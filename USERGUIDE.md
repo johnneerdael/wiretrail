@@ -48,6 +48,7 @@ wiretrail capture.har timeline              # chronological view
 wiretrail capture.har show-entry e000123    # one entry, full + redacted
 wiretrail capture.har report                # markdown dossier
 wiretrail capture.har curl e000123          # sanitized replay command
+wiretrail capture.har auto                  # smart one-shot: summary + auto-drilled findings
 wiretrail capture.har diagnose              # ranked root-cause synthesis
 wiretrail capture.har validate              # capture quality + sufficiency
 wiretrail capture.har startup               # boot profile: concurrency + critical path
@@ -112,6 +113,20 @@ next useful commands: duplicates · errors · slowest
 The `hints` block is the fastest "where do I look?" — it surfaces the largest
 duplicate group and the error count. `resource types` separates business API
 traffic from media/static noise so big counts stay legible.
+
+Below `hints`, `summary` now prints a ranked **recommended next steps** section —
+the same evidence-backed recommendations that power `diagnose` and `auto`, each
+showing the exact command (with a scoping `--filter`) to run next:
+
+```text
+recommended next steps:
+  [HIGH] retries
+         8 retries, final 500 on POST /v1/ratings/bulk — repeated retries did not recover
+  [HIGH] errors --filter "host:api.ntsk.cloud"
+         8x 500 on POST /v1/ratings/bulk — internal server error
+  [MEDIUM] diff --filter "host:youtubei.googleapis.com path:/youtubei/v1/visitor_id"
+         29x identical POST /youtubei/v1/visitor_id — repeated identical calls (not retries)
+```
 
 ---
 
@@ -374,6 +389,52 @@ no raw bodies or headers leave the tool, so the output is safe by construction.
 
 ## 8. Diagnosis & capture quality
 
+### `auto` — one command, full smart analysis
+
+`auto` is the single command for "analyze this HAR for me." It prints the summary
+(including the recommended next steps), then **runs the top recommendations and
+inlines their full output**, each scoped to exactly the host/route in question, with
+the reproducing command line above it:
+
+```text
+$ wiretrail capture.har auto
+== wiretrail summary ==
+[stats + recommended next steps]
+
+────────────────────────────────────────
+[HIGH] retry-exhaustion — 8 retries, final 500 on POST /v1/ratings/bulk
+$ wiretrail capture.har retries
+== wiretrail retries ==
+POST api.ntsk.cloud/v1/ratings/bulk  (9 attempts, 8 retries, final 500)
+  triggered by: 500, 0
+  backoff gaps: 3.7s, 8.4s, 1.2s, ...
+
+────────────────────────────────────────
+[HIGH] 5xx-cluster — 8x 500 on POST /v1/ratings/bulk
+$ wiretrail capture.har errors --filter "host:api.ntsk.cloud"
+== wiretrail errors ==
+   8x  [500] POST api.ntsk.cloud/v1/ratings/bulk
+  message: internal server error
+
+not drilled (below threshold):
+  [LOW] slow-backend — slowest call 2210ms on ...   (run: wiretrail capture.har slowest)
+```
+
+By default `auto` drills **HIGH and MEDIUM** recommendations and lists lower ones as
+one-line suggestions. Widen or narrow the gate:
+
+```bash
+wiretrail capture.har auto                      # drill HIGH+MED (default)
+wiretrail capture.har auto --all                # drill everything, including LOW
+wiretrail capture.har auto --min-severity high  # only HIGH/CRITICAL
+wiretrail capture.har auto --json               # nested: {summary, drilldowns[], not_drilled[]}
+```
+
+It honors the global `--filter` (which scopes the whole run), `--top`, and
+`--unsafe-include-secrets` (threaded into every drill-down). Exit code `1` when any
+recommendation exists, `0` on a clean capture. Each drill-down runs its own
+redactor, so the whole report stays safe to paste.
+
 ### `diagnose` — "just tell me what's wrong"
 
 ```text
@@ -542,8 +603,10 @@ Entry IDs (`e000123`) are stable across commands, so an agent can pivot from a
 
 ```bash
 # 0. One-shot triage: what's wrong and is the capture even usable?
-wiretrail capture.har diagnose        # ranked root causes, each with a follow-up command
+wiretrail capture.har auto            # summary + ranked findings, each drilled inline
 wiretrail capture.har validate        # confirm timings/bodies/auth coverage first
+# (auto wraps diagnose + the drill-downs below; the steps after this are what it
+#  automates — run them by hand when you want to go deeper on one finding.)
 
 # 1. What dominates the capture?
 wiretrail capture.har summary

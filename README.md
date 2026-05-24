@@ -89,11 +89,18 @@ wiretrail <FILE> [COMMAND] [OPTIONS]
 
 ```bash
 wiretrail capture.har                      # executive summary (default)
+wiretrail capture.har auto                 # smart one-shot: summary + auto-drill the findings
 wiretrail capture.har duplicates           # repeated calls, grouped
 wiretrail capture.har errors --json        # 4xx/5xx grouped, as JSON
 wiretrail capture.har show-entry e000123   # full redacted detail for one entry
 wiretrail capture.har curl e000123 --unsafe-include-secrets  # replayable cURL
 ```
+
+**Start with `auto`** for an unfamiliar capture: it prints the summary, ranks the
+likely problems, and inlines the relevant deeper analysis (errors, retries, auth,
+…) scoped to exactly where the trouble is — one command, no guessing what to run
+next. `summary` itself now ends with a ranked **recommended next steps** section,
+so even the default command tells you precisely which follow-ups matter.
 
 ### Global options
 
@@ -162,6 +169,7 @@ The filter language: `host:api.foo.com status:>=400 method:POST path:*login* tim
 
 | Command | Answers |
 |---|---|
+| `auto` | Smart one-shot: prints the summary, then drills the top-ranked recommendations (HIGH+MED by default) inline, each scoped by its own filter. `--all` / `--min-severity` widen/narrow. |
 | `diagnose` | Ranked root-cause findings synthesized from all analyses (severity-sorted, with evidence IDs + a suggested follow-up command). |
 | `validate` | Capture quality + analysis sufficiency (timings/bodies/auth coverage, sanitized?, anomalies). |
 | `startup` | Boot/startup profile: max concurrency, critical path, slow dependencies (`--window-ms`). |
