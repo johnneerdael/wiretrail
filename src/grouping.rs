@@ -60,9 +60,30 @@ pub fn retry_entry_ids(entries: &[&Entry]) -> AHashSet<String> {
     out
 }
 
+/// Densest sliding window over entries pre-sorted by `started_offset_ms`.
+/// Returns `(count, left_idx, right_idx)` (inclusive) of the most populous
+/// window no wider than `window_ms`. Returns `(0, 0, 0)` for an empty slice.
+pub fn densest_window(entries: &[&Entry], window_ms: f64) -> (usize, usize, usize) {
+    if entries.is_empty() {
+        return (0, 0, 0);
+    }
+    let mut best = (1usize, 0usize, 0usize);
+    let mut l = 0usize;
+    for r in 0..entries.len() {
+        while entries[r].started_offset_ms - entries[l].started_offset_ms > window_ms {
+            l += 1;
+        }
+        let count = r - l + 1;
+        if count > best.0 {
+            best = (count, l, r);
+        }
+    }
+    best
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{group_by_fingerprint, group_has_retry, retry_entry_ids};
+    use super::{densest_window, group_by_fingerprint, group_has_retry, retry_entry_ids};
     use crate::model::{sample_capture, sample_entry, Entry};
 
     fn refs(cap: &crate::model::Capture) -> Vec<&Entry> {
@@ -106,5 +127,27 @@ mod tests {
         assert!(retry_entry_ids(&refs(&cap)).is_empty());
         let groups = group_by_fingerprint(&refs(&cap));
         assert!(!group_has_retry(&groups[0].1));
+    }
+
+    fn off(index: usize, offset_ms: f64) -> Entry {
+        let mut e = sample_entry(index, "h", "GET", "/x", 200);
+        e.started_offset_ms = offset_ms;
+        e
+    }
+
+    #[test]
+    fn densest_window_finds_burst() {
+        // offsets 0,50,100,150,1000 with a 200ms window -> densest is the first 4
+        let cap = sample_capture(vec![
+            off(0, 0.0),
+            off(1, 50.0),
+            off(2, 100.0),
+            off(3, 150.0),
+            off(4, 1000.0),
+        ]);
+        let refs: Vec<&Entry> = cap.entries.iter().collect();
+        let (count, l, r) = densest_window(&refs, 200.0);
+        assert_eq!(count, 4);
+        assert_eq!((l, r), (0, 3));
     }
 }
