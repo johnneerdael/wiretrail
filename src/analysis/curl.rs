@@ -1,6 +1,6 @@
 use crate::filter::Filter;
 use crate::model::{Capture, Entry};
-use crate::redact::{redact_body, redact_header_value, redact_query_value};
+use crate::redact::{redact_body, redact_header_value, redact_url};
 use serde::Serialize;
 
 const MUTATING_METHODS: &[&str] = &["POST", "PUT", "PATCH", "DELETE"];
@@ -23,7 +23,7 @@ pub struct CurlCommand {
 /// Build a sanitized, safety-labeled curl command for one entry.
 pub fn entry_to_curl(e: &Entry, unsafe_include: bool) -> CurlCommand {
     let method = e.method.to_ascii_uppercase();
-    let url = build_url(e, unsafe_include);
+    let url = redact_url(&e.url, unsafe_include);
 
     let mut parts = vec![format!("curl -X {method} '{url}'")];
     for (k, v) in &e.req_headers {
@@ -57,29 +57,6 @@ pub fn compute_curl(cap: &Capture, filter: &Filter, top: usize, unsafe_include: 
         .map(|e| entry_to_curl(e, unsafe_include))
         .collect();
     CurlResult { commands }
-}
-
-fn build_url(e: &Entry, unsafe_include: bool) -> String {
-    match url::Url::parse(&e.url) {
-        Ok(mut u) => {
-            let pairs: Vec<(String, String)> = u
-                .query_pairs()
-                .map(|(k, v)| {
-                    let rv = redact_query_value(k.as_ref(), v.as_ref(), unsafe_include);
-                    (k.into_owned(), rv)
-                })
-                .collect();
-            u.set_query(None);
-            let mut s = u.to_string();
-            if !pairs.is_empty() {
-                let q: Vec<String> = pairs.iter().map(|(k, v)| format!("{k}={v}")).collect();
-                s.push('?');
-                s.push_str(&q.join("&"));
-            }
-            s
-        }
-        Err(_) => e.url.clone(),
-    }
 }
 
 fn safety(method: &str, norm_path: &str) -> (bool, String) {

@@ -1,5 +1,5 @@
 use crate::model::{Capture, Entry};
-use crate::redact::{redact_body, redact_header_value, redact_query_value};
+use crate::redact::{redact_body, redact_header_value, redact_query_value, redact_url};
 use crate::timing::PhaseBreakdown;
 use serde::Serialize;
 
@@ -72,7 +72,7 @@ pub fn entry_detail(e: &Entry, unsafe_include: bool) -> EntryDetail {
         id: e.id.clone(),
         index: e.index,
         method: e.method.to_ascii_uppercase(),
-        url: e.url.clone(),
+        url: redact_url(&e.url, unsafe_include),
         host: e.host.clone(),
         norm_path: e.norm_path.clone(),
         status: e.status,
@@ -176,5 +176,17 @@ mod tests {
         let d = entry_detail(find_entry(&c, "e000000").unwrap(), true);
         let auth = d.req_headers.iter().find(|(n, _)| n == "Authorization").unwrap();
         assert_eq!(auth.1, "Bearer secret");
+    }
+
+    #[test]
+    fn url_path_blob_is_redacted_by_default() {
+        let mut e = sample_entry(0, "h.example.com", "GET", "/manifest.json", 200);
+        e.url = "https://h.example.com/cfg/eyJrZXkiOiJzZWNyZXQiLCJuIjoxMjN9==/manifest.json".into();
+        let d = entry_detail(&e, false);
+        assert!(d.url.contains("<redacted>"));
+        assert!(!d.url.contains("eyJrZXki"));
+        // unsafe shows raw
+        let d2 = entry_detail(&e, true);
+        assert!(d2.url.contains("eyJrZXki"));
     }
 }
