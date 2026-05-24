@@ -25,6 +25,7 @@ pub mod filter;
 pub mod fingerprint;
 pub mod glob;
 pub mod grouping;
+pub mod jsonpath;
 pub mod jwt;
 pub mod loader;
 pub mod model;

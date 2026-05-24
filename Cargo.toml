@@ -34,6 +34,7 @@ memmap2 = "0.9.10"
 chrono = "0.4.44"
 url = "2.5"
 ahash = "0.8.12"
+regex = "1"
 
 [profile.release]
 lto = "fat"
