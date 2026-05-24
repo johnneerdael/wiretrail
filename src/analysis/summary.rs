@@ -174,7 +174,10 @@ pub fn render_summary_text(s: &SummaryResult) -> String {
         "entries: {} total, {} after filter\n",
         s.total_entries, s.filtered_entries
     ));
-    out.push_str(&format!("capture window: {}\n", human_ms(s.duration_ms)));
+    out.push_str(&format!(
+        "duration (first start to last response): {}\n",
+        human_ms(s.duration_ms)
+    ));
 
     out.push_str("\nstatus classes:\n");
     for (k, v) in &s.status_classes {
