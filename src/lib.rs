@@ -31,6 +31,9 @@ pub mod config;
 pub mod glob;
 pub mod stats;
 pub mod vendor;
+pub mod errorbody;
+pub mod grouping;
+pub mod timing;
 
 /// Errors that HAR functions may return.
 #[derive(thiserror::Error, Debug)]
