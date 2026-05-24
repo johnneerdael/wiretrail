@@ -1,8 +1,11 @@
+pub mod auth;
 pub mod curl;
 pub mod duplicates;
 pub mod endpoints;
 pub mod errors;
+pub mod handoff;
 pub mod hosts;
+pub mod jwt;
 pub mod pagination;
 pub mod rate_limit;
 pub mod redirects;

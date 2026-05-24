@@ -35,6 +35,7 @@ pub mod errorbody;
 pub mod grouping;
 pub mod timing;
 pub mod opaque;
+pub mod jwt;
 
 /// Errors that HAR functions may return.
 #[derive(thiserror::Error, Debug)]
