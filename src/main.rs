@@ -13,6 +13,9 @@ use har::analysis::timeline::{compute_timeline, render_timeline_text};
 use har::analysis::transitions::{compute_transitions, render_transitions_text};
 use har::analysis::curl::{compute_curl, entry_to_curl, render_curl_text, CurlResult};
 use har::analysis::report::{compose_report, ReportResult};
+use har::analysis::storms::{compute_storms, render_storms_text};
+use har::analysis::pagination::{compute_pagination, render_pagination_text};
+use har::analysis::rate_limit::{compute_rate_limit, render_rate_limit_text};
 use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
@@ -87,6 +90,29 @@ enum Command {
         /// Optional entry id (e000123) or index; omit to emit all filtered entries.
         id: Option<String>,
     },
+    /// Bursts of many calls to the same host or endpoint within a window.
+    Storms {
+        /// Window width in milliseconds.
+        #[arg(long, default_value_t = 1000)]
+        window_ms: u64,
+        /// Minimum calls in the window to count as a storm.
+        #[arg(long, default_value_t = 5)]
+        min_count: usize,
+    },
+    /// Pagination loops and N+1 fan-out clusters.
+    Pagination {
+        /// Page count above which a sequence is flagged excessive.
+        #[arg(long, default_value_t = 20)]
+        max_pages: usize,
+        /// Minimum fan-out to flag an N+1 cluster.
+        #[arg(long = "fanout-min", default_value_t = 5)]
+        fanout_min: usize,
+        /// Window (ms) for N+1 clustering.
+        #[arg(long, default_value_t = 2000)]
+        window_ms: u64,
+    },
+    /// Rate-limit (429) events, Retry-After, and cooldown violations.
+    RateLimit,
 }
 
 fn main() {
@@ -314,6 +340,45 @@ fn main() {
                 &["show-entry", "errors", "duplicates"],
             );
             exit(false);
+        }
+        Command::Storms { window_ms, min_count } => {
+            let result = compute_storms(&cap, &filter, window_ms, min_count, cli.top);
+            let findings = !result.storms.is_empty();
+            emit(
+                cli.json,
+                "storms",
+                &cap.meta,
+                &result,
+                &render_storms_text(&result),
+                &["pagination", "duplicates", "timeline"],
+            );
+            exit(findings);
+        }
+        Command::Pagination { max_pages, fanout_min, window_ms } => {
+            let result = compute_pagination(&cap, &filter, max_pages, fanout_min, window_ms, cli.top);
+            let findings = !result.pages.is_empty() || !result.nplus1.is_empty();
+            emit(
+                cli.json,
+                "pagination",
+                &cap.meta,
+                &result,
+                &render_pagination_text(&result),
+                &["storms", "duplicates", "endpoints"],
+            );
+            exit(findings);
+        }
+        Command::RateLimit => {
+            let result = compute_rate_limit(&cap, &filter, cli.top);
+            let findings = !result.groups.is_empty();
+            emit(
+                cli.json,
+                "rate-limit",
+                &cap.meta,
+                &result,
+                &render_rate_limit_text(&result),
+                &["errors", "retries", "transitions"],
+            );
+            exit(findings);
         }
     }
 }
