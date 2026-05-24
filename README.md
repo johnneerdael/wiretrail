@@ -7,8 +7,9 @@
 `wiretrail` is a fast, deterministic, agent-friendly **HAR (HTTP Archive) analyzer**
 for the command line. It answers narrow, repeatable questions about a network
 capture in a single command — storms, duplicates, retries, errors, auth flows,
-slow calls, what varies between repeated requests — with structured terminal
-output and a stable `--json` schema, and **no GUI**.
+slow calls, what varies between repeated requests, ranked root-cause diagnosis,
+body search/extraction, and regression diff against a baseline — with structured
+terminal output and a stable `--json` schema, and **no GUI**.
 
 It is **HeapTrail for network captures**. It reuses
 [heaptrail](https://github.com/johnneerdael/heaptrail)'s design philosophy:
@@ -40,7 +41,8 @@ path segments — and only reveals raw values with an explicit
   lets an agent run a command, read the result, and decide the next probe. Every
   command prints a "next useful commands" footer.
 - **Headless / CI.** Single static binary, deterministic output, defined exit codes
-  (`0` clean, `1` findings, `2` invalid HAR).
+  (`0` clean, `1` findings, `2` invalid HAR). `compare --fail-on <severity>` turns a
+  regression diff against a baseline HAR into a strict pass/fail gate.
 - **Large captures.** mmap single-pass parse: a 143 MB capture (2237 entries) loads
   in ~0.5 s using ~2× the file size in RAM.
 - **Safe to share.** Redact-by-default makes `report`, `curl`, and `show-entry`
@@ -150,9 +152,27 @@ The filter language: `host:api.foo.com status:>=400 method:POST path:*login* tim
 |---|---|
 | `show-entry <id>` | Full normalized request/response/timings for one entry, redacted. |
 | `diff` | What varies across repeated calls to one endpoint (query/header/body verdict: identical / volatile-only / meaningful). |
-| `checks` | Built-in checks: required-headers (config) + content-type mismatches. |
+| `search <pattern>` | Grep request/response bodies (`--regex`, `--ignore-case`); redaction-safe context snippets. |
+| `extract <jsonpath>` | Pull a JSON-path value from bodies (`$.errors[0].code`, `[*]` wildcard); `--target req\|resp`; opaque values masked. |
+| `export` | Flatten entries to NDJSON or CSV (`--format ndjson\|csv`) — metadata only, no raw bodies. |
 | `report` | A dossier-style markdown report composed from the analyses. |
 | `curl [id]` | Sanitized, safety-labeled `curl` replay for one entry or all filtered entries. |
+
+**Diagnosis & quality**
+
+| Command | Answers |
+|---|---|
+| `diagnose` | Ranked root-cause findings synthesized from all analyses (severity-sorted, with evidence IDs + a suggested follow-up command). |
+| `validate` | Capture quality + analysis sufficiency (timings/bodies/auth coverage, sanitized?, anomalies). |
+| `startup` | Boot/startup profile: max concurrency, critical path, slow dependencies (`--window-ms`). |
+| `cascade` | Earliest failure and the downstream failures it triggered (`--window-ms`, `--min-downstream`). |
+
+**Regression & rules**
+
+| Command | Answers |
+|---|---|
+| `compare <baseline.har>` | Diff this capture against a baseline: new/removed hosts & endpoints, new errors, latency regressions, payload growth — severity-scored. `--fail-on <severity>` gates CI. |
+| `rules` | Evaluate `wiretrail.yaml` rules + built-in packs (`--pack auth,caching,payments,security,rest,graphql`). |
 
 Run `wiretrail <file> <command> --help` for per-command options.
 
@@ -198,9 +218,19 @@ ownership:
 required_headers:
   - host: "api.foo.com"
     headers: ["Authorization", "X-App-Version", "Accept"]
+
+rules:
+  - name: "API calls need auth"
+    host: "api.foo.com"          # globs; optional method/path/status matchers
+    require_headers: ["Authorization"]
+    max_latency_ms: 2000
+  - name: "no staging hosts in prod capture"
+    host: "*.staging.foo.com"
+    forbid: true                 # any match is a violation
 ```
 
-Without config, `subsystems` falls back to built-in vendor heuristics, then raw host.
+`rules` evaluates this list plus any built-in `--pack`s; `subsystems` falls back to
+built-in vendor heuristics then raw host when no `ownership` rule matches.
 
 ## Redaction & safety
 

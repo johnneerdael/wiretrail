@@ -48,6 +48,15 @@ wiretrail capture.har timeline              # chronological view
 wiretrail capture.har show-entry e000123    # one entry, full + redacted
 wiretrail capture.har report                # markdown dossier
 wiretrail capture.har curl e000123          # sanitized replay command
+wiretrail capture.har diagnose              # ranked root-cause synthesis
+wiretrail capture.har validate              # capture quality + sufficiency
+wiretrail capture.har startup               # boot profile: concurrency + critical path
+wiretrail capture.har cascade               # first failure + downstream cascade
+wiretrail capture.har search "error"        # grep bodies (--regex, --ignore-case)
+wiretrail capture.har extract '$.error.message'   # JSON-path extract from bodies
+wiretrail capture.har export --format csv   # flatten entries to NDJSON/CSV
+wiretrail new.har compare baseline.har      # regression diff vs a baseline
+wiretrail capture.har rules --pack auth     # config rules + built-in packs
 
 # Modifiers (global)
 --json                     # machine-readable envelope
@@ -322,9 +331,189 @@ wiretrail capture.har curl e000123 --unsafe-include-secrets   # replayable
 Each command is labeled `SAFE`/`UNSAFE` based on method (mutating?) and
 payment/order keywords in the path.
 
+### `search` — grep bodies, safely
+
+```text
+$ wiretrail capture.har search "internal server error" --ignore-case
+== wiretrail search ==
+
+e000112 (resp.body)
+  …or":{"code":"internal_error","message":"internal server error"}}…
+```
+
+Substring by default; `--regex` for a pattern, `--ignore-case` to fold case. The
+snippet is a context window passed through the same redactor as everything else —
+a token sitting next to your match is masked, not printed.
+
+### `extract` — pull one field across entries
+
+```text
+$ wiretrail capture.har extract '$.error.message'
+== wiretrail extract ==
+e000112  internal server error
+e000138  internal server error
+```
+
+A hand-rolled JSON-path (`$.a.b`, `a[0].c`, `errors[*].code` wildcard) evaluated
+over each body. `--target req` reads request bodies instead of responses. Values
+that look like opaque secrets are masked unless `--unsafe-include-secrets`.
+
+### `export` — NDJSON / CSV for jq, DuckDB, spreadsheets
+
+```bash
+wiretrail capture.har export                 # one NDJSON object per entry
+wiretrail capture.har export --format csv    # header + one row per entry
+wiretrail capture.har export --json | jq …   # (export already prints raw records)
+```
+
+One normalized record per entry — `id, offset_ms, duration_ms, method, host,
+norm_path, status, bytes, content_type, resource_type, correlation`. Metadata only:
+no raw bodies or headers leave the tool, so the output is safe by construction.
+
 ---
 
-## 8. `--json` — for scripts and agents
+## 8. Diagnosis & capture quality
+
+### `diagnose` — "just tell me what's wrong"
+
+```text
+$ wiretrail capture.har diagnose
+== wiretrail diagnose ==
+
+[high] retry-exhaustion — 8 retries, final 500 on POST /v1/ratings/bulk
+  repeated retries did not recover
+  evidence: e000112, e000138, …   ->  retries
+
+[medium] wasteful-duplicates — 27x identical POST /rest/v1/rpc/sync_resolve_account_secret
+  repeated identical calls (not retries)   ->  diff
+```
+
+`diagnose` composes the other analyses (errors, auth, rate-limit, retries, storms,
+duplicates, redirects, slowest) into one severity-ranked list, each finding carrying
+evidence entry IDs and the single follow-up command that drills in. Start here.
+
+### `validate` — can this capture even answer my question?
+
+```text
+$ wiretrail capture.har validate
+== wiretrail validate ==
+HAR 1.2 via HTTPToolkit  (2237 entries)
+with timings: 100% · response bodies: 84% · POST req bodies: 61%
+auth headers: true · cookies: false
+
+sufficiency:
+  - no request bodies on POST/PUT/PATCH — `diff` body verdicts limited
+```
+
+Tells you what's present before you trust a finding — coverage of timings/bodies/
+auth, whether the capture looks `sanitized`, anomalies (status-0, negative sizes),
+and which commands will be limited by what's missing.
+
+### `startup` — boot profile
+
+```text
+$ wiretrail capture.har startup --window-ms 30000
+== wiretrail startup ==
+max concurrency: 6
+critical path: 4.2s across 11 calls
+slowest dependencies: api.themoviedb.org (1.8s), ...
+```
+
+Concurrency sweep + critical-path approximation over the boot window — surfaces
+sequential chains that could be parallelized and the dependencies that dominate.
+
+### `cascade` — first failure and its blast radius
+
+```text
+$ wiretrail capture.har cascade
+== wiretrail cascade ==
+trigger e000112 [500] POST api.ntsk.cloud/v1/ratings/bulk
+  downstream failures within 5s: 4
+```
+
+Finds the earliest failure and the downstream failures it plausibly triggered
+(`--window-ms`, `--min-downstream`).
+
+---
+
+## 9. Regression & rules
+
+### `compare <baseline.har>` — what changed vs a known-good run
+
+```text
+$ wiretrail new.har compare baseline.har
+== wiretrail compare ==
+max severity: medium
+new hosts: openrouter.ai, mdblist.com
+new endpoints: 10
+removed endpoints: 10
+
+new errors:
+  [medium] GET api.mdblist.com/my/lists -> 405 (1x)
+
+latency regressions:
+  [medium] GET api.torbox.app/v1/api/user/me p50 275ms -> 1853ms
+
+payload growth:
+  [low] GET api.mdblist.com/sync/watched 177B -> 738B
+```
+
+Builds per-endpoint aggregates of both captures and severity-scores the deltas:
+a new 5xx is `high`, a new 4xx `medium`, a p50 that more than doubled *and* grew
+>200 ms `medium`, a payload that more than doubled `low`.
+
+For CI, gate on severity:
+
+```bash
+wiretrail new.har compare baseline.har --fail-on high   # exit 1 only on a high+ regression
+echo $?
+```
+
+Without `--fail-on` it follows the usual convention (exit `1` if there is any
+finding). With it, the run exits non-zero only when the worst regression reaches
+the threshold.
+
+### `rules` — enforce your conventions
+
+```text
+$ wiretrail capture.har rules --pack auth,security,caching
+== wiretrail rules ==
+
+[high] auth: Authorization required
+  missing required header: Authorization (307 entries)
+
+[high] security: no secrets in query
+  opaque secret in query param `bui` (60 entries)
+```
+
+Evaluates the `rules:` list from `wiretrail.yaml` plus any built-in `--pack`s:
+
+| Pack | Flags |
+|---|---|
+| `auth` | requests missing an `Authorization` header |
+| `caching` | `GET` 200s without `Cache-Control` |
+| `payments` | charge/payment paths missing an `Idempotency-Key` |
+| `security` | opaque secret-looking values in query params (names the **param**, never the value) |
+| `rest` | `GET` requests carrying a body (mutation over GET) |
+| `graphql` | `POST /graphql` without an `operationName` |
+
+A `wiretrail.yaml` rule is a matcher (`host`/`path`/`method`/`status` globs) plus
+any of `require_headers`, `max_latency_ms`, or `forbid: true`:
+
+```yaml
+rules:
+  - name: "API needs auth and must be fast"
+    host: "api.foo.com"
+    require_headers: ["Authorization"]
+    max_latency_ms: 2000
+  - name: "no staging in a prod capture"
+    host: "*.staging.foo.com"
+    forbid: true
+```
+
+---
+
+## 10. `--json` — for scripts and agents
 
 Every command emits a stable envelope:
 
@@ -349,9 +538,13 @@ Entry IDs (`e000123`) are stable across commands, so an agent can pivot from a
 
 ---
 
-## 9. End-to-end: an Android startup investigation
+## 11. End-to-end: an Android startup investigation
 
 ```bash
+# 0. One-shot triage: what's wrong and is the capture even usable?
+wiretrail capture.har diagnose        # ranked root causes, each with a follow-up command
+wiretrail capture.har validate        # confirm timings/bodies/auth coverage first
+
 # 1. What dominates the capture?
 wiretrail capture.har summary
 #    -> 2237 reqs, top dup 29x visitor_id, 59 errors
@@ -372,11 +565,14 @@ wiretrail capture.har retries         # confirms backoff between the 8 attempts
 # 5. Hand off / reproduce
 wiretrail capture.har handoff         # blocks with correlation IDs + sanitized curl
 wiretrail capture.har report > dossier.md
+
+# 6. Guard against regressions in CI
+wiretrail capture.har compare known-good.har --fail-on high
 ```
 
 ---
 
-## 10. Performance and limits
+## 12. Performance and limits
 
 - **Throughput:** mmap + one typed `from_slice` (no `serde_json::Value` DOM). 143 MB
   / 2237 entries parses + summarizes in ~0.5 s.
@@ -398,7 +594,7 @@ time window + a preceding list call).
 
 ---
 
-## 11. Troubleshooting
+## 13. Troubleshooting
 
 **"failed to parse HAR JSON"** — the file isn't valid JSON or isn't a HAR. Check it
 opens in a JSON viewer and has a top-level `log.entries` array.
@@ -412,7 +608,7 @@ reported* (errors, duplicates, etc.), `0` means clean. Useful as a CI gate. `2`
 means the HAR was invalid/unreadable.
 
 **A secret I need is `<redacted>`** — add `--unsafe-include-secrets`. It applies to
-`curl`, `show-entry`, `errors`, `report`, `jwt`, and `diff`.
+`curl`, `show-entry`, `errors`, `report`, `jwt`, `diff`, `search`, and `extract`.
 
 **`subsystems` shows raw hostnames** — that's the fallback when a host isn't a known
 vendor and isn't in your `wiretrail.yaml` ownership map. Add a rule to name it.
