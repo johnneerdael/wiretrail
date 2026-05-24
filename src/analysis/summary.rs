@@ -1,6 +1,7 @@
 use crate::filter::Filter;
 use crate::fingerprint::fingerprint;
 use crate::model::Capture;
+use crate::recommender::{Recommendation, recommend};
 use ahash::AHashMap;
 use serde::Serialize;
 use std::collections::BTreeMap;
@@ -20,6 +21,7 @@ pub struct SummaryResult {
     pub slowest: Vec<SlowEntry>,
     pub biggest_payloads: Vec<PayloadEntry>,
     pub hints: Vec<String>,
+    pub recommendations: Vec<Recommendation>,
 }
 
 #[derive(Debug, Serialize)]
@@ -152,6 +154,8 @@ pub fn compute_summary(cap: &Capture, filter: &Filter, top: usize) -> SummaryRes
         hints.push(format!("{error_count} error responses (4xx/5xx/failed)"));
     }
 
+    let recommendations = recommend(cap, filter, top);
+
     SummaryResult {
         total_entries: cap.entries.len(),
         filtered_entries: entries.len(),
@@ -166,6 +170,7 @@ pub fn compute_summary(cap: &Capture, filter: &Filter, top: usize) -> SummaryRes
         slowest: slow,
         biggest_payloads: payloads,
         hints,
+        recommendations,
     }
 }
 
@@ -247,6 +252,19 @@ pub fn render_summary_text(s: &SummaryResult) -> String {
         }
     }
 
+    if !s.recommendations.is_empty() {
+        out.push_str("\nrecommended next steps:\n");
+        for r in &s.recommendations {
+            out.push_str(&format!(
+                "  [{}] {}\n         {} — {}\n",
+                r.severity.to_ascii_uppercase(),
+                r.command_line(),
+                r.title,
+                r.detail
+            ));
+        }
+    }
+
     out
 }
 
@@ -283,5 +301,19 @@ mod tests {
         let f = Filter::parse(&["status:>=400".into()]).unwrap();
         let s = compute_summary(&cap, &f, 5);
         assert!(s.filtered_entries <= s.total_entries);
+    }
+
+    #[test]
+    fn populates_recommendations_when_errors_present() {
+        use crate::model::{sample_capture, sample_entry};
+        let cap = sample_capture(vec![
+            sample_entry(0, "api.x", "POST", "/bulk", 500),
+            sample_entry(1, "api.x", "POST", "/bulk", 500),
+            sample_entry(2, "api.x", "POST", "/bulk", 500),
+        ]);
+        let s = compute_summary(&cap, &Filter::parse(&[]).unwrap(), 10);
+        assert!(s.recommendations.iter().any(|r| r.kind == "5xx-cluster"));
+        let text = super::render_summary_text(&s);
+        assert!(text.contains("recommended next steps"));
     }
 }
