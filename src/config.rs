@@ -10,6 +10,8 @@ pub struct Config {
     pub ownership: Vec<OwnershipRule>,
     #[serde(default)]
     pub required_headers: Vec<RequiredHeaderRule>,
+    #[serde(default)]
+    pub rules: Vec<Rule>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -19,6 +21,33 @@ pub struct RequiredHeaderRule {
     /// Header names that must be present on matching requests.
     #[serde(default)]
     pub headers: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct Rule {
+    /// Human-readable rule name (shown in findings).
+    pub name: String,
+    /// Host glob the rule applies to (None = any host).
+    #[serde(default)]
+    pub host: Option<String>,
+    /// Path glob the rule applies to (None = any path).
+    #[serde(default)]
+    pub path: Option<String>,
+    /// HTTP method glob (None = any method).
+    #[serde(default)]
+    pub method: Option<String>,
+    /// Status glob, matched against the stringified status (e.g. "2*", "404").
+    #[serde(default)]
+    pub status: Option<String>,
+    /// Header names that must be present on matching requests.
+    #[serde(default)]
+    pub require_headers: Vec<String>,
+    /// Maximum allowed request duration in milliseconds.
+    #[serde(default)]
+    pub max_latency_ms: Option<f64>,
+    /// If true, any matching request is itself a violation.
+    #[serde(default)]
+    pub forbid: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -197,5 +226,24 @@ required_headers:
     fn required_headers_defaults_empty() {
         let cfg = Config::from_yaml_str("ownership: []").unwrap();
         assert!(cfg.required_headers.is_empty());
+    }
+
+    #[test]
+    fn parses_rules_from_yaml() {
+        let yaml = r#"
+rules:
+  - name: "API needs auth"
+    host: "api.*"
+    require_headers: ["Authorization"]
+    max_latency_ms: 2000
+  - name: "no internal hosts"
+    host: "*.internal"
+    forbid: true
+"#;
+        let cfg = Config::from_yaml_str(yaml).unwrap();
+        assert_eq!(cfg.rules.len(), 2);
+        assert_eq!(cfg.rules[0].require_headers, vec!["Authorization"]);
+        assert_eq!(cfg.rules[0].max_latency_ms, Some(2000.0));
+        assert!(cfg.rules[1].forbid);
     }
 }

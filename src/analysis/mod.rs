@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod cascade;
 pub mod checks;
+pub mod compare;
 pub mod curl;
 pub mod diagnose;
 pub mod diff;
@@ -17,6 +18,7 @@ pub mod rate_limit;
 pub mod redirects;
 pub mod report;
 pub mod retries;
+pub mod rules;
 pub mod search;
 pub mod show_entry;
 pub mod slowest;
