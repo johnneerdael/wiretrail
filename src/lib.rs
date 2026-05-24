@@ -15,6 +15,19 @@ use std::path::Path;
 pub mod v1_2;
 pub mod v1_3;
 
+pub mod analysis;
+pub mod assemble;
+pub mod classify;
+pub mod correlate;
+pub mod filter;
+pub mod fingerprint;
+pub mod loader;
+pub mod model;
+pub mod normalize;
+pub mod raw;
+pub mod redact;
+pub mod render;
+
 /// Errors that HAR functions may return.
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

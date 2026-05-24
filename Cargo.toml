@@ -1,19 +1,22 @@
 [package]
-name = "har"
-version = "0.9.0"
-authors = ["Sebastian Mandrean <sebastian.mandrean@gmail.com>"]
+name = "wiretrail"
+version = "0.1.0"
+authors = ["John Neerdael <john@neerdael.nl>"]
 edition = "2024"
 rust-version = "1.88"
-description = "A HTTP Archive format (HAR) serialization & deserialization library."
+description = "Fast, deterministic, agent-friendly HAR analyzer CLI. heaptrail for network captures."
 license = "MIT"
-repository = "https://github.com/mandrean/har-rs"
-documentation = "https://docs.rs/har"
+repository = "https://github.com/johnneerdael/wiretrail"
 readme = "README.md"
-keywords = ["har", "serialization", "deserialization", "json", "yaml"]
+keywords = ["har", "http", "analysis", "cli", "debugging"]
+categories = ["command-line-utilities"]
 
-[package.metadata.docs.rs]
-features = ["yaml"]
-rustdoc-args = ["--cfg", "docsrs"]
+[lib]
+name = "har"
+
+[[bin]]
+name = "wiretrail"
+path = "src/main.rs"
 
 [features]
 default = []
@@ -25,3 +28,12 @@ serde_json = "1.0.149"
 serde_with = "3.18.0"
 thiserror = "2.0.18"
 yaml_serde = { version = "0.10.4", optional = true }
+clap = { version = "4.6.1", features = ["derive"] }
+memmap2 = "0.9.10"
+chrono = "0.4.44"
+url = "2.5"
+ahash = "0.8.12"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
