@@ -1,8 +1,16 @@
 use clap::{Parser, Subcommand};
+use har::analysis::duplicates::{compute_duplicates, render_duplicates_text};
 use har::analysis::endpoints::{compute_endpoints, render_endpoints_text};
+use har::analysis::errors::{compute_errors, render_errors_text};
 use har::analysis::hosts::{compute_hosts, render_hosts_text};
+use har::analysis::redirects::{compute_redirects, render_redirects_text};
+use har::analysis::retries::{compute_retries, render_retries_text};
+use har::analysis::show_entry::{entry_detail, find_entry, render_entry_detail_text};
+use har::analysis::slowest::{compute_slowest, render_slowest_text};
 use har::analysis::subsystems::{compute_subsystems, render_subsystems_text};
 use har::analysis::summary::{compute_summary, render_summary_text};
+use har::analysis::timeline::{compute_timeline, render_timeline_text};
+use har::analysis::transitions::{compute_transitions, render_transitions_text};
 use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
@@ -35,6 +43,10 @@ struct Cli {
     /// Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present).
     #[arg(long, global = true)]
     config: Option<PathBuf>,
+
+    /// Show raw secret values (auth headers, tokens, bodies) instead of redacting.
+    #[arg(long, global = true)]
+    unsafe_include_secrets: bool,
 }
 
 #[derive(Subcommand, Debug)]
@@ -47,6 +59,25 @@ enum Command {
     Subsystems,
     /// Normalized endpoint inventory.
     Endpoints,
+    /// Repeated requests (method + path + query fingerprint).
+    Duplicates,
+    /// Repeated requests that follow a failed attempt.
+    Retries,
+    /// 4xx/5xx/failed responses grouped by endpoint.
+    Errors,
+    /// Redirect responses, chains, and storms.
+    Redirects,
+    /// Top-N slowest requests with timing breakdown.
+    Slowest,
+    /// Status-code transition sequences (401->200, 429->429, ...).
+    Transitions,
+    /// Chronological per-request timeline.
+    Timeline,
+    /// Full redacted detail for one entry (by id `e000123` or index).
+    ShowEntry {
+        /// Entry id (e000123) or bare index.
+        id: String,
+    },
 }
 
 fn main() {
@@ -128,6 +159,111 @@ fn main() {
                 &["errors", "duplicates", "show-entry"],
             );
             exit(findings);
+        }
+        Command::Duplicates => {
+            let result = compute_duplicates(&cap, &filter, cli.top);
+            let findings = !result.groups.is_empty();
+            emit(
+                cli.json,
+                "duplicates",
+                &cap.meta,
+                &result,
+                &render_duplicates_text(&result),
+                &["retries", "errors", "show-entry"],
+            );
+            exit(findings);
+        }
+        Command::Retries => {
+            let result = compute_retries(&cap, &filter, cli.top);
+            let findings = !result.groups.is_empty();
+            emit(
+                cli.json,
+                "retries",
+                &cap.meta,
+                &result,
+                &render_retries_text(&result),
+                &["errors", "transitions", "show-entry"],
+            );
+            exit(findings);
+        }
+        Command::Errors => {
+            let result = compute_errors(&cap, &filter, cli.top, cli.unsafe_include_secrets);
+            let findings = !result.groups.is_empty();
+            emit(
+                cli.json,
+                "errors",
+                &cap.meta,
+                &result,
+                &render_errors_text(&result),
+                &["transitions", "redirects", "show-entry"],
+            );
+            exit(findings);
+        }
+        Command::Redirects => {
+            let result = compute_redirects(&cap, &filter, cli.top);
+            let findings = result.groups.iter().any(|g| g.is_storm);
+            emit(
+                cli.json,
+                "redirects",
+                &cap.meta,
+                &result,
+                &render_redirects_text(&result),
+                &["timeline", "errors", "show-entry"],
+            );
+            exit(findings);
+        }
+        Command::Slowest => {
+            let result = compute_slowest(&cap, &filter, cli.top);
+            emit(
+                cli.json,
+                "slowest",
+                &cap.meta,
+                &result,
+                &render_slowest_text(&result),
+                &["timeline", "hosts", "show-entry"],
+            );
+            exit(false);
+        }
+        Command::Transitions => {
+            let result = compute_transitions(&cap, &filter, cli.top);
+            let findings = !result.transitions.is_empty();
+            emit(
+                cli.json,
+                "transitions",
+                &cap.meta,
+                &result,
+                &render_transitions_text(&result),
+                &["errors", "retries", "show-entry"],
+            );
+            exit(findings);
+        }
+        Command::Timeline => {
+            let result = compute_timeline(&cap, &filter, cli.top);
+            emit(
+                cli.json,
+                "timeline",
+                &cap.meta,
+                &result,
+                &render_timeline_text(&result),
+                &["slowest", "duplicates", "show-entry"],
+            );
+            exit(false);
+        }
+        Command::ShowEntry { id } => {
+            let Some(e) = find_entry(&cap, &id) else {
+                eprintln!("wiretrail: no entry with id or index '{id}'");
+                std::process::exit(ExitCode::InvalidHar as i32);
+            };
+            let detail = entry_detail(e, cli.unsafe_include_secrets);
+            emit(
+                cli.json,
+                "show-entry",
+                &cap.meta,
+                &detail,
+                &render_entry_detail_text(&detail),
+                &["timeline", "duplicates", "errors"],
+            );
+            exit(false);
         }
     }
 }
