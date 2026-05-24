@@ -10,7 +10,7 @@ repository = "https://github.com/johnneerdael/wiretrail"
 readme = "README.md"
 keywords = ["har", "http", "analysis", "cli", "debugging"]
 categories = ["command-line-utilities"]
-exclude = ["docs/", "*.har"]
+exclude = ["docs/", "plugins/", ".claude-plugin/", "*.har"]
 
 [lib]
 name = "har"

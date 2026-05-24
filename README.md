@@ -232,6 +232,27 @@ analysis is structural only (no signature verification). N+1 detection is a
 best-effort heuristic. See [USERGUIDE.md](USERGUIDE.md) for details and worked
 examples.
 
+## Claude Code plugin
+
+This repo ships a Claude Code plugin that teaches the assistant to drive wiretrail.
+It auto-triggers on "analyse/debug HAR", "wiretrail", or a `.har` file in the
+conversation, and adds an `/analysing-har` slash command.
+
+```text
+# One-time: add the marketplace
+/plugin marketplace add johnneerdael/wiretrail
+
+# Install the plugin
+/plugin install analysing-har@analysing-har
+
+# Use it
+/analysing-har path/to/capture.har
+# …or just say "analyse this HAR" / "debug this HAR" and the skill triggers.
+```
+
+The plugin wraps the `wiretrail` CLI (auto-installs via `cargo install wiretrail`
+if missing) and follows the triage workflow in [USERGUIDE.md](USERGUIDE.md).
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

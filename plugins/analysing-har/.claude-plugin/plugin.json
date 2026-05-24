@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "analysing-har",
+  "version": "0.1.0",
+  "description": "Analyse and debug HAR (HTTP Archive) captures with wiretrail: request storms, wasteful duplicates vs retries, 4xx/5xx errors, slow calls, auth/JWT/token-refresh flows, rate limits, and what differs between repeated calls. Redacts secrets by default. Wraps wiretrail with auto-install instructions.",
+  "author": {
+    "name": "John Neerdael",
+    "email": "john@neerdael.nl",
+    "url": "https://github.com/johnneerdael"
+  },
+  "homepage": "https://github.com/johnneerdael/wiretrail",
+  "repository": "https://github.com/johnneerdael/wiretrail",
+  "license": "MIT",
+  "keywords": [
+    "har",
+    "http-archive",
+    "network",
+    "debugging",
+    "api",
+    "wiretrail",
+    "duplicates",
+    "auth",
+    "jwt"
+  ]
+}
