@@ -181,20 +181,21 @@ pub fn compute_diagnose(cap: &Capture, filter: &Filter, top: usize) -> DiagnoseR
     }
 
     // slow backend
-    if let Some(s) = slowest::compute_slowest(cap, filter, top).entries.first() {
-        if s.duration_ms > 1000.0 && s.bottleneck == "server wait/TTFB" {
-            f.push(Diagnosis {
-                severity: "low".into(),
-                kind: "slow-backend".into(),
-                title: format!(
-                    "slowest call {}ms on {} {}",
-                    s.duration_ms as i64, s.host, s.norm_path
-                ),
-                detail: "dominated by server wait (TTFB)".into(),
-                evidence_ids: vec![s.id.clone()],
-                suggested_command: "slowest".into(),
-            });
-        }
+    if let Some(s) = slowest::compute_slowest(cap, filter, top).entries.first()
+        && s.duration_ms > 1000.0
+        && s.bottleneck == "server wait/TTFB"
+    {
+        f.push(Diagnosis {
+            severity: "low".into(),
+            kind: "slow-backend".into(),
+            title: format!(
+                "slowest call {}ms on {} {}",
+                s.duration_ms as i64, s.host, s.norm_path
+            ),
+            detail: "dominated by server wait (TTFB)".into(),
+            evidence_ids: vec![s.id.clone()],
+            suggested_command: "slowest".into(),
+        });
     }
 
     f.sort_by(|a, b| {

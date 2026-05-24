@@ -105,7 +105,10 @@ mod tests {
         let recs = export_records(&cap(), &Filter::parse(&[]).unwrap());
         let s = render_ndjson(&recs);
         assert_eq!(s.lines().count(), 2);
-        assert!(s.lines().all(|l| l.starts_with('{') && l.contains("\"id\"")));
+        assert!(
+            s.lines()
+                .all(|l| l.starts_with('{') && l.contains("\"id\""))
+        );
     }
 
     #[test]
