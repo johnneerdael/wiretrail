@@ -19,6 +19,8 @@ use har::analysis::rate_limit::{compute_rate_limit, render_rate_limit_text};
 use har::analysis::jwt::{compute_jwt, render_jwt_text};
 use har::analysis::auth::{compute_auth, render_auth_text};
 use har::analysis::handoff::{compute_handoff, render_handoff_text};
+use har::analysis::diff::{compute_diff, render_diff_text};
+use har::analysis::checks::{compute_checks, render_checks_text};
 use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
@@ -122,6 +124,10 @@ enum Command {
     Auth,
     /// Backend trace-handoff blocks for failed + slowest requests.
     Handoff,
+    /// What varies across repeated calls to the same endpoint.
+    Diff,
+    /// Built-in checks: required headers (config) + content-type mismatch.
+    Checks,
 }
 
 fn main() {
@@ -430,6 +436,42 @@ fn main() {
                 &result,
                 &render_handoff_text(&result),
                 &["errors", "slowest", "curl"],
+            );
+            exit(findings);
+        }
+        Command::Diff => {
+            let result = compute_diff(&cap, &filter, cli.top, cli.unsafe_include_secrets);
+            let findings = result.groups.iter().any(|g| {
+                g.body_verdict == "meaningful"
+                    || g.varying_header_names.iter().any(|n| n == "authorization")
+            });
+            emit(
+                cli.json,
+                "diff",
+                &cap.meta,
+                &result,
+                &render_diff_text(&result),
+                &["duplicates", "show-entry", "endpoints"],
+            );
+            exit(findings);
+        }
+        Command::Checks => {
+            let config = match Config::load(cli.config.as_deref()) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("wiretrail: {e}");
+                    std::process::exit(ExitCode::InvalidHar as i32);
+                }
+            };
+            let result = compute_checks(&cap, &filter, &config, cli.top);
+            let findings = !result.findings.is_empty();
+            emit(
+                cli.json,
+                "checks",
+                &cap.meta,
+                &result,
+                &render_checks_text(&result),
+                &["errors", "show-entry", "endpoints"],
             );
             exit(findings);
         }
