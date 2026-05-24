@@ -164,6 +164,74 @@ fn top_n_map(map: &AHashMap<String, usize>, top: usize) -> Vec<(String, usize)> 
     v
 }
 
+use crate::render::{human_bytes, human_ms};
+
+/// Render the summary as deterministic, copy-paste-safe terminal text.
+pub fn render_summary_text(s: &SummaryResult) -> String {
+    let mut out = String::new();
+    out.push_str("== wiretrail summary ==\n");
+    out.push_str(&format!(
+        "entries: {} total, {} after filter\n",
+        s.total_entries, s.filtered_entries
+    ));
+    out.push_str(&format!("capture window: {}\n", human_ms(s.duration_ms)));
+
+    out.push_str("\nstatus classes:\n");
+    for (k, v) in &s.status_classes {
+        out.push_str(&format!("  {k}: {v}\n"));
+    }
+
+    out.push_str("\nresource types:\n");
+    for (k, v) in &s.resource_breakdown {
+        out.push_str(&format!("  {k}: {v}\n"));
+    }
+
+    out.push_str("\ntop hosts (by request count):\n");
+    for h in &s.top_hosts {
+        out.push_str(&format!("  {:>5}  {}\n", h.count, h.host));
+    }
+
+    if !s.top_duplicates.is_empty() {
+        out.push_str("\ntop duplicate calls:\n");
+        for d in &s.top_duplicates {
+            out.push_str(&format!("  {:>4}x  {}  ({})\n", d.count, d.fingerprint, d.example_id));
+        }
+    }
+
+    out.push_str("\nslowest requests:\n");
+    for e in &s.slowest {
+        out.push_str(&format!(
+            "  {:>8}  {} {} {}{}  [{}]\n",
+            human_ms(e.duration_ms),
+            e.id,
+            e.method,
+            e.host,
+            e.norm_path,
+            e.status
+        ));
+    }
+
+    out.push_str("\nbiggest payloads:\n");
+    for p in &s.biggest_payloads {
+        out.push_str(&format!(
+            "  {:>10}  {} {}{}\n",
+            human_bytes(p.bytes),
+            p.id,
+            p.host,
+            p.norm_path
+        ));
+    }
+
+    if !s.hints.is_empty() {
+        out.push_str("\nhints:\n");
+        for h in &s.hints {
+            out.push_str(&format!("  - {h}\n"));
+        }
+    }
+
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::compute_summary;
