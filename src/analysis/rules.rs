@@ -77,7 +77,10 @@ fn eval_rule(rule: &Rule, e: &Entry) -> Vec<(String, String, String)> {
         out.push((
             rule.name.clone(),
             "medium".into(),
-            format!("latency {:.0}ms exceeds budget {budget:.0}ms", e.duration_ms),
+            format!(
+                "latency {:.0}ms exceeds budget {budget:.0}ms",
+                e.duration_ms
+            ),
         ));
     }
     out
@@ -135,28 +138,30 @@ fn eval_special(pack: &str, e: &Entry) -> Vec<(String, String, String)> {
                 }
             }
         }
-        "rest" => {
+        "rest"
             if e.method.eq_ignore_ascii_case("GET")
-                && e.req_body.as_deref().is_some_and(|b| !b.is_empty())
-            {
-                out.push((
-                    "rest: no mutation over GET".into(),
-                    "medium".into(),
-                    "GET request carries a body".into(),
-                ));
-            }
+                && e.req_body.as_deref().is_some_and(|b| !b.is_empty()) =>
+        {
+            out.push((
+                "rest: no mutation over GET".into(),
+                "medium".into(),
+                "GET request carries a body".into(),
+            ));
         }
-        "graphql" => {
+        "graphql"
             if e.method.eq_ignore_ascii_case("POST")
                 && glob_match("*/graphql", &e.path)
-                && !e.req_body.as_deref().unwrap_or("").contains("operationName")
-            {
-                out.push((
-                    "graphql: operationName required".into(),
-                    "low".into(),
-                    "GraphQL POST without operationName".into(),
-                ));
-            }
+                && !e
+                    .req_body
+                    .as_deref()
+                    .unwrap_or("")
+                    .contains("operationName") =>
+        {
+            out.push((
+                "graphql: operationName required".into(),
+                "low".into(),
+                "GraphQL POST without operationName".into(),
+            ));
         }
         _ => {}
     }
@@ -181,13 +186,17 @@ pub fn compute_rules(
     for e in cap.entries.iter().filter(|e| filter.matches(e)) {
         for rule in &rules {
             for (name, sev, detail) in eval_rule(rule, e) {
-                map.entry((name, sev, detail)).or_default().push(e.id.clone());
+                map.entry((name, sev, detail))
+                    .or_default()
+                    .push(e.id.clone());
             }
         }
         for p in packs {
             if is_special_pack(p) {
                 for (name, sev, detail) in eval_special(p, e) {
-                    map.entry((name, sev, detail)).or_default().push(e.id.clone());
+                    map.entry((name, sev, detail))
+                        .or_default()
+                        .push(e.id.clone());
                 }
             }
         }
@@ -287,8 +296,18 @@ mod tests {
     #[test]
     fn auth_pack_flags_missing_authorization() {
         let cap = sample_capture(vec![sample_entry(0, "api.x", "GET", "/a", 200)]);
-        let r = compute_rules(&cap, &no_filter(), &Config::default(), &["auth".to_string()], 50);
-        assert!(r.findings.iter().any(|f| f.detail.contains("Authorization")));
+        let r = compute_rules(
+            &cap,
+            &no_filter(),
+            &Config::default(),
+            &["auth".to_string()],
+            50,
+        );
+        assert!(
+            r.findings
+                .iter()
+                .any(|f| f.detail.contains("Authorization"))
+        );
     }
 
     #[test]

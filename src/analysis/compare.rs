@@ -58,7 +58,12 @@ struct Agg {
 }
 
 fn endpoint_key(e: &Entry) -> String {
-    format!("{} {}{}", e.method.to_ascii_uppercase(), e.host, e.norm_path)
+    format!(
+        "{} {}{}",
+        e.method.to_ascii_uppercase(),
+        e.host,
+        e.norm_path
+    )
 }
 
 fn aggregate(cap: &Capture, filter: &Filter) -> (AHashSet<String>, AHashMap<String, Agg>) {
@@ -79,7 +84,12 @@ fn aggregate(cap: &Capture, filter: &Filter) -> (AHashSet<String>, AHashMap<Stri
 }
 
 /// Diff a new capture against a baseline; severity-score the regressions.
-pub fn compute_compare(new: &Capture, base: &Capture, filter: &Filter, top: usize) -> CompareResult {
+pub fn compute_compare(
+    new: &Capture,
+    base: &Capture,
+    filter: &Filter,
+    top: usize,
+) -> CompareResult {
     let (new_hosts_set, new_map) = aggregate(new, filter);
     let (base_hosts_set, base_map) = aggregate(base, filter);
 
