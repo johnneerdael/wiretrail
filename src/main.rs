@@ -16,6 +16,9 @@ use har::analysis::report::{compose_report, ReportResult};
 use har::analysis::storms::{compute_storms, render_storms_text};
 use har::analysis::pagination::{compute_pagination, render_pagination_text};
 use har::analysis::rate_limit::{compute_rate_limit, render_rate_limit_text};
+use har::analysis::jwt::{compute_jwt, render_jwt_text};
+use har::analysis::auth::{compute_auth, render_auth_text};
+use har::analysis::handoff::{compute_handoff, render_handoff_text};
 use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
@@ -113,6 +116,12 @@ enum Command {
     },
     /// Rate-limit (429) events, Retry-After, and cooldown violations.
     RateLimit,
+    /// Find and decode JWTs (redacted: no signature, hashed sub).
+    Jwt,
+    /// Auth failures (401/403), inconsistent auth, and token-refresh flows.
+    Auth,
+    /// Backend trace-handoff blocks for failed + slowest requests.
+    Handoff,
 }
 
 fn main() {
@@ -377,6 +386,50 @@ fn main() {
                 &result,
                 &render_rate_limit_text(&result),
                 &["errors", "retries", "transitions"],
+            );
+            exit(findings);
+        }
+        Command::Jwt => {
+            let result = compute_jwt(&cap, &filter, cli.top, cli.unsafe_include_secrets);
+            let findings = result.tokens.iter().any(|t| t.summary.expired == Some(true));
+            emit(
+                cli.json,
+                "jwt",
+                &cap.meta,
+                &result,
+                &render_jwt_text(&result),
+                &["auth", "show-entry", "errors"],
+            );
+            exit(findings);
+        }
+        Command::Auth => {
+            let result = compute_auth(&cap, &filter, cli.top);
+            let findings = !result.failures.is_empty()
+                || !result.missing_auth_hosts.is_empty()
+                || result
+                    .refreshes
+                    .iter()
+                    .any(|r| !r.success || r.old_token_reused || r.concurrent);
+            emit(
+                cli.json,
+                "auth",
+                &cap.meta,
+                &result,
+                &render_auth_text(&result),
+                &["jwt", "transitions", "errors"],
+            );
+            exit(findings);
+        }
+        Command::Handoff => {
+            let result = compute_handoff(&cap, &filter, cli.top, cli.unsafe_include_secrets);
+            let findings = !result.items.is_empty();
+            emit(
+                cli.json,
+                "handoff",
+                &cap.meta,
+                &result,
+                &render_handoff_text(&result),
+                &["errors", "slowest", "curl"],
             );
             exit(findings);
         }
