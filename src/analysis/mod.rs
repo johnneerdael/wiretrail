@@ -1,8 +1,10 @@
+pub mod curl;
 pub mod duplicates;
 pub mod endpoints;
 pub mod errors;
 pub mod hosts;
 pub mod redirects;
+pub mod report;
 pub mod retries;
 pub mod show_entry;
 pub mod slowest;
