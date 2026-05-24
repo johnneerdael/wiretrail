@@ -1,4 +1,12 @@
+pub mod duplicates;
 pub mod endpoints;
+pub mod errors;
 pub mod hosts;
+pub mod redirects;
+pub mod retries;
+pub mod show_entry;
+pub mod slowest;
 pub mod subsystems;
 pub mod summary;
+pub mod timeline;
+pub mod transitions;
