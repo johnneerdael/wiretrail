@@ -8,6 +8,17 @@ use std::path::Path;
 pub struct Config {
     #[serde(default)]
     pub ownership: Vec<OwnershipRule>,
+    #[serde(default)]
+    pub required_headers: Vec<RequiredHeaderRule>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RequiredHeaderRule {
+    /// Host glob the rule applies to.
+    pub host: String,
+    /// Header names that must be present on matching requests.
+    #[serde(default)]
+    pub headers: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -153,5 +164,24 @@ ownership:
         assert_eq!(cfg.subsystem_for(&hit).name, "Repos");
         // miss does not match the rule -> vendor fallback
         assert_eq!(cfg.subsystem_for(&miss).name, "GitHub");
+    }
+
+    #[test]
+    fn parses_required_headers() {
+        let yaml = r#"
+required_headers:
+  - host: "api.company.com"
+    headers: ["Authorization", "X-App-Version"]
+"#;
+        let cfg = Config::from_yaml_str(yaml).unwrap();
+        assert_eq!(cfg.required_headers.len(), 1);
+        assert_eq!(cfg.required_headers[0].host, "api.company.com");
+        assert_eq!(cfg.required_headers[0].headers, vec!["Authorization", "X-App-Version"]);
+    }
+
+    #[test]
+    fn required_headers_defaults_empty() {
+        let cfg = Config::from_yaml_str("ownership: []").unwrap();
+        assert!(cfg.required_headers.is_empty());
     }
 }
