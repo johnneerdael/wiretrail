@@ -11,6 +11,8 @@ use har::analysis::subsystems::{compute_subsystems, render_subsystems_text};
 use har::analysis::summary::{compute_summary, render_summary_text};
 use har::analysis::timeline::{compute_timeline, render_timeline_text};
 use har::analysis::transitions::{compute_transitions, render_transitions_text};
+use har::analysis::curl::{compute_curl, entry_to_curl, render_curl_text, CurlResult};
+use har::analysis::report::{compose_report, ReportResult};
 use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
@@ -77,6 +79,13 @@ enum Command {
     ShowEntry {
         /// Entry id (e000123) or bare index.
         id: String,
+    },
+    /// Compose a dossier-style markdown report.
+    Report,
+    /// Sanitized curl replay commands (one entry, or all filtered).
+    Curl {
+        /// Optional entry id (e000123) or index; omit to emit all filtered entries.
+        id: Option<String>,
     },
 }
 
@@ -262,6 +271,47 @@ fn main() {
                 &detail,
                 &render_entry_detail_text(&detail),
                 &["timeline", "duplicates", "errors"],
+            );
+            exit(false);
+        }
+        Command::Report => {
+            let config = match Config::load(cli.config.as_deref()) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("wiretrail: {e}");
+                    std::process::exit(ExitCode::InvalidHar as i32);
+                }
+            };
+            let markdown = compose_report(&cap, &filter, &config, cli.top, cli.unsafe_include_secrets);
+            if cli.json {
+                let result = ReportResult { markdown };
+                let env = Envelope::new("report", cap.meta.clone(), &result);
+                println!("{}", env.to_json());
+            } else {
+                print!("{markdown}");
+            }
+            exit(false);
+        }
+        Command::Curl { id } => {
+            let result = match id {
+                Some(id) => {
+                    let Some(e) = find_entry(&cap, &id) else {
+                        eprintln!("wiretrail: no entry with id or index '{id}'");
+                        std::process::exit(ExitCode::InvalidHar as i32);
+                    };
+                    CurlResult {
+                        commands: vec![entry_to_curl(e, cli.unsafe_include_secrets)],
+                    }
+                }
+                None => compute_curl(&cap, &filter, cli.top, cli.unsafe_include_secrets),
+            };
+            emit(
+                cli.json,
+                "curl",
+                &cap.meta,
+                &result,
+                &render_curl_text(&result),
+                &["show-entry", "errors", "duplicates"],
             );
             exit(false);
         }
