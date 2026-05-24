@@ -38,11 +38,18 @@ fn call_of(e: &Entry) -> StartupCall {
 
 /// Profile the boot window: concurrency, sequential critical path, slow deps.
 /// `window_ms == 0` means "the whole capture".
-pub fn compute_startup(cap: &Capture, filter: &Filter, window_ms: u64, top: usize) -> StartupResult {
+pub fn compute_startup(
+    cap: &Capture,
+    filter: &Filter,
+    window_ms: u64,
+    top: usize,
+) -> StartupResult {
     let mut entries: Vec<&Entry> = cap
         .entries
         .iter()
-        .filter(|e| filter.matches(e) && (window_ms == 0 || e.started_offset_ms <= window_ms as f64))
+        .filter(|e| {
+            filter.matches(e) && (window_ms == 0 || e.started_offset_ms <= window_ms as f64)
+        })
         .collect();
     entries.sort_by(|a, b| {
         a.started_offset_ms
@@ -148,7 +155,7 @@ pub fn render_startup_text(r: &StartupResult) -> String {
 mod tests {
     use super::compute_startup;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     fn at(index: usize, path: &str, offset: f64, dur: f64) -> Entry {
         let mut e = sample_entry(index, "h", "GET", path, 200);

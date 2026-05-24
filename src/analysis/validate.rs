@@ -23,7 +23,9 @@ pub struct Anomaly {
 }
 
 fn has_header(e: &Entry, name: &str) -> bool {
-    e.req_headers.iter().any(|(n, _)| n.eq_ignore_ascii_case(name))
+    e.req_headers
+        .iter()
+        .any(|(n, _)| n.eq_ignore_ascii_case(name))
 }
 
 fn has_body(b: &Option<String>) -> bool {
@@ -40,12 +42,21 @@ pub fn compute_validate(cap: &Capture) -> ValidateResult {
         .iter()
         .filter(|e| e.timings.wait > 0.0 || e.timings.receive > 0.0 || e.timings.send > 0.0)
         .count();
-    let with_resp_body = cap.entries.iter().filter(|e| has_body(&e.resp_body)).count();
+    let with_resp_body = cap
+        .entries
+        .iter()
+        .filter(|e| has_body(&e.resp_body))
+        .count();
 
     let posts: Vec<&Entry> = cap
         .entries
         .iter()
-        .filter(|e| matches!(e.method.to_ascii_uppercase().as_str(), "POST" | "PUT" | "PATCH"))
+        .filter(|e| {
+            matches!(
+                e.method.to_ascii_uppercase().as_str(),
+                "POST" | "PUT" | "PATCH"
+            )
+        })
         .collect();
     let posts_with_body = posts.iter().filter(|e| has_body(&e.req_body)).count();
 
@@ -55,7 +66,10 @@ pub fn compute_validate(cap: &Capture) -> ValidateResult {
     let count = |pred: &dyn Fn(&Entry) -> bool, kind: &str| -> Option<Anomaly> {
         let c = cap.entries.iter().filter(|e| pred(e)).count();
         if c > 0 {
-            Some(Anomaly { kind: kind.to_string(), count: c })
+            Some(Anomaly {
+                kind: kind.to_string(),
+                count: c,
+            })
         } else {
             None
         }
@@ -85,13 +99,16 @@ pub fn compute_validate(cap: &Capture) -> ValidateResult {
 
     let mut notes = Vec::new();
     if pct_with_resp_body < 0.10 {
-        notes.push("few/no response bodies captured — `errors`/`search`/`extract` limited".to_string());
+        notes.push(
+            "few/no response bodies captured — `errors`/`search`/`extract` limited".to_string(),
+        );
     }
     if !with_auth {
         notes.push("no Authorization headers — `auth`/`jwt` limited".to_string());
     }
     if !posts.is_empty() && posts_with_body == 0 {
-        notes.push("no request bodies on POST/PUT/PATCH — `diff` body verdicts limited".to_string());
+        notes
+            .push("no request bodies on POST/PUT/PATCH — `diff` body verdicts limited".to_string());
     }
     if with_timings == 0 {
         notes.push("no timing data — `slowest`/`startup` limited".to_string());
@@ -134,7 +151,10 @@ pub fn render_validate_text(r: &ValidateResult) -> String {
         pct(r.pct_with_resp_body),
         pct(r.pct_post_with_req_body)
     ));
-    out.push_str(&format!("auth headers: {} · cookies: {}\n", r.with_auth, r.with_cookies));
+    out.push_str(&format!(
+        "auth headers: {} · cookies: {}\n",
+        r.with_auth, r.with_cookies
+    ));
     if r.sanitized {
         out.push_str("sanitized: yes (no auth/cookies and few response bodies)\n");
     }
@@ -168,14 +188,22 @@ mod tests {
         assert!(r.sanitized);
         assert!(!r.with_auth);
         assert_eq!(r.pct_with_resp_body, 0.0);
-        assert!(r.sufficiency_notes.iter().any(|n| n.contains("response bodies")));
+        assert!(
+            r.sufficiency_notes
+                .iter()
+                .any(|n| n.contains("response bodies"))
+        );
     }
 
     #[test]
     fn detects_status_zero_anomaly() {
         let cap = sample_capture(vec![sample_entry(0, "api.x", "GET", "/a", 0)]);
         let r = compute_validate(&cap);
-        assert!(r.anomalies.iter().any(|a| a.kind == "status-0" && a.count == 1));
+        assert!(
+            r.anomalies
+                .iter()
+                .any(|a| a.kind == "status-0" && a.count == 1)
+        );
     }
 
     #[test]

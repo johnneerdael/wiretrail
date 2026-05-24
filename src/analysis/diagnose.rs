@@ -50,7 +50,10 @@ pub fn compute_diagnose(cap: &Capture, filter: &Filter, top: usize) -> DiagnoseR
                 severity: "medium".into(),
                 kind: "4xx".into(),
                 title: format!("{}x {} on {} {}", g.count, g.status, g.method, g.norm_path),
-                detail: g.error_message.clone().unwrap_or_else(|| "client error".into()),
+                detail: g
+                    .error_message
+                    .clone()
+                    .unwrap_or_else(|| "client error".into()),
                 evidence_ids: g.entry_ids.clone(),
                 suggested_command: "errors".into(),
             });
@@ -80,7 +83,11 @@ pub fn compute_diagnose(cap: &Capture, filter: &Filter, top: usize) -> DiagnoseR
     }
     if !a.failures.is_empty() {
         let total: usize = a.failures.iter().map(|x| x.count).sum();
-        let ids: Vec<String> = a.failures.iter().flat_map(|x| x.entry_ids.clone()).collect();
+        let ids: Vec<String> = a
+            .failures
+            .iter()
+            .flat_map(|x| x.entry_ids.clone())
+            .collect();
         f.push(Diagnosis {
             severity: "medium".into(),
             kind: "auth-failures".into(),
@@ -98,7 +105,10 @@ pub fn compute_diagnose(cap: &Capture, filter: &Filter, top: usize) -> DiagnoseR
                 severity: "high".into(),
                 kind: "rate-limit-no-backoff".into(),
                 title: format!("calls during 429 cooldown on {} {}", g.host, g.norm_path),
-                detail: format!("{} 429s, follow-ups before Retry-After elapsed", g.count_429),
+                detail: format!(
+                    "{} 429s, follow-ups before Retry-After elapsed",
+                    g.count_429
+                ),
                 evidence_ids: g.entry_ids.clone(),
                 suggested_command: "rate-limit".into(),
             });
@@ -128,7 +138,10 @@ pub fn compute_diagnose(cap: &Capture, filter: &Filter, top: usize) -> DiagnoseR
             f.push(Diagnosis {
                 severity: "medium".into(),
                 kind: "request-storm".into(),
-                title: format!("{} {} calls/s burst to {}", s.peak_count, s.scope_kind, s.scope),
+                title: format!(
+                    "{} {} calls/s burst to {}",
+                    s.peak_count, s.scope_kind, s.scope
+                ),
                 detail: "burst of calls in a 1s window".into(),
                 evidence_ids: s.entry_ids.clone(),
                 suggested_command: "storms".into(),
@@ -156,7 +169,10 @@ pub fn compute_diagnose(cap: &Capture, filter: &Filter, top: usize) -> DiagnoseR
             f.push(Diagnosis {
                 severity: "low".into(),
                 kind: "redirect-storm".into(),
-                title: format!("{}x [{}] redirect on {} {}", g.count, g.status, g.host, g.norm_path),
+                title: format!(
+                    "{}x [{}] redirect on {} {}",
+                    g.count, g.status, g.host, g.norm_path
+                ),
                 detail: "repeated redirects".into(),
                 evidence_ids: g.entry_ids.clone(),
                 suggested_command: "redirects".into(),
@@ -205,7 +221,12 @@ pub fn render_diagnose_text(r: &DiagnoseResult) -> String {
         out.push_str(&format!("  {}\n", d.detail));
         out.push_str(&format!(
             "  evidence: {}\n",
-            d.evidence_ids.iter().take(8).cloned().collect::<Vec<_>>().join(", ")
+            d.evidence_ids
+                .iter()
+                .take(8)
+                .cloned()
+                .collect::<Vec<_>>()
+                .join(", ")
         ));
         out.push_str(&format!("  -> wiretrail <file> {}\n", d.suggested_command));
     }
@@ -219,7 +240,7 @@ pub fn render_diagnose_text(r: &DiagnoseResult) -> String {
 mod tests {
     use super::compute_diagnose;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     fn err(index: usize, path: &str, status: i64, off: f64) -> Entry {
         let mut e = sample_entry(index, "api.x", "POST", path, status);
@@ -235,7 +256,11 @@ mod tests {
             err(2, "/bulk", 500, 20.0),
         ]);
         let r = compute_diagnose(&cap, &Filter::parse(&[]).unwrap(), 20);
-        assert!(r.findings.iter().any(|f| f.kind == "5xx-cluster" && f.severity == "high"));
+        assert!(
+            r.findings
+                .iter()
+                .any(|f| f.kind == "5xx-cluster" && f.severity == "high")
+        );
         assert_eq!(r.findings[0].severity, "high");
     }
 

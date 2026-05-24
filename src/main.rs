@@ -1,7 +1,9 @@
 use clap::{Parser, Subcommand};
 use har::analysis::auth::{compute_auth, render_auth_text};
+use har::analysis::cascade::{compute_cascade, render_cascade_text};
 use har::analysis::checks::{compute_checks, render_checks_text};
 use har::analysis::curl::{CurlResult, compute_curl, entry_to_curl, render_curl_text};
+use har::analysis::diagnose::{compute_diagnose, render_diagnose_text};
 use har::analysis::diff::{compute_diff, render_diff_text};
 use har::analysis::duplicates::{compute_duplicates, render_duplicates_text};
 use har::analysis::endpoints::{compute_endpoints, render_endpoints_text};
@@ -16,11 +18,13 @@ use har::analysis::report::{ReportResult, compose_report};
 use har::analysis::retries::{compute_retries, render_retries_text};
 use har::analysis::show_entry::{entry_detail, find_entry, render_entry_detail_text};
 use har::analysis::slowest::{compute_slowest, render_slowest_text};
+use har::analysis::startup::{compute_startup, render_startup_text};
 use har::analysis::storms::{compute_storms, render_storms_text};
 use har::analysis::subsystems::{compute_subsystems, render_subsystems_text};
 use har::analysis::summary::{compute_summary, render_summary_text};
 use har::analysis::timeline::{compute_timeline, render_timeline_text};
 use har::analysis::transitions::{compute_transitions, render_transitions_text};
+use har::analysis::validate::{compute_validate, render_validate_text};
 use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
@@ -128,6 +132,25 @@ enum Command {
     Diff,
     /// Built-in checks: required headers (config) + content-type mismatch.
     Checks,
+    /// Ranked root-cause findings synthesized from all analyses.
+    Diagnose,
+    /// Boot/startup profile: concurrency, critical path, slow dependencies.
+    Startup {
+        /// Boot window in milliseconds (0 = whole capture).
+        #[arg(long, default_value_t = 30000)]
+        window_ms: u64,
+    },
+    /// Earliest failure and downstream failure cascades.
+    Cascade {
+        /// Window (ms) to attribute downstream failures to a trigger.
+        #[arg(long, default_value_t = 5000)]
+        window_ms: u64,
+        /// Minimum downstream failures to report a cascade.
+        #[arg(long = "min-downstream", default_value_t = 3)]
+        min_downstream: usize,
+    },
+    /// Capture-quality and analysis-sufficiency report.
+    Validate,
 }
 
 fn main() {
@@ -490,6 +513,60 @@ fn main() {
                 &result,
                 &render_checks_text(&result),
                 &["errors", "show-entry", "endpoints"],
+            );
+            exit(findings);
+        }
+        Command::Diagnose => {
+            let result = compute_diagnose(&cap, &filter, cli.top);
+            let findings = !result.findings.is_empty();
+            emit(
+                cli.json,
+                "diagnose",
+                &cap.meta,
+                &result,
+                &render_diagnose_text(&result),
+                &["errors", "auth", "duplicates"],
+            );
+            exit(findings);
+        }
+        Command::Startup { window_ms } => {
+            let result = compute_startup(&cap, &filter, window_ms, cli.top);
+            emit(
+                cli.json,
+                "startup",
+                &cap.meta,
+                &result,
+                &render_startup_text(&result),
+                &["slowest", "timeline", "storms"],
+            );
+            exit(false);
+        }
+        Command::Cascade {
+            window_ms,
+            min_downstream,
+        } => {
+            let result = compute_cascade(&cap, &filter, window_ms, min_downstream, cli.top);
+            let findings = result.first_failure.is_some() || !result.cascades.is_empty();
+            emit(
+                cli.json,
+                "cascade",
+                &cap.meta,
+                &result,
+                &render_cascade_text(&result),
+                &["errors", "transitions", "show-entry"],
+            );
+            exit(findings);
+        }
+        Command::Validate => {
+            let result = compute_validate(&cap);
+            let findings = !result.anomalies.is_empty();
+            emit(
+                cli.json,
+                "validate",
+                &cap.meta,
+                &result,
+                &render_validate_text(&result),
+                &["summary", "diagnose", "errors"],
             );
             exit(findings);
         }

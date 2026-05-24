@@ -105,7 +105,10 @@ pub fn compute_cascade(
     });
     cascades.truncate(top);
 
-    CascadeResult { first_failure, cascades }
+    CascadeResult {
+        first_failure,
+        cascades,
+    }
 }
 
 /// Render cascades as deterministic terminal text.
@@ -139,7 +142,7 @@ pub fn render_cascade_text(r: &CascadeResult) -> String {
 mod tests {
     use super::compute_cascade;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     fn at(index: usize, path: &str, status: i64, offset: f64) -> Entry {
         let mut e = sample_entry(index, "api.x", "GET", path, status);
@@ -167,8 +170,18 @@ mod tests {
         for i in 1..=4 {
             es.push(at(i, "/data", 500, i as f64 * 100.0));
         }
-        let r = compute_cascade(&sample_capture(es), &Filter::parse(&[]).unwrap(), 5000, 3, 10);
-        let c = r.cascades.iter().find(|c| c.trigger_id == "e000000").unwrap();
+        let r = compute_cascade(
+            &sample_capture(es),
+            &Filter::parse(&[]).unwrap(),
+            5000,
+            3,
+            10,
+        );
+        let c = r
+            .cascades
+            .iter()
+            .find(|c| c.trigger_id == "e000000")
+            .unwrap();
         assert_eq!(c.trigger_kind, "config");
         assert!(c.downstream_failures >= 3);
     }
