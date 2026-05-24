@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "analysing-har",
-  "version": "0.1.0",
-  "description": "Analyse and debug HAR (HTTP Archive) captures with wiretrail: request storms, wasteful duplicates vs retries, 4xx/5xx errors, slow calls, auth/JWT/token-refresh flows, rate limits, and what differs between repeated calls. Redacts secrets by default. Wraps wiretrail with auto-install instructions.",
+  "version": "0.3.0",
+  "description": "Analyse and debug HAR (HTTP Archive) captures with wiretrail: one-shot smart analysis (`auto`), ranked root-cause diagnosis, request storms, wasteful duplicates vs retries, 4xx/5xx errors, slow calls, auth/JWT/token-refresh flows, rate limits, body search/extract, regression diff against a baseline, and what differs between repeated calls. Redacts secrets by default. Wraps wiretrail with auto-install instructions.",
   "author": {
     "name": "John Neerdael",
     "email": "john@neerdael.nl",
@@ -20,6 +20,9 @@
     "wiretrail",
     "duplicates",
     "auth",
-    "jwt"
+    "jwt",
+    "diagnose",
+    "auto",
+    "regression"
   ]
 }

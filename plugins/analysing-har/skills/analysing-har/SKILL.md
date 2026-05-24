@@ -1,6 +1,6 @@
 ---
 name: analysing-har
-description: Use when analysing or debugging a HAR (HTTP Archive) network capture. Triggers include "analyse har", "analyze har", "debug har", "wiretrail", a `.har` file appearing in the conversation or working tree, or questions about request storms, wasteful/duplicate API calls, retries, 4xx/5xx errors, slow requests, auth/JWT/token-refresh problems, rate limiting, redirects, or what differs between repeated calls. wiretrail is the recommended CLI — prefer it over manually grepping the HAR JSON or loading it into a browser.
+description: Use when analysing or debugging a HAR (HTTP Archive) network capture. Triggers include "analyse har", "analyze har", "debug har", "wiretrail", a `.har` file appearing in the conversation or working tree, or questions about what's wrong in a capture, request storms, wasteful/duplicate API calls, retries, 4xx/5xx errors, slow requests, auth/JWT/token-refresh problems, rate limiting, redirects, searching/extracting fields from request or response bodies, comparing a capture against a baseline, or what differs between repeated calls. wiretrail is the recommended CLI — prefer it over manually grepping the HAR JSON or loading it into a browser.
 ---
 
 # Analysing HAR files with wiretrail
@@ -46,8 +46,11 @@ wiretrail <FILE.har> [COMMAND] [OPTIONS]
 ```
 
 - No command → `summary` (the default).
-- **Always start with `summary`** to get oriented, then follow its
-  `next useful commands` footer and the `hints` block.
+- **For "what's wrong with this capture?", run `auto` first** — it prints the
+  summary, ranks the likely problems, and inlines the relevant deeper analysis
+  (errors, retries, auth, …) scoped to exactly where the trouble is, in one shot.
+  Use `summary` when you just want the oriented overview; `summary` now ends with a
+  ranked **recommended next steps** section naming the exact follow-up commands.
 - Global options: `--json` (machine output), `--top N` (list size, default 10),
   `--filter "<expr>"`, `--config wiretrail.yaml`, `--unsafe-include-secrets`.
 - Filter language: `host:api.foo.com status:>=400 method:POST path:*login* time:>1000ms has:req.header.authorization`.
@@ -60,13 +63,31 @@ wiretrail <FILE.har> [COMMAND] [OPTIONS]
 `--unsafe-include-secrets` when the user needs a *replayable* request (auth headers,
 tokens, URL secrets) — and warn them the output then contains live credentials.
 
-## The triage workflow
+## The fast path (recommended)
 
-Work top-down; each step narrows the next. Don't dump every command — read
-`summary`, then run only what the findings point to.
+For "analyse this HAR / what's wrong?", **run `auto`** — one command does the whole
+triage: summary + ranked recommendations + the relevant deeper analysis inlined,
+each scoped to the offending host/route, with the reproducing command printed above
+it. Then read down the report; everything actionable is already there.
 
-1. **Orient** — `summary`. Note total requests, time span, error count, the biggest
-   duplicate group, and the `hints`.
+```bash
+wiretrail capture.har auto                      # summary + auto-drilled HIGH+MED findings
+wiretrail capture.har auto --all                # also drill LOW findings
+wiretrail capture.har auto --min-severity high  # only HIGH/CRITICAL
+```
+
+`diagnose` is the same ranked findings *without* the inlined drill-downs (a compact
+"what's wrong" list, each with a suggested follow-up command + evidence IDs). Use
+`diagnose` when you want the shortlist; `auto` when you want it already investigated.
+
+## The manual triage workflow
+
+When you want to go deeper on one thread (or `auto` pointed you somewhere), work
+top-down; each step narrows the next. Don't dump every command — follow the findings.
+
+1. **Orient** — `summary` (note totals, error count, biggest duplicate group, and the
+   `recommended next steps`). `validate` first if you suspect a sanitized/partial
+   capture (it reports timings/bodies/auth coverage and which commands are limited).
 2. **Group** — `subsystems` (named integrations) or `hosts` (per-host latency/bytes/
    errors). Answers "who is this app talking to, and how much?"
 3. **Wasteful traffic** — `duplicates` (repeated calls), then `diff` on a suspicious
@@ -74,11 +95,19 @@ Work top-down; each step narrows the next. Don't dump every command — read
    real differences). `storms` for time-clustered bursts; `pagination` for loops /
    N+1; `rate-limit` for 429 handling.
 4. **Failures** — `errors` (4xx/5xx grouped, with parsed message/code/correlation),
-   `retries` (failures with backoff), `transitions` (401→200, 429→429, 5xx→2xx),
-   `redirects` (chains/storms), `slowest` (timing-phase breakdown + bottleneck).
+   `retries` (failures with backoff), `cascade` (first failure + downstream blast
+   radius), `transitions` (401→200, 429→429, 5xx→2xx), `redirects` (chains/storms),
+   `slowest` (timing-phase breakdown + bottleneck). `startup` for boot-time
+   concurrency + critical path.
 5. **Auth** — `auth` (failures, token rotation, refresh flows) and `jwt` (decode
    tokens, expiry/skew — `sub` hashed, never the raw token).
-6. **Hand off / reproduce** — `handoff` (backend blocks: correlation IDs + sanitized
+6. **Dig into bodies** — `search "<pattern>"` (grep request/response bodies, `--regex`
+   /`--ignore-case`, redaction-safe snippets), `extract '$.path'` (pull a JSON-path
+   field across entries). `export --format ndjson|csv` to pull metadata into jq/DuckDB.
+7. **Regression / governance** — `compare <baseline.har>` (diff vs a known-good run;
+   `--fail-on <severity>` gates CI), `rules --pack auth,security,…` (enforce
+   conventions / config rules), `checks` (required headers + content-type).
+8. **Hand off / reproduce** — `handoff` (backend blocks: correlation IDs + sanitized
    curl), `report` (markdown dossier), `curl <id>` (one replay; add
    `--unsafe-include-secrets` if they need to actually run it), `show-entry <id>`
    (full redacted detail).
@@ -87,7 +116,10 @@ Work top-down; each step narrows the next. Don't dump every command — read
 
 | Command | Use when you want… |
 |---|---|
-| `summary` *(default)* | the one-screen overview + hints (always run first). |
+| `auto` | **the whole triage in one shot** — summary + ranked findings, each drilled inline and scoped (`--all`, `--min-severity`). Start here for "what's wrong?". |
+| `diagnose` | a compact ranked "what's wrong" shortlist (no inlined drill-downs), each with evidence IDs + a suggested command. |
+| `summary` *(default)* | the one-screen overview + hints + ranked recommended next steps. |
+| `validate` | to check capture quality/sufficiency (timings/bodies/auth coverage; sanitized? anomalies) before trusting findings. |
 | `hosts` | per-host request count, methods, status mix, p50/p95/max latency, bytes, dup count. |
 | `subsystems` | hosts grouped into named integrations (vendor heuristics + `wiretrail.yaml`). |
 | `endpoints` | a normalized API catalog (method, `{id}` path, statuses, content types). |
@@ -101,18 +133,27 @@ Work top-down; each step narrows the next. Don't dump every command — read
 | `redirects` | redirect chains/storms, cross-host hops. |
 | `transitions` | status sequences (auth-recovered, rate-limit-persisted, recovered-5xx). |
 | `slowest` | top-N slow calls + timing-phase breakdown + bottleneck label. |
+| `startup` | boot/startup profile: max concurrency, critical path, slow dependencies. |
+| `cascade` | the earliest failure and the downstream failures it triggered. |
 | `jwt` | decode JWTs (claims/exp/skew), redacted (hashed sub, no signature). |
 | `auth` | 401/403 patterns, inconsistent auth, token rotation, refresh-flow problems. |
 | `handoff` | backend hand-off blocks for failed + slowest requests. |
 | `show-entry <id>` | the full redacted request/response/timings for one entry. |
 | `diff` | what query/headers/body vary across repeated calls to one endpoint. |
+| `search <pattern>` | grep request/response bodies (`--regex`, `--ignore-case`); redaction-safe snippets. |
+| `extract <jsonpath>` | pull a JSON-path field (`$.errors[0].code`, `[*]`) from bodies; `--target req\|resp`. |
+| `export` | flatten entries to NDJSON/CSV (`--format`) for jq/DuckDB/spreadsheets (metadata only). |
+| `compare <baseline.har>` | regression diff vs a baseline: new errors, latency/payload regressions; `--fail-on` gates CI. |
+| `rules` | enforce conventions: `wiretrail.yaml` rules + built-in `--pack auth,caching,payments,security,rest,graphql`. |
 | `checks` | required-header rules (config) + content-type mismatches. |
 | `report` | a shareable markdown dossier. |
 | `curl [id]` | sanitized, safety-labeled replay command(s). |
 
 ## Worked example — an app-startup capture
 
-A 353-request startup capture. `summary` immediately points the way:
+A 353-request startup capture. `wiretrail capture.har auto` would do this entire
+walkthrough in one command — below is what it surfaces (and how to reproduce each
+piece by hand). `summary` immediately points the way:
 
 ```
 $ wiretrail capture.har summary
@@ -182,21 +223,26 @@ Envelope shape: `{ tool, schema_version, command, capture, result, warnings, nex
 ## Quick reference
 
 ```bash
-wiretrail c.har                              # summary (start here)
-wiretrail c.har duplicates                   # repeated calls
-wiretrail c.har diff                         # what varies across repeats
+wiretrail c.har auto                         # one-shot smart analysis (start here)
+wiretrail c.har                              # summary only (overview + next steps)
+wiretrail c.har diagnose                     # ranked "what's wrong" shortlist
+wiretrail c.har duplicates ; wiretrail c.har diff   # repeats + what varies
 wiretrail c.har errors --json                # failures as JSON
 wiretrail c.har slowest                      # slow calls + bottleneck
 wiretrail c.har auth ; wiretrail c.har jwt   # auth/token story
-wiretrail c.har storms --window-ms 2000      # bursts (wider window)
-wiretrail c.har --filter "status:>=500" curl # replay all 5xx (redacted)
+wiretrail c.har search "timeout" --ignore-case      # grep bodies (redacted)
+wiretrail new.har compare baseline.har --fail-on high   # regression gate
 wiretrail c.har show-entry e000123 --unsafe-include-secrets   # raw detail
 ```
 
 ## Common mistakes
 
-- **Dumping every command.** Start with `summary`, follow `hints` and
-  `next useful commands`. Three or four targeted commands usually tell the story.
+- **Dumping every command.** For "what's wrong?", run `auto` (one shot) or start
+  with `summary`/`diagnose` and follow the ranked recommendations. Three or four
+  targeted commands usually tell the story — don't run all 32.
+- **Using `report` as the "tell me what's wrong" command.** `report` is a static
+  markdown dossier; the smart synthesizers are `auto` (drilled) and `diagnose`
+  (shortlist). Reach for those first.
 - **Reaching for `--unsafe-include-secrets` by reflex.** Default output is already
   safe and complete for analysis; only use the flag for a *replayable* request, and
   flag to the user that the result contains live credentials.
