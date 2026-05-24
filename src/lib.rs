@@ -27,6 +27,10 @@ pub mod normalize;
 pub mod raw;
 pub mod redact;
 pub mod render;
+pub mod config;
+pub mod glob;
+pub mod stats;
+pub mod vendor;
 
 /// Errors that HAR functions may return.
 #[derive(thiserror::Error, Debug)]

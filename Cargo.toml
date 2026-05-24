@@ -20,14 +20,14 @@ path = "src/main.rs"
 
 [features]
 default = []
-yaml = ["dep:yaml_serde"]
+yaml = []
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 serde_with = "3.18.0"
 thiserror = "2.0.18"
-yaml_serde = { version = "0.10.4", optional = true }
+yaml_serde = "0.10.4"
 clap = { version = "4.6.1", features = ["derive"] }
 memmap2 = "0.9.10"
 chrono = "0.4.44"
