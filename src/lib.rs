@@ -32,6 +32,7 @@ pub mod model;
 pub mod normalize;
 pub mod opaque;
 pub mod raw;
+pub mod recommender;
 pub mod redact;
 pub mod render;
 pub mod stats;
