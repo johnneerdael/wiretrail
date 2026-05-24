@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use har::analysis::auth::{compute_auth, render_auth_text};
 use har::analysis::cascade::{compute_cascade, render_cascade_text};
 use har::analysis::checks::{compute_checks, render_checks_text};
+use har::analysis::compare::{compute_compare, render_compare_text, sev_rank};
 use har::analysis::curl::{CurlResult, compute_curl, entry_to_curl, render_curl_text};
 use har::analysis::diagnose::{compute_diagnose, render_diagnose_text};
 use har::analysis::diff::{compute_diff, render_diff_text};
@@ -18,6 +19,7 @@ use har::analysis::rate_limit::{compute_rate_limit, render_rate_limit_text};
 use har::analysis::redirects::{compute_redirects, render_redirects_text};
 use har::analysis::report::{ReportResult, compose_report};
 use har::analysis::retries::{compute_retries, render_retries_text};
+use har::analysis::rules::{compute_rules, render_rules_text};
 use har::analysis::search::{compute_search, render_search_text};
 use har::analysis::show_entry::{entry_detail, find_entry, render_entry_detail_text};
 use har::analysis::slowest::{compute_slowest, render_slowest_text};
@@ -76,6 +78,25 @@ enum TargetArg {
 enum ExportFormatArg {
     Ndjson,
     Csv,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum SeverityArg {
+    Critical,
+    High,
+    Medium,
+    Low,
+}
+
+impl SeverityArg {
+    fn as_str(self) -> &'static str {
+        match self {
+            SeverityArg::Critical => "critical",
+            SeverityArg::High => "high",
+            SeverityArg::Medium => "medium",
+            SeverityArg::Low => "low",
+        }
+    }
 }
 
 #[derive(Subcommand, Debug)]
@@ -190,6 +211,20 @@ enum Command {
         /// Output format.
         #[arg(long, value_enum, default_value_t = ExportFormatArg::Ndjson)]
         format: ExportFormatArg,
+    },
+    /// Compare this capture against a baseline HAR (regression diff).
+    Compare {
+        /// Path to the baseline HAR to diff against.
+        baseline: PathBuf,
+        /// Exit non-zero only when max severity reaches this level (CI gate).
+        #[arg(long = "fail-on", value_enum)]
+        fail_on: Option<SeverityArg>,
+    },
+    /// Evaluate config rules and built-in rule packs against the capture.
+    Rules {
+        /// Built-in packs to apply, e.g. `--pack auth,security`.
+        #[arg(long = "pack", value_delimiter = ',')]
+        pack: Vec<String>,
     },
 }
 
@@ -672,6 +707,51 @@ fn main() {
             };
             println!("{out}");
             exit(false);
+        }
+        Command::Compare { baseline, fail_on } => {
+            let base_doc = match load(&baseline) {
+                Ok(d) => d,
+                Err(e) => {
+                    eprintln!("wiretrail: baseline: {e}");
+                    std::process::exit(ExitCode::InvalidHar as i32);
+                }
+            };
+            let base = assemble(base_doc);
+            let result = compute_compare(&cap, &base, &filter, cli.top);
+            emit(
+                cli.json,
+                "compare",
+                &cap.meta,
+                &result,
+                &render_compare_text(&result),
+                &["diagnose", "errors", "slowest"],
+            );
+            let any = result.max_severity != "none";
+            let findings = match fail_on {
+                Some(t) => any && sev_rank(&result.max_severity) >= sev_rank(t.as_str()),
+                None => any,
+            };
+            exit(findings);
+        }
+        Command::Rules { pack } => {
+            let config = match Config::load(cli.config.as_deref()) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("wiretrail: {e}");
+                    std::process::exit(ExitCode::InvalidHar as i32);
+                }
+            };
+            let result = compute_rules(&cap, &filter, &config, &pack, cli.top);
+            let findings = !result.findings.is_empty();
+            emit(
+                cli.json,
+                "rules",
+                &cap.meta,
+                &result,
+                &render_rules_text(&result),
+                &["checks", "errors", "diagnose"],
+            );
+            exit(findings);
         }
     }
 }
