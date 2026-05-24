@@ -1,5 +1,7 @@
 pub mod auth;
+pub mod checks;
 pub mod curl;
+pub mod diff;
 pub mod duplicates;
 pub mod endpoints;
 pub mod errors;
