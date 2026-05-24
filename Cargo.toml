@@ -1,0 +1,27 @@
+[package]
+name = "har"
+version = "0.9.0"
+authors = ["Sebastian Mandrean <sebastian.mandrean@gmail.com>"]
+edition = "2024"
+rust-version = "1.88"
+description = "A HTTP Archive format (HAR) serialization & deserialization library."
+license = "MIT"
+repository = "https://github.com/mandrean/har-rs"
+documentation = "https://docs.rs/har"
+readme = "README.md"
+keywords = ["har", "serialization", "deserialization", "json", "yaml"]
+
+[package.metadata.docs.rs]
+features = ["yaml"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+default = []
+yaml = ["dep:yaml_serde"]
+
+[dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+serde_with = "3.18.0"
+thiserror = "2.0.18"
+yaml_serde = { version = "0.10.4", optional = true }
