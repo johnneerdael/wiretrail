@@ -24,6 +24,23 @@ impl Recommendation {
     }
 }
 
+/// Turn a normalized path into a filter glob: each `{id}`/`{blob}` segment
+/// becomes `*` so it matches the raw paths in the capture (the filter language
+/// matches `path:` against the raw, un-normalized path).
+fn path_glob(norm_path: &str) -> String {
+    norm_path
+        .split('/')
+        .map(|seg| {
+            if seg.starts_with('{') && seg.ends_with('}') {
+                "*"
+            } else {
+                seg
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
 /// Severity ordering shared across the recommender, diagnose, summary, and auto.
 pub fn sev_rank(s: &str) -> u8 {
     match s {
@@ -173,7 +190,7 @@ pub fn recommend(cap: &Capture, filter: &Filter, top: usize) -> Vec<Recommendati
                 detail: "repeated identical calls (not retries)".into(),
                 evidence_ids: g.entry_ids.clone(),
                 command: "diff".into(),
-                filter: None,
+                filter: Some(format!("host:{} path:{}", g.host, path_glob(&g.norm_path))),
             });
         }
     }
@@ -257,5 +274,38 @@ mod tests {
     fn clean_capture_yields_no_recommendations() {
         let cap = sample_capture(vec![sample_entry(0, "api.x", "GET", "/ok", 200)]);
         assert!(recommend(&cap, &Filter::parse(&[]).unwrap(), 20).is_empty());
+    }
+
+    #[test]
+    fn path_glob_replaces_normalized_segments() {
+        assert_eq!(super::path_glob("/v1/ratings/bulk"), "/v1/ratings/bulk");
+        assert_eq!(
+            super::path_glob("/{blob}/manifest.json"),
+            "/*/manifest.json"
+        );
+        assert_eq!(
+            super::path_glob("/users/{id}/orders/{id}"),
+            "/users/*/orders/*"
+        );
+    }
+
+    #[test]
+    fn wasteful_duplicates_recommendation_is_scoped_and_parses() {
+        // 10 identical GETs on a normalized-path route -> a wasteful-duplicates rec.
+        let entries: Vec<Entry> = (0..10)
+            .map(|i| sample_entry(i, "cdn.x", "GET", "/{blob}/manifest.json", 200))
+            .collect();
+        let recs = recommend(&sample_capture(entries), &Filter::parse(&[]).unwrap(), 20);
+        let dup = recs
+            .iter()
+            .find(|r| r.kind == "wasteful-duplicates")
+            .expect("a wasteful-duplicates recommendation");
+        assert_eq!(dup.command, "diff");
+        assert_eq!(
+            dup.filter.as_deref(),
+            Some("host:cdn.x path:/*/manifest.json")
+        );
+        // the scoping filter must itself be a valid filter expression
+        assert!(Filter::parse(&[dup.filter.clone().unwrap()]).is_ok());
     }
 }
