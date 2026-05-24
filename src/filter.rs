@@ -1,3 +1,4 @@
+use crate::glob::glob_match;
 use crate::model::Entry;
 
 #[derive(Debug)]
@@ -135,35 +136,6 @@ fn has_field(field: &str, e: &Entry) -> bool {
         "resp.body" => e.resp_body.as_ref().is_some_and(|b| !b.is_empty()),
         _ => false,
     }
-}
-
-/// Minimal glob: `*` matches any run of characters. Case-insensitive.
-fn glob_match(pattern: &str, text: &str) -> bool {
-    let p = pattern.to_ascii_lowercase();
-    let t = text.to_ascii_lowercase();
-    if !p.contains('*') {
-        return p == t;
-    }
-    let parts: Vec<&str> = p.split('*').collect();
-    let mut pos = 0usize;
-    for (i, part) in parts.iter().enumerate() {
-        if part.is_empty() {
-            continue;
-        }
-        if i == 0 {
-            if !t[pos..].starts_with(part) {
-                return false;
-            }
-            pos += part.len();
-        } else if i == parts.len() - 1 {
-            return t[pos..].ends_with(part);
-        } else if let Some(found) = t[pos..].find(part) {
-            pos += found + part.len();
-        } else {
-            return false;
-        }
-    }
-    true
 }
 
 #[cfg(test)]
