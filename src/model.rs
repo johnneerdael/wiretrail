@@ -85,3 +85,48 @@ impl Entry {
         self.status_class() == 4 || self.status_class() == 5 || self.status == 0
     }
 }
+
+#[cfg(test)]
+pub fn sample_entry(index: usize, host: &str, method: &str, path: &str, status: i64) -> Entry {
+    Entry {
+        id: format_entry_id(index),
+        index,
+        started_offset_ms: index as f64 * 10.0,
+        duration_ms: 10.0,
+        method: method.to_string(),
+        url: format!("https://{host}{path}"),
+        host: host.to_string(),
+        path: path.to_string(),
+        norm_path: path.to_string(),
+        query: Vec::new(),
+        status,
+        status_text: String::new(),
+        resource_type: ResourceType::Api,
+        content_type: Some("application/json".to_string()),
+        req_headers: Vec::new(),
+        resp_headers: Vec::new(),
+        req_body: None,
+        resp_body: None,
+        timings: Phases::default(),
+        sizes: Sizes::default(),
+        server_ip: None,
+        http_version: "HTTP/2".to_string(),
+        redirect_url: None,
+        correlation: Vec::new(),
+    }
+}
+
+#[cfg(test)]
+pub fn sample_capture(entries: Vec<Entry>) -> Capture {
+    let meta = CaptureMeta {
+        har_version: "1.2".to_string(),
+        creator: "test".to_string(),
+        creator_version: "0".to_string(),
+        browser: None,
+        entry_count: entries.len(),
+        start_ms: Some(0),
+        end_ms: Some(0),
+        duration_ms: 0.0,
+    };
+    Capture { meta, entries }
+}
