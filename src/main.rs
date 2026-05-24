@@ -34,7 +34,8 @@ use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
 use har::loader::load;
-use har::model::CaptureMeta;
+use har::model::{Capture, CaptureMeta};
+use har::recommender::Recommendation;
 use har::render::{Envelope, ExitCode};
 use std::path::PathBuf;
 
@@ -226,6 +227,15 @@ enum Command {
         #[arg(long = "pack", value_delimiter = ',')]
         pack: Vec<String>,
     },
+    /// Smart one-shot: summary + auto-drill the top recommendations inline.
+    Auto {
+        /// Drill into every triggered recommendation, including LOW.
+        #[arg(long)]
+        all: bool,
+        /// Only drill recommendations at or above this severity (default: medium).
+        #[arg(long = "min-severity", value_enum)]
+        min_severity: Option<SeverityArg>,
+    },
 }
 
 fn main() {
@@ -252,13 +262,24 @@ fn main() {
         Command::Summary => {
             let result = compute_summary(&cap, &filter, cli.top);
             let findings = result.error_count > 0 || !result.top_duplicates.is_empty();
+            let mut next: Vec<String> = result
+                .recommendations
+                .iter()
+                .map(|r| r.command.clone())
+                .collect::<std::collections::BTreeSet<_>>()
+                .into_iter()
+                .collect();
+            if next.is_empty() {
+                next = vec!["duplicates".into(), "errors".into(), "slowest".into()];
+            }
+            let next_refs: Vec<&str> = next.iter().map(|s| s.as_str()).collect();
             emit(
                 cli.json,
                 "summary",
                 &cap.meta,
                 &result,
                 &render_summary_text(&result),
-                &["duplicates", "errors", "slowest"],
+                &next_refs,
             );
             exit(findings);
         }
@@ -753,6 +774,164 @@ fn main() {
             );
             exit(findings);
         }
+        Command::Auto { all, min_severity } => {
+            let summary = compute_summary(&cap, &filter, cli.top);
+            let floor = if all {
+                "low"
+            } else {
+                min_severity.map(|s| s.as_str()).unwrap_or("medium")
+            };
+            let floor_rank = sev_rank(floor);
+            let findings = !summary.recommendations.is_empty();
+
+            if cli.json {
+                let mut drilldowns = Vec::new();
+                let mut not_drilled = Vec::new();
+                for rec in &summary.recommendations {
+                    if sev_rank(&rec.severity) >= floor_rank {
+                        let sf = scoped_filter(&cli.filter, rec);
+                        drilldowns.push(serde_json::json!({
+                            "severity": rec.severity,
+                            "kind": rec.kind,
+                            "command": rec.command,
+                            "filter": rec.filter,
+                            "title": rec.title,
+                            "detail": rec.detail,
+                            "evidence_ids": rec.evidence_ids,
+                            "result": drilldown_json(
+                                &rec.command, &cap, &sf, cli.top, cli.unsafe_include_secrets
+                            ),
+                        }));
+                    } else {
+                        not_drilled.push(serde_json::json!({
+                            "severity": rec.severity,
+                            "kind": rec.kind,
+                            "command": rec.command,
+                            "filter": rec.filter,
+                            "title": rec.title,
+                            "detail": rec.detail,
+                        }));
+                    }
+                }
+                let result = serde_json::json!({
+                    "summary": serde_json::to_value(&summary).unwrap_or(serde_json::Value::Null),
+                    "drilldowns": drilldowns,
+                    "not_drilled": not_drilled,
+                });
+                let next: Vec<String> = summary
+                    .recommendations
+                    .iter()
+                    .map(|r| r.command.clone())
+                    .collect::<std::collections::BTreeSet<_>>()
+                    .into_iter()
+                    .collect();
+                let env = Envelope::new("auto", cap.meta.clone(), result).with_next_commands(next);
+                println!("{}", env.to_json());
+                exit(findings);
+            }
+
+            print!("{}", render_summary_text(&summary));
+            for rec in &summary.recommendations {
+                if sev_rank(&rec.severity) >= floor_rank {
+                    let sf = scoped_filter(&cli.filter, rec);
+                    println!("\n────────────────────────────────────────");
+                    println!(
+                        "[{}] {} — {}",
+                        rec.severity.to_ascii_uppercase(),
+                        rec.kind,
+                        rec.title
+                    );
+                    println!("$ wiretrail {} {}", cli.file.display(), rec.command_line());
+                    print!(
+                        "{}",
+                        drilldown_text(
+                            &rec.command,
+                            &cap,
+                            &sf,
+                            cli.top,
+                            cli.unsafe_include_secrets
+                        )
+                    );
+                }
+            }
+            let not_drilled: Vec<&Recommendation> = summary
+                .recommendations
+                .iter()
+                .filter(|r| sev_rank(&r.severity) < floor_rank)
+                .collect();
+            if !not_drilled.is_empty() {
+                println!("\nnot drilled (below threshold):");
+                for r in &not_drilled {
+                    println!(
+                        "  [{}] {} — {}   (run: wiretrail {} {})",
+                        r.severity.to_ascii_uppercase(),
+                        r.kind,
+                        r.title,
+                        cli.file.display(),
+                        r.command_line()
+                    );
+                }
+            }
+            exit(findings);
+        }
+    }
+}
+
+/// Render one recommended drill-down command's full text output, scoped by `filter`.
+fn drilldown_text(
+    cmd: &str,
+    cap: &Capture,
+    filter: &Filter,
+    top: usize,
+    unsafe_include: bool,
+) -> String {
+    match cmd {
+        "errors" => render_errors_text(&compute_errors(cap, filter, top, unsafe_include)),
+        "auth" => render_auth_text(&compute_auth(cap, filter, top)),
+        "rate-limit" => render_rate_limit_text(&compute_rate_limit(cap, filter, top)),
+        "retries" => render_retries_text(&compute_retries(cap, filter, top)),
+        "storms" => render_storms_text(&compute_storms(cap, filter, 1000, 5, top)),
+        "diff" => render_diff_text(&compute_diff(cap, filter, top, unsafe_include)),
+        "redirects" => render_redirects_text(&compute_redirects(cap, filter, top)),
+        "slowest" => render_slowest_text(&compute_slowest(cap, filter, top)),
+        _ => String::new(),
+    }
+}
+
+/// Serialize one drill-down command's result object as JSON (for `auto --json`).
+fn drilldown_json(
+    cmd: &str,
+    cap: &Capture,
+    filter: &Filter,
+    top: usize,
+    unsafe_include: bool,
+) -> serde_json::Value {
+    use serde_json::to_value;
+    let v = match cmd {
+        "errors" => to_value(compute_errors(cap, filter, top, unsafe_include)),
+        "auth" => to_value(compute_auth(cap, filter, top)),
+        "rate-limit" => to_value(compute_rate_limit(cap, filter, top)),
+        "retries" => to_value(compute_retries(cap, filter, top)),
+        "storms" => to_value(compute_storms(cap, filter, 1000, 5, top)),
+        "diff" => to_value(compute_diff(cap, filter, top, unsafe_include)),
+        "redirects" => to_value(compute_redirects(cap, filter, top)),
+        "slowest" => to_value(compute_slowest(cap, filter, top)),
+        _ => Ok(serde_json::Value::Null),
+    };
+    v.unwrap_or(serde_json::Value::Null)
+}
+
+/// Build the Filter for a drill-down: the global `--filter` clauses AND the
+/// recommendation's own scoping clause (if any). Falls back to the global filter
+/// alone if the combined expression somehow fails to parse.
+fn scoped_filter(global_clauses: &[String], rec: &Recommendation) -> Filter {
+    let mut clauses = global_clauses.to_vec();
+    if let Some(f) = &rec.filter {
+        clauses.push(f.clone());
+    }
+    match Filter::parse(&clauses) {
+        Ok(f) => f,
+        Err(_) => Filter::parse(global_clauses).expect("global filter already validated"),
     }
 }
 
