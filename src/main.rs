@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use har::analysis::auth::{compute_auth, render_auth_text};
 use har::analysis::cascade::{compute_cascade, render_cascade_text};
 use har::analysis::checks::{compute_checks, render_checks_text};
@@ -8,6 +8,8 @@ use har::analysis::diff::{compute_diff, render_diff_text};
 use har::analysis::duplicates::{compute_duplicates, render_duplicates_text};
 use har::analysis::endpoints::{compute_endpoints, render_endpoints_text};
 use har::analysis::errors::{compute_errors, render_errors_text};
+use har::analysis::export::{export_records, render_csv, render_ndjson};
+use har::analysis::extract::{Target, compute_extract, render_extract_text};
 use har::analysis::handoff::{compute_handoff, render_handoff_text};
 use har::analysis::hosts::{compute_hosts, render_hosts_text};
 use har::analysis::jwt::{compute_jwt, render_jwt_text};
@@ -16,6 +18,7 @@ use har::analysis::rate_limit::{compute_rate_limit, render_rate_limit_text};
 use har::analysis::redirects::{compute_redirects, render_redirects_text};
 use har::analysis::report::{ReportResult, compose_report};
 use har::analysis::retries::{compute_retries, render_retries_text};
+use har::analysis::search::{compute_search, render_search_text};
 use har::analysis::show_entry::{entry_detail, find_entry, render_entry_detail_text};
 use har::analysis::slowest::{compute_slowest, render_slowest_text};
 use har::analysis::startup::{compute_startup, render_startup_text};
@@ -61,6 +64,18 @@ struct Cli {
     /// Show raw secret values (auth headers, tokens, bodies) instead of redacting.
     #[arg(long, global = true)]
     unsafe_include_secrets: bool,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum TargetArg {
+    Req,
+    Resp,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum ExportFormatArg {
+    Ndjson,
+    Csv,
 }
 
 #[derive(Subcommand, Debug)]
@@ -151,6 +166,31 @@ enum Command {
     },
     /// Capture-quality and analysis-sufficiency report.
     Validate,
+    /// Search request/response bodies (redaction-safe).
+    Search {
+        /// Pattern to search for.
+        pattern: String,
+        /// Treat the pattern as a regular expression.
+        #[arg(long)]
+        regex: bool,
+        /// Case-insensitive match.
+        #[arg(long = "ignore-case")]
+        ignore_case: bool,
+    },
+    /// Extract a JSON path from request/response bodies.
+    Extract {
+        /// JSON path, e.g. `$.errors[0].code`.
+        path: String,
+        /// Which body to query.
+        #[arg(long, value_enum, default_value_t = TargetArg::Resp)]
+        target: TargetArg,
+    },
+    /// Flatten entries to NDJSON or CSV.
+    Export {
+        /// Output format.
+        #[arg(long, value_enum, default_value_t = ExportFormatArg::Ndjson)]
+        format: ExportFormatArg,
+    },
 }
 
 fn main() {
@@ -569,6 +609,69 @@ fn main() {
                 &["summary", "diagnose", "errors"],
             );
             exit(findings);
+        }
+        Command::Search {
+            pattern,
+            regex,
+            ignore_case,
+        } => {
+            match compute_search(
+                &cap,
+                &filter,
+                &pattern,
+                regex,
+                ignore_case,
+                cli.top,
+                cli.unsafe_include_secrets,
+            ) {
+                Ok(result) => {
+                    emit(
+                        cli.json,
+                        "search",
+                        &cap.meta,
+                        &result,
+                        &render_search_text(&result),
+                        &["show-entry", "extract", "errors"],
+                    );
+                    exit(false);
+                }
+                Err(e) => {
+                    eprintln!("wiretrail: {e}");
+                    std::process::exit(ExitCode::InvalidHar as i32);
+                }
+            }
+        }
+        Command::Extract { path, target } => {
+            let target = match target {
+                TargetArg::Req => Target::Req,
+                TargetArg::Resp => Target::Resp,
+            };
+            let result = compute_extract(
+                &cap,
+                &filter,
+                &path,
+                target,
+                cli.top,
+                cli.unsafe_include_secrets,
+            );
+            emit(
+                cli.json,
+                "extract",
+                &cap.meta,
+                &result,
+                &render_extract_text(&result),
+                &["search", "show-entry", "errors"],
+            );
+            exit(false);
+        }
+        Command::Export { format } => {
+            let records = export_records(&cap, &filter);
+            let out = match format {
+                ExportFormatArg::Ndjson => render_ndjson(&records),
+                ExportFormatArg::Csv => render_csv(&records),
+            };
+            println!("{out}");
+            exit(false);
         }
     }
 }
