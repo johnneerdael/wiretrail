@@ -63,6 +63,8 @@ pub struct RawResponse {
     pub status: i64,
     #[serde(rename = "statusText", default)]
     pub status_text: String,
+    #[serde(rename = "httpVersion", default)]
+    pub http_version: String,
     #[serde(default)]
     pub headers: Vec<RawNameValue>,
     #[serde(default)]
@@ -73,6 +75,16 @@ pub struct RawResponse {
     pub headers_size: i64,
     #[serde(rename = "bodySize", default)]
     pub body_size: i64,
+}
+
+impl RawResponse {
+    pub fn http_version_or_request(&self, req_version: &str) -> String {
+        if self.http_version.is_empty() {
+            req_version.to_string()
+        } else {
+            self.http_version.clone()
+        }
+    }
 }
 
 #[derive(Debug, Default, Deserialize)]
