@@ -66,13 +66,17 @@ fn parse_clause(token: &str) -> Result<Clause, String> {
 
 fn parse_cmp_int(s: &str) -> Result<(Cmp, i64), String> {
     let (cmp, rest) = split_cmp(s);
-    let n = rest.parse::<i64>().map_err(|_| format!("invalid number: {rest}"))?;
+    let n = rest
+        .parse::<i64>()
+        .map_err(|_| format!("invalid number: {rest}"))?;
     Ok((cmp, n))
 }
 
 fn parse_cmp_float(s: &str) -> Result<(Cmp, f64), String> {
     let (cmp, rest) = split_cmp(s);
-    let n = rest.parse::<f64>().map_err(|_| format!("invalid number: {rest}"))?;
+    let n = rest
+        .parse::<f64>()
+        .map_err(|_| format!("invalid number: {rest}"))?;
     Ok((cmp, n))
 }
 
@@ -126,10 +130,16 @@ fn clause_matches(c: &Clause, e: &Entry) -> bool {
 fn has_field(field: &str, e: &Entry) -> bool {
     // Supported forms: req.header.<name>, resp.header.<name>, req.body, resp.body
     if let Some(name) = field.strip_prefix("req.header.") {
-        return e.req_headers.iter().any(|(n, _)| n.eq_ignore_ascii_case(name));
+        return e
+            .req_headers
+            .iter()
+            .any(|(n, _)| n.eq_ignore_ascii_case(name));
     }
     if let Some(name) = field.strip_prefix("resp.header.") {
-        return e.resp_headers.iter().any(|(n, _)| n.eq_ignore_ascii_case(name));
+        return e
+            .resp_headers
+            .iter()
+            .any(|(n, _)| n.eq_ignore_ascii_case(name));
     }
     match field {
         "req.body" => e.req_body.as_ref().is_some_and(|b| !b.is_empty()),
@@ -146,13 +156,30 @@ mod tests {
 
     fn entry(host: &str, status: i64, method: &str, path: &str, dur: f64) -> Entry {
         Entry {
-            id: "e000000".into(), index: 0, started_offset_ms: 0.0, duration_ms: dur,
-            method: method.into(), url: format!("https://{host}{path}"), host: host.into(),
-            path: path.into(), norm_path: path.into(), query: vec![], status,
-            status_text: String::new(), resource_type: ResourceType::Api, content_type: None,
-            req_headers: vec![("authorization".into(), "x".into())], resp_headers: vec![],
-            req_body: None, resp_body: None, timings: Phases::default(), sizes: Sizes::default(),
-            server_ip: None, http_version: "HTTP/2".into(), redirect_url: None, correlation: vec![],
+            id: "e000000".into(),
+            index: 0,
+            started_offset_ms: 0.0,
+            duration_ms: dur,
+            method: method.into(),
+            url: format!("https://{host}{path}"),
+            host: host.into(),
+            path: path.into(),
+            norm_path: path.into(),
+            query: vec![],
+            status,
+            status_text: String::new(),
+            resource_type: ResourceType::Api,
+            content_type: None,
+            req_headers: vec![("authorization".into(), "x".into())],
+            resp_headers: vec![],
+            req_body: None,
+            resp_body: None,
+            timings: Phases::default(),
+            sizes: Sizes::default(),
+            server_ip: None,
+            http_version: "HTTP/2".into(),
+            redirect_url: None,
+            correlation: vec![],
         }
     }
 
@@ -166,7 +193,12 @@ mod tests {
 
     #[test]
     fn matches_method_and_path_glob_and_time() {
-        let f = Filter::parse(&["method:POST".into(), "path:*login*".into(), "time:>5ms".into()]).unwrap();
+        let f = Filter::parse(&[
+            "method:POST".into(),
+            "path:*login*".into(),
+            "time:>5ms".into(),
+        ])
+        .unwrap();
         assert!(f.matches(&entry("h", 200, "POST", "/v1/login/start", 10.0)));
         assert!(!f.matches(&entry("h", 200, "POST", "/v1/login/start", 1.0)));
         assert!(!f.matches(&entry("h", 200, "GET", "/v1/login/start", 10.0)));

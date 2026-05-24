@@ -1,6 +1,6 @@
 use crate::config::Config;
-use crate::fingerprint::fingerprint;
 use crate::filter::Filter;
+use crate::fingerprint::fingerprint;
 use crate::model::{Capture, Entry};
 use crate::render::human_ms;
 use ahash::{AHashMap, AHashSet};

@@ -5,7 +5,15 @@ use ahash::{AHashMap, AHashSet};
 use serde::Serialize;
 
 const VOLATILE_KEYS: &[&str] = &[
-    "timestamp", "ts", "nonce", "date", "cb", "cachebuster", "requestid", "request_id", "_",
+    "timestamp",
+    "ts",
+    "nonce",
+    "date",
+    "cb",
+    "cachebuster",
+    "requestid",
+    "request_id",
+    "_",
 ];
 const SAMPLE_CAP: usize = 3;
 
@@ -33,13 +41,22 @@ pub struct QueryVariance {
 }
 
 /// Show what varies across repeated calls to the same (method, host, norm_path).
-pub fn compute_diff(cap: &Capture, filter: &Filter, top: usize, unsafe_include: bool) -> DiffResult {
+pub fn compute_diff(
+    cap: &Capture,
+    filter: &Filter,
+    top: usize,
+    unsafe_include: bool,
+) -> DiffResult {
     let entries: Vec<&Entry> = cap.entries.iter().filter(|e| filter.matches(e)).collect();
 
     let mut by_route: AHashMap<(String, String, String), Vec<&Entry>> = AHashMap::new();
     for e in &entries {
         by_route
-            .entry((e.method.to_ascii_uppercase(), e.host.clone(), e.norm_path.clone()))
+            .entry((
+                e.method.to_ascii_uppercase(),
+                e.host.clone(),
+                e.norm_path.clone(),
+            ))
             .or_default()
             .push(e);
     }
@@ -49,7 +66,7 @@ pub fn compute_diff(cap: &Capture, filter: &Filter, top: usize, unsafe_include: 
         if g.len() < 2 {
             continue;
         }
-        g.sort_by(|a, b| a.index.cmp(&b.index));
+        g.sort_by_key(|a| a.index);
 
         let varying_query = varying_query(&g, unsafe_include);
         let varying_header_names = varying_header_names(&g);
@@ -107,7 +124,10 @@ fn varying_query(members: &[&Entry], unsafe_include: bool) -> Vec<QueryVariance>
         }
         if distinct.len() > 1 {
             values.truncate(SAMPLE_CAP);
-            out.push(QueryVariance { key: k, samples: values });
+            out.push(QueryVariance {
+                key: k,
+                samples: values,
+            });
         }
     }
     out.sort_by(|a, b| a.key.cmp(&b.key));
@@ -199,10 +219,17 @@ pub fn render_diff_text(r: &DiffResult) -> String {
             g.method, g.host, g.norm_path, g.count, g.body_verdict
         ));
         for q in &g.varying_query {
-            out.push_str(&format!("  query {} varies: {}\n", q.key, q.samples.join(", ")));
+            out.push_str(&format!(
+                "  query {} varies: {}\n",
+                q.key,
+                q.samples.join(", ")
+            ));
         }
         if !g.varying_header_names.is_empty() {
-            out.push_str(&format!("  headers vary: {}\n", g.varying_header_names.join(", ")));
+            out.push_str(&format!(
+                "  headers vary: {}\n",
+                g.varying_header_names.join(", ")
+            ));
         }
     }
     out
@@ -212,7 +239,7 @@ pub fn render_diff_text(r: &DiffResult) -> String {
 mod tests {
     use super::compute_diff;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     fn post(index: usize, body: &str) -> Entry {
         let mut e = sample_entry(index, "api.x", "POST", "/items", 200);
@@ -233,10 +260,7 @@ mod tests {
 
     #[test]
     fn body_meaningful() {
-        let cap = sample_capture(vec![
-            post(0, r#"{"name":"a"}"#),
-            post(1, r#"{"name":"b"}"#),
-        ]);
+        let cap = sample_capture(vec![post(0, r#"{"name":"a"}"#), post(1, r#"{"name":"b"}"#)]);
         let r = compute_diff(&cap, &Filter::parse(&[]).unwrap(), 10, false);
         let g = r.groups.iter().find(|g| g.norm_path == "/items").unwrap();
         assert_eq!(g.body_verdict, "meaningful");
@@ -248,7 +272,12 @@ mod tests {
         a.query = vec![("page".into(), "1".into()), ("token".into(), "AAA".into())];
         let mut b = sample_entry(1, "api.x", "GET", "/y", 200);
         b.query = vec![("page".into(), "2".into()), ("token".into(), "BBB".into())];
-        let r = compute_diff(&sample_capture(vec![a, b]), &Filter::parse(&[]).unwrap(), 10, false);
+        let r = compute_diff(
+            &sample_capture(vec![a, b]),
+            &Filter::parse(&[]).unwrap(),
+            10,
+            false,
+        );
         let g = r.groups.iter().find(|g| g.norm_path == "/y").unwrap();
         let keys: Vec<&str> = g.varying_query.iter().map(|q| q.key.as_str()).collect();
         assert!(keys.contains(&"page"));

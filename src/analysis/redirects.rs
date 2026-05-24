@@ -32,15 +32,26 @@ fn is_redirect(e: &Entry) -> bool {
 }
 
 fn host_of(url: &str) -> Option<String> {
-    url::Url::parse(url).ok().and_then(|u| u.host_str().map(|h| h.to_string()))
+    url::Url::parse(url)
+        .ok()
+        .and_then(|u| u.host_str().map(|h| h.to_string()))
 }
 
 /// Group redirect responses by (host, method, norm_path, status); flag storms
 /// (count >= 5) and cross-host hops. `top` bounds the list.
 pub fn compute_redirects(cap: &Capture, filter: &Filter, top: usize) -> RedirectsResult {
     let mut by_key: AHashMap<(String, String, String, i64), Vec<&Entry>> = AHashMap::new();
-    for e in cap.entries.iter().filter(|e| filter.matches(e) && is_redirect(e)) {
-        let key = (e.host.clone(), e.method.to_ascii_uppercase(), e.norm_path.clone(), e.status);
+    for e in cap
+        .entries
+        .iter()
+        .filter(|e| filter.matches(e) && is_redirect(e))
+    {
+        let key = (
+            e.host.clone(),
+            e.method.to_ascii_uppercase(),
+            e.norm_path.clone(),
+            e.status,
+        );
         by_key.entry(key).or_default().push(e);
     }
 
@@ -57,7 +68,9 @@ pub fn compute_redirects(cap: &Capture, filter: &Filter, top: usize) -> Redirect
                 .iter()
                 .find_map(|e| e.redirect_url.as_deref())
                 .and_then(host_of);
-            let cross_host = target_host.as_deref().is_some_and(|t| !t.is_empty() && t != host);
+            let cross_host = target_host
+                .as_deref()
+                .is_some_and(|t| !t.is_empty() && t != host);
             RedirectGroup {
                 count: g.len(),
                 is_storm: g.len() >= STORM_THRESHOLD,
@@ -96,7 +109,11 @@ pub fn render_redirects_text(r: &RedirectsResult) -> String {
         if g.cross_host {
             tags.push("cross-host");
         }
-        let tagstr = if tags.is_empty() { String::new() } else { format!(" [{}]", tags.join(", ")) };
+        let tagstr = if tags.is_empty() {
+            String::new()
+        } else {
+            format!(" [{}]", tags.join(", "))
+        };
         out.push_str(&format!(
             "\n{:>4}x  [{}] {} {}{}{}\n",
             g.count, g.status, g.method, g.host, g.norm_path, tagstr
@@ -115,7 +132,13 @@ mod tests {
     use crate::filter::Filter;
     use crate::model::{sample_capture, sample_entry};
 
-    fn redirect(index: usize, host: &str, path: &str, status: i64, target: &str) -> crate::model::Entry {
+    fn redirect(
+        index: usize,
+        host: &str,
+        path: &str,
+        status: i64,
+        target: &str,
+    ) -> crate::model::Entry {
         let mut e = sample_entry(index, host, "GET", path, status);
         e.redirect_url = Some(target.to_string());
         e
@@ -125,7 +148,13 @@ mod tests {
         let mut entries = Vec::new();
         // 6 x 308 to torii manifest -> storm
         for i in 0..6 {
-            entries.push(redirect(i, "torii.app", "/manifest.json", 308, "https://torii.app/v2/manifest.json"));
+            entries.push(redirect(
+                i,
+                "torii.app",
+                "/manifest.json",
+                308,
+                "https://torii.app/v2/manifest.json",
+            ));
         }
         // one cross-host 302
         entries.push(redirect(6, "a.com", "/go", 302, "https://b.com/landing"));
@@ -137,7 +166,11 @@ mod tests {
     #[test]
     fn groups_redirects_and_flags_storm() {
         let r = compute_redirects(&cap(), &Filter::parse(&[]).unwrap(), 10);
-        let storm = r.groups.iter().find(|g| g.norm_path == "/manifest.json").unwrap();
+        let storm = r
+            .groups
+            .iter()
+            .find(|g| g.norm_path == "/manifest.json")
+            .unwrap();
         assert_eq!(storm.count, 6);
         assert_eq!(storm.status, 308);
         assert!(storm.is_storm);

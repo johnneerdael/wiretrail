@@ -19,7 +19,11 @@ fn segment_token(seg: &str, index: usize) -> Option<&'static str> {
     }
     // Pure numeric: id unless a single leading digit (keeps `/3/tv/popular`).
     if seg.bytes().all(|b| b.is_ascii_digit()) {
-        return if index == 1 && seg.len() == 1 { None } else { Some("{id}") };
+        return if index == 1 && seg.len() == 1 {
+            None
+        } else {
+            Some("{id}")
+        };
     }
     if is_uuid(seg) {
         return Some("{id}");
@@ -43,7 +47,10 @@ mod tests {
 
     #[test]
     fn collapses_numeric_ids() {
-        assert_eq!(normalize_path("/users/123/orders/456"), "/users/{id}/orders/{id}");
+        assert_eq!(
+            normalize_path("/users/123/orders/456"),
+            "/users/{id}/orders/{id}"
+        );
     }
 
     #[test]
@@ -87,6 +94,9 @@ mod tests {
 
     #[test]
     fn numeric_id_still_uses_id_token() {
-        assert_eq!(normalize_path("/users/123/orders/456"), "/users/{id}/orders/{id}");
+        assert_eq!(
+            normalize_path("/users/123/orders/456"),
+            "/users/{id}/orders/{id}"
+        );
     }
 }

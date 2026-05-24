@@ -126,7 +126,7 @@ pub fn render_storms_text(r: &StormsResult) -> String {
 mod tests {
     use super::compute_storms;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Capture, Entry};
+    use crate::model::{Capture, Entry, sample_capture, sample_entry};
 
     fn at(index: usize, host: &str, path: &str, offset_ms: f64) -> Entry {
         let mut e = sample_entry(index, host, "GET", path, 200);
@@ -146,8 +146,16 @@ mod tests {
     #[test]
     fn detects_endpoint_and_host_burst() {
         let r = compute_storms(&burst(), &Filter::parse(&[]).unwrap(), 1000, 5, 10);
-        assert!(r.storms.iter().any(|s| s.scope_kind == "endpoint" && s.peak_count == 6));
-        assert!(r.storms.iter().any(|s| s.scope_kind == "host" && s.peak_count == 6));
+        assert!(
+            r.storms
+                .iter()
+                .any(|s| s.scope_kind == "endpoint" && s.peak_count == 6)
+        );
+        assert!(
+            r.storms
+                .iter()
+                .any(|s| s.scope_kind == "host" && s.peak_count == 6)
+        );
     }
 
     #[test]
@@ -156,7 +164,13 @@ mod tests {
         for i in 0..6 {
             es.push(at(i, "h", "/x", i as f64 * 1000.0)); // 1s apart
         }
-        let r = compute_storms(&sample_capture(es), &Filter::parse(&[]).unwrap(), 500, 5, 10);
+        let r = compute_storms(
+            &sample_capture(es),
+            &Filter::parse(&[]).unwrap(),
+            500,
+            5,
+            10,
+        );
         assert!(r.storms.is_empty());
     }
 

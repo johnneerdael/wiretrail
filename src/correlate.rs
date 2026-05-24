@@ -12,10 +12,7 @@ const CORRELATION_HEADERS: &[&str] = &[
 pub fn extract_correlation(headers: &[(String, String)]) -> Vec<(String, String)> {
     let mut out = Vec::new();
     for known in CORRELATION_HEADERS {
-        if let Some((_, v)) = headers
-            .iter()
-            .find(|(n, _)| n.eq_ignore_ascii_case(known))
-        {
+        if let Some((_, v)) = headers.iter().find(|(n, _)| n.eq_ignore_ascii_case(known)) {
             out.push((known.to_string(), v.clone()));
         }
     }

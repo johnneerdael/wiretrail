@@ -29,13 +29,25 @@ struct Acc<'a> {
 pub fn compute_endpoints(cap: &Capture, filter: &Filter, top: usize) -> EndpointsResult {
     let mut by_key: AHashMap<(String, String, String), Acc> = AHashMap::new();
     for e in cap.entries.iter().filter(|e| filter.matches(e)) {
-        let key = (e.method.to_ascii_uppercase(), e.host.clone(), e.norm_path.clone());
-        by_key.entry(key).or_insert_with(|| Acc { entries: Vec::new() }).entries.push(e);
+        let key = (
+            e.method.to_ascii_uppercase(),
+            e.host.clone(),
+            e.norm_path.clone(),
+        );
+        by_key
+            .entry(key)
+            .or_insert_with(|| Acc {
+                entries: Vec::new(),
+            })
+            .entries
+            .push(e);
     }
 
     let mut endpoints: Vec<EndpointStat> = by_key
         .into_iter()
-        .map(|((method, host, norm_path), acc)| endpoint_stat(method, host, norm_path, &acc.entries))
+        .map(|((method, host, norm_path), acc)| {
+            endpoint_stat(method, host, norm_path, &acc.entries)
+        })
         .collect();
 
     endpoints.sort_by(|a, b| {
@@ -49,7 +61,12 @@ pub fn compute_endpoints(cap: &Capture, filter: &Filter, top: usize) -> Endpoint
     EndpointsResult { endpoints }
 }
 
-fn endpoint_stat(method: String, host: String, norm_path: String, entries: &[&Entry]) -> EndpointStat {
+fn endpoint_stat(
+    method: String,
+    host: String,
+    norm_path: String,
+    entries: &[&Entry],
+) -> EndpointStat {
     let mut statuses: BTreeMap<String, usize> = BTreeMap::new();
     let mut content_types: AHashSet<String> = AHashSet::new();
     let mut query_keys: AHashSet<String> = AHashSet::new();
@@ -97,10 +114,16 @@ pub fn render_endpoints_text(r: &EndpointsResult) -> String {
         ));
         out.push_str(&format!("  status: {}\n", statuses.join(" ")));
         if !e.content_types.is_empty() {
-            out.push_str(&format!("  content-types: {}\n", e.content_types.join(", ")));
+            out.push_str(&format!(
+                "  content-types: {}\n",
+                e.content_types.join(", ")
+            ));
         }
         if !e.sample_query_keys.is_empty() {
-            out.push_str(&format!("  query keys: {}\n", e.sample_query_keys.join(", ")));
+            out.push_str(&format!(
+                "  query keys: {}\n",
+                e.sample_query_keys.join(", ")
+            ));
         }
     }
     out
@@ -135,7 +158,10 @@ mod tests {
         assert_eq!(get.statuses.get("404"), Some(&1));
         assert_eq!(get.error_count, 1);
         // observed query keys are collected and sorted/deduped
-        assert_eq!(get.sample_query_keys, vec!["expand".to_string(), "page".to_string()]);
+        assert_eq!(
+            get.sample_query_keys,
+            vec!["expand".to_string(), "page".to_string()]
+        );
         assert!(r.endpoints.iter().any(|e| e.method == "POST"));
     }
 

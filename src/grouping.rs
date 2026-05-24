@@ -84,7 +84,7 @@ pub fn densest_window(entries: &[&Entry], window_ms: f64) -> (usize, usize, usiz
 #[cfg(test)]
 mod tests {
     use super::{densest_window, group_by_fingerprint, group_has_retry, retry_entry_ids};
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     fn refs(cap: &crate::model::Capture) -> Vec<&Entry> {
         cap.entries.iter().collect()

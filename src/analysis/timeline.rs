@@ -1,5 +1,5 @@
-use crate::fingerprint::fingerprint;
 use crate::filter::Filter;
+use crate::fingerprint::fingerprint;
 use crate::grouping::retry_entry_ids;
 use crate::model::Capture;
 use crate::render::{human_bytes, human_ms};
@@ -77,7 +77,11 @@ pub fn render_timeline_text(r: &TimelineResult) -> String {
     let mut out = String::new();
     out.push_str("== wiretrail timeline ==\n");
     for row in &r.rows {
-        let marker = row.marker.as_deref().map(|m| format!(" {m}")).unwrap_or_default();
+        let marker = row
+            .marker
+            .as_deref()
+            .map(|m| format!(" {m}"))
+            .unwrap_or_default();
         out.push_str(&format!(
             "{:>8}  {:>7}  {} {} {}{}  [{}] {}{}\n",
             human_ms(row.offset_ms),

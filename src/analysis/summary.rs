@@ -1,5 +1,5 @@
-use crate::fingerprint::fingerprint;
 use crate::filter::Filter;
+use crate::fingerprint::fingerprint;
 use crate::model::Capture;
 use ahash::AHashMap;
 use serde::Serialize;
@@ -96,9 +96,17 @@ pub fn compute_summary(cap: &Capture, filter: &Filter, top: usize) -> SummaryRes
     let mut dups: Vec<DuplicateGroup> = fp_counts
         .into_iter()
         .filter(|(_, (c, _))| *c > 1)
-        .map(|(fp, (c, id))| DuplicateGroup { fingerprint: fp, count: c, example_id: id })
+        .map(|(fp, (c, id))| DuplicateGroup {
+            fingerprint: fp,
+            count: c,
+            example_id: id,
+        })
         .collect();
-    dups.sort_by(|a, b| b.count.cmp(&a.count).then(a.fingerprint.cmp(&b.fingerprint)));
+    dups.sort_by(|a, b| {
+        b.count
+            .cmp(&a.count)
+            .then(a.fingerprint.cmp(&b.fingerprint))
+    });
     dups.truncate(top);
 
     let mut slow: Vec<SlowEntry> = entries
@@ -112,7 +120,11 @@ pub fn compute_summary(cap: &Capture, filter: &Filter, top: usize) -> SummaryRes
             duration_ms: e.duration_ms,
         })
         .collect();
-    slow.sort_by(|a, b| b.duration_ms.partial_cmp(&a.duration_ms).unwrap_or(std::cmp::Ordering::Equal));
+    slow.sort_by(|a, b| {
+        b.duration_ms
+            .partial_cmp(&a.duration_ms)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     slow.truncate(top);
 
     let mut payloads: Vec<PayloadEntry> = entries
@@ -124,17 +136,17 @@ pub fn compute_summary(cap: &Capture, filter: &Filter, top: usize) -> SummaryRes
             bytes: e.sizes.resp_content.max(e.sizes.resp_body),
         })
         .collect();
-    payloads.sort_by(|a, b| b.bytes.cmp(&a.bytes));
+    payloads.sort_by_key(|p| std::cmp::Reverse(p.bytes));
     payloads.truncate(top);
 
     let mut hints = Vec::new();
-    if let Some(top_dup) = dups.first() {
-        if top_dup.count >= 3 {
-            hints.push(format!(
-                "{}x duplicate calls: {}",
-                top_dup.count, top_dup.fingerprint
-            ));
-        }
+    if let Some(top_dup) = dups.first()
+        && top_dup.count >= 3
+    {
+        hints.push(format!(
+            "{}x duplicate calls: {}",
+            top_dup.count, top_dup.fingerprint
+        ));
     }
     if error_count > 0 {
         hints.push(format!("{error_count} error responses (4xx/5xx/failed)"));
@@ -197,7 +209,10 @@ pub fn render_summary_text(s: &SummaryResult) -> String {
     if !s.top_duplicates.is_empty() {
         out.push_str("\ntop duplicate calls:\n");
         for d in &s.top_duplicates {
-            out.push_str(&format!("  {:>4}x  {}  ({})\n", d.count, d.fingerprint, d.example_id));
+            out.push_str(&format!(
+                "  {:>4}x  {}  ({})\n",
+                d.count, d.fingerprint, d.example_id
+            ));
         }
     }
 

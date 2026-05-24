@@ -1,26 +1,26 @@
 use clap::{Parser, Subcommand};
+use har::analysis::auth::{compute_auth, render_auth_text};
+use har::analysis::checks::{compute_checks, render_checks_text};
+use har::analysis::curl::{CurlResult, compute_curl, entry_to_curl, render_curl_text};
+use har::analysis::diff::{compute_diff, render_diff_text};
 use har::analysis::duplicates::{compute_duplicates, render_duplicates_text};
 use har::analysis::endpoints::{compute_endpoints, render_endpoints_text};
 use har::analysis::errors::{compute_errors, render_errors_text};
+use har::analysis::handoff::{compute_handoff, render_handoff_text};
 use har::analysis::hosts::{compute_hosts, render_hosts_text};
+use har::analysis::jwt::{compute_jwt, render_jwt_text};
+use har::analysis::pagination::{compute_pagination, render_pagination_text};
+use har::analysis::rate_limit::{compute_rate_limit, render_rate_limit_text};
 use har::analysis::redirects::{compute_redirects, render_redirects_text};
+use har::analysis::report::{ReportResult, compose_report};
 use har::analysis::retries::{compute_retries, render_retries_text};
 use har::analysis::show_entry::{entry_detail, find_entry, render_entry_detail_text};
 use har::analysis::slowest::{compute_slowest, render_slowest_text};
+use har::analysis::storms::{compute_storms, render_storms_text};
 use har::analysis::subsystems::{compute_subsystems, render_subsystems_text};
 use har::analysis::summary::{compute_summary, render_summary_text};
 use har::analysis::timeline::{compute_timeline, render_timeline_text};
 use har::analysis::transitions::{compute_transitions, render_transitions_text};
-use har::analysis::curl::{compute_curl, entry_to_curl, render_curl_text, CurlResult};
-use har::analysis::report::{compose_report, ReportResult};
-use har::analysis::storms::{compute_storms, render_storms_text};
-use har::analysis::pagination::{compute_pagination, render_pagination_text};
-use har::analysis::rate_limit::{compute_rate_limit, render_rate_limit_text};
-use har::analysis::jwt::{compute_jwt, render_jwt_text};
-use har::analysis::auth::{compute_auth, render_auth_text};
-use har::analysis::handoff::{compute_handoff, render_handoff_text};
-use har::analysis::diff::{compute_diff, render_diff_text};
-use har::analysis::checks::{compute_checks, render_checks_text};
 use har::assemble::assemble;
 use har::config::Config;
 use har::filter::Filter;
@@ -166,7 +166,10 @@ fn main() {
         }
         Command::Hosts => {
             let result = compute_hosts(&cap, &filter, cli.top);
-            let findings = result.hosts.iter().any(|h| h.error_count > 0 || h.duplicate_count > 0);
+            let findings = result
+                .hosts
+                .iter()
+                .any(|h| h.error_count > 0 || h.duplicate_count > 0);
             emit(
                 cli.json,
                 "hosts",
@@ -186,7 +189,10 @@ fn main() {
                 }
             };
             let result = compute_subsystems(&cap, &filter, &config, cli.top);
-            let findings = result.subsystems.iter().any(|s| s.error_count > 0 || s.duplicate_count > 0);
+            let findings = result
+                .subsystems
+                .iter()
+                .any(|s| s.error_count > 0 || s.duplicate_count > 0);
             emit(
                 cli.json,
                 "subsystems",
@@ -323,7 +329,8 @@ fn main() {
                     std::process::exit(ExitCode::InvalidHar as i32);
                 }
             };
-            let markdown = compose_report(&cap, &filter, &config, cli.top, cli.unsafe_include_secrets);
+            let markdown =
+                compose_report(&cap, &filter, &config, cli.top, cli.unsafe_include_secrets);
             if cli.json {
                 let result = ReportResult { markdown };
                 let env = Envelope::new("report", cap.meta.clone(), &result);
@@ -356,7 +363,10 @@ fn main() {
             );
             exit(false);
         }
-        Command::Storms { window_ms, min_count } => {
+        Command::Storms {
+            window_ms,
+            min_count,
+        } => {
             let result = compute_storms(&cap, &filter, window_ms, min_count, cli.top);
             let findings = !result.storms.is_empty();
             emit(
@@ -369,8 +379,13 @@ fn main() {
             );
             exit(findings);
         }
-        Command::Pagination { max_pages, fanout_min, window_ms } => {
-            let result = compute_pagination(&cap, &filter, max_pages, fanout_min, window_ms, cli.top);
+        Command::Pagination {
+            max_pages,
+            fanout_min,
+            window_ms,
+        } => {
+            let result =
+                compute_pagination(&cap, &filter, max_pages, fanout_min, window_ms, cli.top);
             let findings = !result.pages.is_empty() || !result.nplus1.is_empty();
             emit(
                 cli.json,
@@ -397,7 +412,10 @@ fn main() {
         }
         Command::Jwt => {
             let result = compute_jwt(&cap, &filter, cli.top, cli.unsafe_include_secrets);
-            let findings = result.tokens.iter().any(|t| t.summary.expired == Some(true));
+            let findings = result
+                .tokens
+                .iter()
+                .any(|t| t.summary.expired == Some(true));
             emit(
                 cli.json,
                 "jwt",

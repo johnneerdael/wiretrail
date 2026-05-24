@@ -8,7 +8,11 @@ pub struct Percentiles {
 /// Nearest-rank percentiles over a set of values. Deterministic; does not mutate input.
 pub fn percentiles(values: &[f64]) -> Percentiles {
     if values.is_empty() {
-        return Percentiles { p50: 0.0, p95: 0.0, max: 0.0 };
+        return Percentiles {
+            p50: 0.0,
+            p95: 0.0,
+            max: 0.0,
+        };
     }
     let mut v = values.to_vec();
     v.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));

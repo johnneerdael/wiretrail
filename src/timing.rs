@@ -48,18 +48,27 @@ pub fn classify_bottleneck(p: &Phases) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use super::{classify_bottleneck, PhaseBreakdown};
+    use super::{PhaseBreakdown, classify_bottleneck};
     use crate::model::Phases;
 
     #[test]
     fn picks_dominant_phase() {
-        let p = Phases { wait: 500.0, receive: 10.0, send: 1.0, ..Phases::default() };
+        let p = Phases {
+            wait: 500.0,
+            receive: 10.0,
+            send: 1.0,
+            ..Phases::default()
+        };
         assert_eq!(classify_bottleneck(&p), "server wait/TTFB");
     }
 
     #[test]
     fn dns_dominant() {
-        let p = Phases { dns: Some(300.0), wait: 5.0, ..Phases::default() };
+        let p = Phases {
+            dns: Some(300.0),
+            wait: 5.0,
+            ..Phases::default()
+        };
         assert_eq!(classify_bottleneck(&p), "DNS");
     }
 
@@ -70,7 +79,11 @@ mod tests {
 
     #[test]
     fn breakdown_copies_phases() {
-        let p = Phases { dns: Some(3.0), wait: 9.0, ..Phases::default() };
+        let p = Phases {
+            dns: Some(3.0),
+            wait: 9.0,
+            ..Phases::default()
+        };
         let b = PhaseBreakdown::from_phases(&p);
         assert_eq!(b.dns, Some(3.0));
         assert_eq!(b.wait, 9.0);

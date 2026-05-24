@@ -30,7 +30,12 @@ pub fn classify(content_type: Option<&str>, url: &str) -> ResourceType {
         return ResourceType::Analytics;
     }
     if let Some(ct) = content_type {
-        let ct = ct.split(';').next().unwrap_or(ct).trim().to_ascii_lowercase();
+        let ct = ct
+            .split(';')
+            .next()
+            .unwrap_or(ct)
+            .trim()
+            .to_ascii_lowercase();
         if let Some(rt) = by_mime(&ct) {
             return rt;
         }
@@ -39,7 +44,11 @@ pub fn classify(content_type: Option<&str>, url: &str) -> ResourceType {
 }
 
 fn by_mime(ct: &str) -> Option<ResourceType> {
-    if ct.contains("json") || ct.contains("graphql") || ct.contains("grpc") || ct.contains("protobuf") {
+    if ct.contains("json")
+        || ct.contains("graphql")
+        || ct.contains("grpc")
+        || ct.contains("protobuf")
+    {
         return Some(ResourceType::Api);
     }
     if ct.contains("xml") && !ct.contains("html") {
@@ -48,7 +57,11 @@ fn by_mime(ct: &str) -> Option<ResourceType> {
     if ct.starts_with("image/") || ct.starts_with("video/") || ct.starts_with("audio/") {
         return Some(ResourceType::Media);
     }
-    if ct.contains("javascript") || ct.contains("css") || ct.contains("font") || ct.contains("ecmascript") {
+    if ct.contains("javascript")
+        || ct.contains("css")
+        || ct.contains("font")
+        || ct.contains("ecmascript")
+    {
         return Some(ResourceType::Static);
     }
     if ct.contains("html") {
@@ -79,26 +92,38 @@ fn host_of(url: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{classify, ResourceType};
+    use super::{ResourceType, classify};
 
     #[test]
     fn json_is_api() {
-        assert_eq!(classify(Some("application/json"), "https://api.x/v1/y"), ResourceType::Api);
+        assert_eq!(
+            classify(Some("application/json"), "https://api.x/v1/y"),
+            ResourceType::Api
+        );
     }
 
     #[test]
     fn image_is_media() {
-        assert_eq!(classify(Some("image/png"), "https://x/a.png"), ResourceType::Media);
+        assert_eq!(
+            classify(Some("image/png"), "https://x/a.png"),
+            ResourceType::Media
+        );
     }
 
     #[test]
     fn video_is_media() {
-        assert_eq!(classify(Some("video/mp4"), "https://x/a.mp4"), ResourceType::Media);
+        assert_eq!(
+            classify(Some("video/mp4"), "https://x/a.mp4"),
+            ResourceType::Media
+        );
     }
 
     #[test]
     fn javascript_is_static() {
-        assert_eq!(classify(Some("application/javascript"), "https://x/a.js"), ResourceType::Static);
+        assert_eq!(
+            classify(Some("application/javascript"), "https://x/a.js"),
+            ResourceType::Static
+        );
     }
 
     #[test]
@@ -108,6 +133,12 @@ mod tests {
 
     #[test]
     fn analytics_host() {
-        assert_eq!(classify(Some("application/json"), "https://www.google-analytics.com/collect"), ResourceType::Analytics);
+        assert_eq!(
+            classify(
+                Some("application/json"),
+                "https://www.google-analytics.com/collect"
+            ),
+            ResourceType::Analytics
+        );
     }
 }

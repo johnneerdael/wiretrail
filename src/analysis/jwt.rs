@@ -1,5 +1,5 @@
 use crate::filter::Filter;
-use crate::jwt::{decode_jwt, summarize, token_hash, JwtSummary};
+use crate::jwt::{JwtSummary, decode_jwt, summarize, token_hash};
 use crate::model::{Capture, Entry};
 use ahash::AHashMap;
 use serde::Serialize;
@@ -109,7 +109,9 @@ fn scan_entry(e: &Entry) -> Vec<(String, String)> {
 /// Extract decodable JWT substrings from free text (tokenize on non-JWT chars).
 fn scan_jwts(text: &str) -> Vec<String> {
     let mut out = Vec::new();
-    for cand in text.split(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')) {
+    for cand in
+        text.split(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.'))
+    {
         if cand.matches('.').count() == 2 && cand.len() >= 20 && decode_jwt(cand).is_some() {
             out.push(cand.to_string());
         }
@@ -161,7 +163,7 @@ pub fn render_jwt_text(r: &JwtResult) -> String {
 mod tests {
     use super::compute_jwt;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     const SAMPLE: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
@@ -194,7 +196,12 @@ mod tests {
     fn finds_jwt_in_body() {
         let mut e = sample_entry(0, "api.x", "POST", "/login", 200);
         e.resp_body = Some(format!(r#"{{"access_token":"{SAMPLE}"}}"#));
-        let r = compute_jwt(&sample_capture(vec![e]), &Filter::parse(&[]).unwrap(), 10, false);
+        let r = compute_jwt(
+            &sample_capture(vec![e]),
+            &Filter::parse(&[]).unwrap(),
+            10,
+            false,
+        );
         assert_eq!(r.tokens.len(), 1);
         assert_eq!(r.tokens[0].source, "resp.body");
     }

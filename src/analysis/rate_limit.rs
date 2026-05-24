@@ -58,7 +58,8 @@ pub fn compute_rate_limit(cap: &Capture, filter: &Filter, top: usize) -> RateLim
         let mut violating_ids: Vec<String> = Vec::new();
 
         for lim in &limited {
-            if let Some(ra) = header(lim, "retry-after").and_then(|v| v.trim().parse::<f64>().ok()) {
+            if let Some(ra) = header(lim, "retry-after").and_then(|v| v.trim().parse::<f64>().ok())
+            {
                 retry_after_secs.push(ra);
                 let cooldown_end = lim.started_offset_ms + ra * 1000.0;
                 for e in members.iter() {
@@ -106,7 +107,11 @@ pub fn render_rate_limit_text(r: &RateLimitResult) -> String {
     let mut out = String::new();
     out.push_str("== wiretrail rate-limit ==\n");
     for g in &r.groups {
-        let tag = if g.cooldown_violated { " [cooldown violated]" } else { "" };
+        let tag = if g.cooldown_violated {
+            " [cooldown violated]"
+        } else {
+            ""
+        };
         out.push_str(&format!(
             "\n{} {}  ({}x 429){}\n",
             g.host, g.norm_path, g.count_429, tag
@@ -119,7 +124,10 @@ pub fn render_rate_limit_text(r: &RateLimitResult) -> String {
             out.push_str(&format!("  {k}: {v}\n"));
         }
         if !g.violating_ids.is_empty() {
-            out.push_str(&format!("  called during cooldown: {}\n", g.violating_ids.join(", ")));
+            out.push_str(&format!(
+                "  called during cooldown: {}\n",
+                g.violating_ids.join(", ")
+            ));
         }
     }
     out
@@ -129,7 +137,7 @@ pub fn render_rate_limit_text(r: &RateLimitResult) -> String {
 mod tests {
     use super::compute_rate_limit;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     fn limited(index: usize, offset_ms: f64, retry_after: &str) -> Entry {
         let mut e = sample_entry(index, "api.x", "GET", "/data", 429);
@@ -155,7 +163,12 @@ mod tests {
         let g = &r.groups[0];
         assert_eq!(g.count_429, 1);
         assert_eq!(g.retry_after_secs, vec![30.0]);
-        assert_eq!(g.ratelimit_headers.get("x-ratelimit-remaining").map(String::as_str), Some("0"));
+        assert_eq!(
+            g.ratelimit_headers
+                .get("x-ratelimit-remaining")
+                .map(String::as_str),
+            Some("0")
+        );
     }
 
     #[test]

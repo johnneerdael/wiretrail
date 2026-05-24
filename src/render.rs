@@ -84,8 +84,14 @@ mod tests {
 
     fn meta() -> CaptureMeta {
         CaptureMeta {
-            har_version: "1.2".into(), creator: "x".into(), creator_version: "1".into(),
-            browser: None, entry_count: 0, start_ms: None, end_ms: None, duration_ms: 0.0,
+            har_version: "1.2".into(),
+            creator: "x".into(),
+            creator_version: "1".into(),
+            browser: None,
+            entry_count: 0,
+            start_ms: None,
+            end_ms: None,
+            duration_ms: 0.0,
         }
     }
 

@@ -46,5 +46,8 @@ fn no_command_leaks_path_secret_by_default() {
 fn unsafe_flag_reveals_secret_in_show_entry() {
     let f = fixture();
     let out = run(&[&f, "show-entry", "e000000", "--unsafe-include-secrets"]);
-    assert!(out.contains(SENTINEL), "unsafe show-entry should reveal the secret:\n{out}");
+    assert!(
+        out.contains(SENTINEL),
+        "unsafe show-entry should reveal the secret:\n{out}"
+    );
 }

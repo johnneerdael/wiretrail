@@ -94,7 +94,10 @@ pub fn compute_auth(cap: &Capture, filter: &Filter, top: usize) -> AuthResult {
         match auth_value(e) {
             Some(a) => {
                 *host_has_auth.entry(e.host.clone()).or_default() = true;
-                host_tokens.entry(e.host.clone()).or_default().insert(a.to_string());
+                host_tokens
+                    .entry(e.host.clone())
+                    .or_default()
+                    .insert(a.to_string());
             }
             None => {
                 *host_no_auth.entry(e.host.clone()).or_default() = true;
@@ -111,9 +114,16 @@ pub fn compute_auth(cap: &Capture, filter: &Filter, top: usize) -> AuthResult {
     let mut token_changes: Vec<TokenChange> = host_tokens
         .into_iter()
         .filter(|(_, set)| set.len() > 1)
-        .map(|(host, set)| TokenChange { host, distinct_tokens: set.len() })
+        .map(|(host, set)| TokenChange {
+            host,
+            distinct_tokens: set.len(),
+        })
         .collect();
-    token_changes.sort_by(|a, b| b.distinct_tokens.cmp(&a.distinct_tokens).then(a.host.cmp(&b.host)));
+    token_changes.sort_by(|a, b| {
+        b.distinct_tokens
+            .cmp(&a.distinct_tokens)
+            .then(a.host.cmp(&b.host))
+    });
 
     // --- token refresh flows ---
     // Global timeline of (offset, auth value, id) for reuse analysis.
@@ -175,7 +185,10 @@ pub fn render_auth_text(r: &AuthResult) -> String {
     if !r.failures.is_empty() {
         out.push_str("\nauth failures:\n");
         for f in &r.failures {
-            out.push_str(&format!("  {}x [{}] {} {}\n", f.count, f.status, f.host, f.norm_path));
+            out.push_str(&format!(
+                "  {}x [{}] {} {}\n",
+                f.count, f.status, f.host, f.norm_path
+            ));
         }
     }
     if !r.missing_auth_hosts.is_empty() {
@@ -187,7 +200,10 @@ pub fn render_auth_text(r: &AuthResult) -> String {
     if !r.token_changes.is_empty() {
         out.push_str("\ntoken rotation:\n");
         for t in &r.token_changes {
-            out.push_str(&format!("  {} ({} distinct tokens)\n", t.host, t.distinct_tokens));
+            out.push_str(&format!(
+                "  {} ({} distinct tokens)\n",
+                t.host, t.distinct_tokens
+            ));
         }
     }
     if !r.refreshes.is_empty() {
@@ -203,8 +219,15 @@ pub fn render_auth_text(r: &AuthResult) -> String {
             if rf.concurrent {
                 tags.push("concurrent".to_string());
             }
-            let tagstr = if tags.is_empty() { String::new() } else { format!(" [{}]", tags.join(", ")) };
-            out.push_str(&format!("  {} {} [{}]{}\n", rf.id, rf.host, rf.status, tagstr));
+            let tagstr = if tags.is_empty() {
+                String::new()
+            } else {
+                format!(" [{}]", tags.join(", "))
+            };
+            out.push_str(&format!(
+                "  {} {} [{}]{}\n",
+                rf.id, rf.host, rf.status, tagstr
+            ));
         }
     }
     out
@@ -214,9 +237,16 @@ pub fn render_auth_text(r: &AuthResult) -> String {
 mod tests {
     use super::compute_auth;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
-    fn with_auth(index: usize, host: &str, path: &str, status: i64, auth: Option<&str>, offset: f64) -> Entry {
+    fn with_auth(
+        index: usize,
+        host: &str,
+        path: &str,
+        status: i64,
+        auth: Option<&str>,
+        offset: f64,
+    ) -> Entry {
         let mut e = sample_entry(index, host, "GET", path, status);
         e.started_offset_ms = offset;
         if let Some(a) = auth {

@@ -37,7 +37,10 @@ mod tests {
     fn known_vendors() {
         assert_eq!(vendor_for("api.github.com"), Some("GitHub"));
         assert_eq!(vendor_for("raw.githubusercontent.com"), Some("GitHub"));
-        assert_eq!(vendor_for("yjyuomfgkqwmjvnoxurn.supabase.co"), Some("Supabase"));
+        assert_eq!(
+            vendor_for("yjyuomfgkqwmjvnoxurn.supabase.co"),
+            Some("Supabase")
+        );
         assert_eq!(vendor_for("youtubei.googleapis.com"), Some("Google"));
         assert_eq!(vendor_for("api.themoviedb.org"), Some("TMDB"));
     }

@@ -37,8 +37,17 @@ pub fn compute_errors(
     unsafe_include: bool,
 ) -> ErrorsResult {
     let mut by_key: AHashMap<(String, String, String, i64), Vec<&Entry>> = AHashMap::new();
-    for e in cap.entries.iter().filter(|e| filter.matches(e) && e.is_error()) {
-        let key = (e.host.clone(), e.method.to_ascii_uppercase(), e.norm_path.clone(), e.status);
+    for e in cap
+        .entries
+        .iter()
+        .filter(|e| filter.matches(e) && e.is_error())
+    {
+        let key = (
+            e.host.clone(),
+            e.method.to_ascii_uppercase(),
+            e.norm_path.clone(),
+            e.status,
+        );
         by_key.entry(key).or_default().push(e);
     }
 
@@ -85,8 +94,7 @@ fn error_group(
         .as_deref()
         .filter(|b| !b.is_empty())
         .map(|b| redact_body(b, unsafe_include, SNIPPET_MAX));
-    let correlation_ids: Vec<String> =
-        sample.correlation.iter().map(|(_, v)| v.clone()).collect();
+    let correlation_ids: Vec<String> = sample.correlation.iter().map(|(_, v)| v.clone()).collect();
 
     ErrorGroup {
         host,
@@ -120,7 +128,10 @@ pub fn render_errors_text(r: &ErrorsResult) -> String {
             out.push_str(&format!("  code: {c}\n"));
         }
         if !g.correlation_ids.is_empty() {
-            out.push_str(&format!("  correlation: {}\n", g.correlation_ids.join(", ")));
+            out.push_str(&format!(
+                "  correlation: {}\n",
+                g.correlation_ids.join(", ")
+            ));
         }
         if let Some(s) = &g.body_snippet {
             out.push_str(&format!("  body: {s}\n"));
@@ -163,7 +174,12 @@ mod tests {
     fn redacts_body_snippet_by_default() {
         let mut e = sample_entry(0, "api.x", "POST", "/login", 401);
         e.resp_body = Some(r#"{"access_token":"leak","message":"no"}"#.to_string());
-        let r = compute_errors(&sample_capture(vec![e]), &Filter::parse(&[]).unwrap(), 10, false);
+        let r = compute_errors(
+            &sample_capture(vec![e]),
+            &Filter::parse(&[]).unwrap(),
+            10,
+            false,
+        );
         let snip = r.groups[0].body_snippet.as_deref().unwrap();
         assert!(!snip.contains("leak"));
     }

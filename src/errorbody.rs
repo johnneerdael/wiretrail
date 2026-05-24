@@ -6,7 +6,14 @@ pub struct ErrorFields {
     pub code: Option<String>,
 }
 
-const MESSAGE_KEYS: &[&str] = &["message", "error_description", "error", "reason", "detail", "details"];
+const MESSAGE_KEYS: &[&str] = &[
+    "message",
+    "error_description",
+    "error",
+    "reason",
+    "detail",
+    "details",
+];
 const CODE_KEYS: &[&str] = &["code", "error_code", "status"];
 
 /// Extract common error fields from a JSON response body. Returns empty fields

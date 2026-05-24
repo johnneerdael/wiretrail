@@ -119,7 +119,10 @@ fn clamp_phase(v: Option<f64>) -> Option<f64> {
 }
 
 fn name_values(items: &[RawNameValue]) -> Vec<(String, String)> {
-    items.iter().map(|h| (h.name.clone(), h.value.clone())).collect()
+    items
+        .iter()
+        .map(|h| (h.name.clone(), h.value.clone()))
+        .collect()
 }
 
 fn split_url(url: &str) -> (String, String, Vec<(String, String)>) {
@@ -138,7 +141,9 @@ fn split_url(url: &str) -> (String, String, Vec<(String, String)>) {
 }
 
 fn parse_epoch_ms(s: &str) -> Option<i64> {
-    DateTime::parse_from_rfc3339(s).ok().map(|dt| dt.timestamp_millis())
+    DateTime::parse_from_rfc3339(s)
+        .ok()
+        .map(|dt| dt.timestamp_millis())
 }
 
 #[cfg(test)]

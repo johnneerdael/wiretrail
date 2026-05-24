@@ -4,7 +4,15 @@ use crate::redact::{redact_body, redact_header_value, redact_url};
 use serde::Serialize;
 
 const MUTATING_METHODS: &[&str] = &["POST", "PUT", "PATCH", "DELETE"];
-const RISKY_KEYWORDS: &[&str] = &["payment", "pay", "order", "checkout", "charge", "refund", "subscription"];
+const RISKY_KEYWORDS: &[&str] = &[
+    "payment",
+    "pay",
+    "order",
+    "checkout",
+    "charge",
+    "refund",
+    "subscription",
+];
 const BODY_MAX: usize = 4000;
 
 #[derive(Debug, Serialize)]
@@ -48,7 +56,12 @@ pub fn entry_to_curl(e: &Entry, unsafe_include: bool) -> CurlCommand {
 }
 
 /// Render curl for every filtered entry, bounded by `top`.
-pub fn compute_curl(cap: &Capture, filter: &Filter, top: usize, unsafe_include: bool) -> CurlResult {
+pub fn compute_curl(
+    cap: &Capture,
+    filter: &Filter,
+    top: usize,
+    unsafe_include: bool,
+) -> CurlResult {
     let commands: Vec<CurlCommand> = cap
         .entries
         .iter()
@@ -76,7 +89,10 @@ pub fn render_curl_text(r: &CurlResult) -> String {
     out.push_str("== wiretrail curl ==\n");
     for c in &r.commands {
         let tag = if c.safe { "SAFE" } else { "UNSAFE" };
-        out.push_str(&format!("\n# {} [{}: {}]\n{}\n", c.id, tag, c.label, c.command));
+        out.push_str(&format!(
+            "\n# {} [{}: {}]\n{}\n",
+            c.id, tag, c.label, c.command
+        ));
     }
     out
 }

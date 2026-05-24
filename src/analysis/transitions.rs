@@ -28,7 +28,11 @@ pub fn compute_transitions(cap: &Capture, filter: &Filter, top: usize) -> Transi
     // Group by endpoint, preserving time order.
     let mut by_key: AHashMap<(String, String, String), Vec<&Entry>> = AHashMap::new();
     for e in cap.entries.iter().filter(|e| filter.matches(e)) {
-        let key = (e.method.to_ascii_uppercase(), e.host.clone(), e.norm_path.clone());
+        let key = (
+            e.method.to_ascii_uppercase(),
+            e.host.clone(),
+            e.norm_path.clone(),
+        );
         by_key.entry(key).or_default().push(e);
     }
 
@@ -139,7 +143,11 @@ mod tests {
             sample_entry(3, "h", "POST", "/b", 200),
         ]);
         let r = compute_transitions(&cap, &Filter::parse(&[]).unwrap(), 10);
-        assert!(r.transitions.iter().any(|t| t.label == "rate-limit-persisted"));
+        assert!(
+            r.transitions
+                .iter()
+                .any(|t| t.label == "rate-limit-persisted")
+        );
         assert!(r.transitions.iter().any(|t| t.label == "recovered-5xx"));
     }
 

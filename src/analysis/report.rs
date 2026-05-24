@@ -26,7 +26,10 @@ pub fn compose_report(
     let mut md = String::new();
 
     md.push_str("# wiretrail report\n\n");
-    md.push_str(&format!("- Creator: {} {}\n", cap.meta.creator, cap.meta.creator_version));
+    md.push_str(&format!(
+        "- Creator: {} {}\n",
+        cap.meta.creator, cap.meta.creator_version
+    ));
     md.push_str(&format!("- HAR version: {}\n", cap.meta.har_version));
     md.push_str(&format!("- Entries: {}\n", cap.meta.entry_count));
     md.push_str(&format!("- Window: {}\n\n", human_ms(cap.meta.duration_ms)));
@@ -61,7 +64,11 @@ pub fn compose_report(
     if !dups.groups.is_empty() {
         md.push_str("## Duplicate Index\n\n");
         for g in &dups.groups {
-            let tag = if g.is_retry_pattern { " (retry pattern)" } else { "" };
+            let tag = if g.is_retry_pattern {
+                " (retry pattern)"
+            } else {
+                ""
+            };
             md.push_str(&format!(
                 "- {}x `{} {}{}`{}\n",
                 g.count, g.method, g.host, g.norm_path, tag
@@ -136,7 +143,13 @@ mod tests {
 
     #[test]
     fn report_has_expected_sections() {
-        let md = compose_report(&cap(), &Filter::parse(&[]).unwrap(), &Config::default(), 10, false);
+        let md = compose_report(
+            &cap(),
+            &Filter::parse(&[]).unwrap(),
+            &Config::default(),
+            10,
+            false,
+        );
         assert!(md.contains("# wiretrail report"));
         assert!(md.contains("## Executive Summary"));
         assert!(md.contains("## Subsystems"));
@@ -146,13 +159,25 @@ mod tests {
 
     #[test]
     fn duplicate_index_lists_the_repeated_call() {
-        let md = compose_report(&cap(), &Filter::parse(&[]).unwrap(), &Config::default(), 10, false);
+        let md = compose_report(
+            &cap(),
+            &Filter::parse(&[]).unwrap(),
+            &Config::default(),
+            10,
+            false,
+        );
         assert!(md.contains("POST api.x/resolve"));
     }
 
     #[test]
     fn error_message_is_included() {
-        let md = compose_report(&cap(), &Filter::parse(&[]).unwrap(), &Config::default(), 10, false);
+        let md = compose_report(
+            &cap(),
+            &Filter::parse(&[]).unwrap(),
+            &Config::default(),
+            10,
+            false,
+        );
         assert!(md.contains("nope"));
     }
 }

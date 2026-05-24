@@ -28,8 +28,9 @@ const SENSITIVE_QUERY_KEYS: &[&str] = &[
 
 const URL_VALUED_HEADERS: &[&str] = &["location", "referer", "content-location"];
 
-const VALUE_DELIMS: &[char] =
-    &[' ', '\t', '\n', '\r', ';', ',', '&', '=', '/', '?', '"', '{', '}', '[', ']', ':'];
+const VALUE_DELIMS: &[char] = &[
+    ' ', '\t', '\n', '\r', ';', ',', '&', '=', '/', '?', '"', '{', '}', '[', ']', ':',
+];
 
 pub fn redact_header_value(name: &str, value: &str, unsafe_include: bool) -> String {
     if unsafe_include {
@@ -163,7 +164,13 @@ pub fn redact_body(body: &str, unsafe_include: bool, max: usize) -> String {
 
 fn collapse_newlines(s: &str) -> String {
     s.chars()
-        .map(|c| if c == '\n' || c == '\r' || c == '\t' { ' ' } else { c })
+        .map(|c| {
+            if c == '\n' || c == '\r' || c == '\t' {
+                ' '
+            } else {
+                c
+            }
+        })
         .collect()
 }
 
@@ -203,22 +210,34 @@ mod tests {
 
     #[test]
     fn redacts_authorization_header() {
-        assert_eq!(redact_header_value("Authorization", "Bearer abc", false), "<redacted>");
+        assert_eq!(
+            redact_header_value("Authorization", "Bearer abc", false),
+            "<redacted>"
+        );
     }
 
     #[test]
     fn passes_through_safe_header() {
-        assert_eq!(redact_header_value("Accept", "application/json", false), "application/json");
+        assert_eq!(
+            redact_header_value("Accept", "application/json", false),
+            "application/json"
+        );
     }
 
     #[test]
     fn unsafe_flag_disables_redaction() {
-        assert_eq!(redact_header_value("Authorization", "Bearer abc", true), "Bearer abc");
+        assert_eq!(
+            redact_header_value("Authorization", "Bearer abc", true),
+            "Bearer abc"
+        );
     }
 
     #[test]
     fn redacts_token_query_param() {
-        assert_eq!(redact_query_value("access_token", "xyz", false), "<redacted>");
+        assert_eq!(
+            redact_query_value("access_token", "xyz", false),
+            "<redacted>"
+        );
         assert_eq!(redact_query_value("page", "2", false), "2");
     }
 

@@ -87,10 +87,22 @@ impl Config {
             }
         }
         if let Some(v) = vendor_for(&e.host) {
-            return Subsystem { name: v.to_string(), owner: None, criticality: None };
+            return Subsystem {
+                name: v.to_string(),
+                owner: None,
+                criticality: None,
+            };
         }
-        let name = if e.host.is_empty() { "(unknown)".to_string() } else { e.host.clone() };
-        Subsystem { name, owner: None, criticality: None }
+        let name = if e.host.is_empty() {
+            "(unknown)".to_string()
+        } else {
+            e.host.clone()
+        };
+        Subsystem {
+            name,
+            owner: None,
+            criticality: None,
+        }
     }
 }
 
@@ -99,15 +111,15 @@ fn rule_matches(rule: &OwnershipRule, e: &Entry) -> bool {
     if rule.host.is_none() && rule.path.is_none() {
         return false;
     }
-    if let Some(h) = &rule.host {
-        if !glob_match(h, &e.host) {
-            return false;
-        }
+    if let Some(h) = &rule.host
+        && !glob_match(h, &e.host)
+    {
+        return false;
     }
-    if let Some(p) = &rule.path {
-        if !glob_match(p, &e.path) {
-            return false;
-        }
+    if let Some(p) = &rule.path
+        && !glob_match(p, &e.path)
+    {
+        return false;
     }
     true
 }
@@ -135,10 +147,9 @@ ownership:
 
     #[test]
     fn rule_match_wins_over_vendor() {
-        let cfg = Config::from_yaml_str(
-            "ownership:\n  - name: Torii Addon\n    host: \"torii.*\"\n",
-        )
-        .unwrap();
+        let cfg =
+            Config::from_yaml_str("ownership:\n  - name: Torii Addon\n    host: \"torii.*\"\n")
+                .unwrap();
         let e = sample_entry(0, "torii.nexioapp.org", "GET", "/manifest.json", 308);
         let s = cfg.subsystem_for(&e);
         assert_eq!(s.name, "Torii Addon");
@@ -176,7 +187,10 @@ required_headers:
         let cfg = Config::from_yaml_str(yaml).unwrap();
         assert_eq!(cfg.required_headers.len(), 1);
         assert_eq!(cfg.required_headers[0].host, "api.company.com");
-        assert_eq!(cfg.required_headers[0].headers, vec!["Authorization", "X-App-Version"]);
+        assert_eq!(
+            cfg.required_headers[0].headers,
+            vec!["Authorization", "X-App-Version"]
+        );
     }
 
     #[test]

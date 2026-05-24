@@ -18,24 +18,24 @@ pub mod v1_3;
 pub mod analysis;
 pub mod assemble;
 pub mod classify;
+pub mod config;
 pub mod correlate;
+pub mod errorbody;
 pub mod filter;
 pub mod fingerprint;
+pub mod glob;
+pub mod grouping;
+pub mod jwt;
 pub mod loader;
 pub mod model;
 pub mod normalize;
+pub mod opaque;
 pub mod raw;
 pub mod redact;
 pub mod render;
-pub mod config;
-pub mod glob;
 pub mod stats;
-pub mod vendor;
-pub mod errorbody;
-pub mod grouping;
 pub mod timing;
-pub mod opaque;
-pub mod jwt;
+pub mod vendor;
 
 /// Errors that HAR functions may return.
 #[derive(thiserror::Error, Debug)]

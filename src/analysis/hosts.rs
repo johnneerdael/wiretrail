@@ -1,5 +1,5 @@
-use crate::fingerprint::fingerprint;
 use crate::filter::Filter;
+use crate::fingerprint::fingerprint;
 use crate::model::{Capture, Entry};
 use crate::render::{human_bytes, human_ms};
 use crate::stats::percentiles;
@@ -59,7 +59,9 @@ fn host_stat(host: String, entries: &[&Entry]) -> HostStat {
 
     for e in entries {
         *methods.entry(e.method.to_ascii_uppercase()).or_default() += 1;
-        *status_classes.entry(status_class_label(e.status_class())).or_default() += 1;
+        *status_classes
+            .entry(status_class_label(e.status_class()))
+            .or_default() += 1;
         if e.is_error() {
             error_count += 1;
         }
@@ -124,8 +126,11 @@ pub fn render_hosts_text(r: &HostsResult) -> String {
         ));
         let methods: Vec<String> = h.methods.iter().map(|(m, c)| format!("{m}:{c}")).collect();
         out.push_str(&format!("  methods: {}\n", methods.join(" ")));
-        let statuses: Vec<String> =
-            h.status_classes.iter().map(|(s, c)| format!("{s}:{c}")).collect();
+        let statuses: Vec<String> = h
+            .status_classes
+            .iter()
+            .map(|(s, c)| format!("{s}:{c}"))
+            .collect();
         out.push_str(&format!("  status: {}\n", statuses.join(" ")));
     }
     out

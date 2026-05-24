@@ -51,7 +51,11 @@ pub fn compute_duplicates(cap: &Capture, filter: &Filter, top: usize) -> Duplica
         })
         .collect();
 
-    groups.sort_by(|a, b| b.count.cmp(&a.count).then(a.fingerprint.cmp(&b.fingerprint)));
+    groups.sort_by(|a, b| {
+        b.count
+            .cmp(&a.count)
+            .then(a.fingerprint.cmp(&b.fingerprint))
+    });
     groups.truncate(top);
     DuplicatesResult { groups }
 }
@@ -61,7 +65,11 @@ pub fn render_duplicates_text(r: &DuplicatesResult) -> String {
     let mut out = String::new();
     out.push_str("== wiretrail duplicates ==\n");
     for g in &r.groups {
-        let tag = if g.is_retry_pattern { " [retry pattern]" } else { "" };
+        let tag = if g.is_retry_pattern {
+            " [retry pattern]"
+        } else {
+            ""
+        };
         out.push_str(&format!(
             "\n{:>4}x{}  {} {}{}\n",
             g.count, tag, g.method, g.host, g.norm_path

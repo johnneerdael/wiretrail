@@ -19,7 +19,13 @@ pub fn fingerprint(e: &Entry) -> String {
         .map(|(k, v)| format!("{k}={v}"))
         .collect::<Vec<_>>()
         .join("&");
-    format!("{} {} {} {}", e.method.to_ascii_uppercase(), e.host, e.norm_path, query)
+    format!(
+        "{} {} {} {}",
+        e.method.to_ascii_uppercase(),
+        e.host,
+        e.norm_path,
+        query
+    )
 }
 
 #[cfg(test)]
@@ -30,14 +36,33 @@ mod tests {
 
     fn entry(method: &str, host: &str, norm_path: &str, query: &[(&str, &str)]) -> Entry {
         Entry {
-            id: "e0".into(), index: 0, started_offset_ms: 0.0, duration_ms: 0.0,
-            method: method.into(), url: String::new(), host: host.into(), path: norm_path.into(),
+            id: "e0".into(),
+            index: 0,
+            started_offset_ms: 0.0,
+            duration_ms: 0.0,
+            method: method.into(),
+            url: String::new(),
+            host: host.into(),
+            path: norm_path.into(),
             norm_path: norm_path.into(),
-            query: query.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect(),
-            status: 200, status_text: String::new(), resource_type: ResourceType::Api,
-            content_type: None, req_headers: vec![], resp_headers: vec![], req_body: None,
-            resp_body: None, timings: Phases::default(), sizes: Sizes::default(), server_ip: None,
-            http_version: String::new(), redirect_url: None, correlation: vec![],
+            query: query
+                .iter()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .collect(),
+            status: 200,
+            status_text: String::new(),
+            resource_type: ResourceType::Api,
+            content_type: None,
+            req_headers: vec![],
+            resp_headers: vec![],
+            req_body: None,
+            resp_body: None,
+            timings: Phases::default(),
+            sizes: Sizes::default(),
+            server_ip: None,
+            http_version: String::new(),
+            redirect_url: None,
+            correlation: vec![],
         }
     }
 

@@ -29,7 +29,12 @@ fn abs_iso(start_ms: Option<i64>, offset_ms: f64) -> Option<String> {
 }
 
 /// Backend trace-handoff blocks for every failed request and the top-N slowest.
-pub fn compute_handoff(cap: &Capture, filter: &Filter, top: usize, unsafe_include: bool) -> HandoffResult {
+pub fn compute_handoff(
+    cap: &Capture,
+    filter: &Filter,
+    top: usize,
+    unsafe_include: bool,
+) -> HandoffResult {
     let entries: Vec<&Entry> = cap.entries.iter().filter(|e| filter.matches(e)).collect();
 
     // top-N slowest
@@ -85,7 +90,10 @@ pub fn render_handoff_text(r: &HandoffResult) -> String {
             out.push_str(&format!("  time: {ts} (+{}ms)\n", i.offset_ms as i64));
         }
         if !i.correlation_ids.is_empty() {
-            out.push_str(&format!("  correlation: {}\n", i.correlation_ids.join(", ")));
+            out.push_str(&format!(
+                "  correlation: {}\n",
+                i.correlation_ids.join(", ")
+            ));
         }
         if let Some(ip) = &i.server_ip {
             out.push_str(&format!("  server ip: {ip}\n"));
@@ -119,7 +127,12 @@ mod tests {
     fn redacts_curl_by_default() {
         let mut e = sample_entry(0, "api.x", "GET", "/x", 500);
         e.req_headers = vec![("Authorization".to_string(), "Bearer secret".to_string())];
-        let r = compute_handoff(&sample_capture(vec![e]), &Filter::parse(&[]).unwrap(), 10, false);
+        let r = compute_handoff(
+            &sample_capture(vec![e]),
+            &Filter::parse(&[]).unwrap(),
+            10,
+            false,
+        );
         assert!(!r.items[0].curl.contains("Bearer secret"));
     }
 }

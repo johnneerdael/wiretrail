@@ -1,7 +1,7 @@
 use crate::filter::Filter;
 use crate::model::Capture;
 use crate::render::human_ms;
-use crate::timing::{classify_bottleneck, PhaseBreakdown};
+use crate::timing::{PhaseBreakdown, classify_bottleneck};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -82,14 +82,18 @@ pub fn render_slowest_text(r: &SlowestResult) -> String {
 mod tests {
     use super::compute_slowest;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Phases};
+    use crate::model::{Phases, sample_capture, sample_entry};
 
     fn cap() -> crate::model::Capture {
         let mut fast = sample_entry(0, "h", "GET", "/fast", 200);
         fast.duration_ms = 5.0;
         let mut slow = sample_entry(1, "h", "GET", "/slow", 200);
         slow.duration_ms = 900.0;
-        slow.timings = Phases { wait: 850.0, receive: 40.0, ..Phases::default() };
+        slow.timings = Phases {
+            wait: 850.0,
+            receive: 40.0,
+            ..Phases::default()
+        };
         sample_capture(vec![fast, slow])
     }
 

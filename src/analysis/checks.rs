@@ -34,12 +34,17 @@ fn looks_like_json(body: &str) -> bool {
 fn content_type_issues(e: &Entry) -> Vec<String> {
     let mut v = Vec::new();
     let req_ct = req_content_type(e).unwrap_or_default();
-    if let Some(b) = e.req_body.as_deref().filter(|b| !b.is_empty()) {
-        if looks_like_json(b) && !req_ct.contains("json") {
-            v.push("request JSON body without application/json content-type".to_string());
-        }
+    if let Some(b) = e.req_body.as_deref().filter(|b| !b.is_empty())
+        && looks_like_json(b)
+        && !req_ct.contains("json")
+    {
+        v.push("request JSON body without application/json content-type".to_string());
     }
-    let resp_ct = e.content_type.clone().unwrap_or_default().to_ascii_lowercase();
+    let resp_ct = e
+        .content_type
+        .clone()
+        .unwrap_or_default()
+        .to_ascii_lowercase();
     match e.resp_body.as_deref().filter(|b| !b.is_empty()) {
         Some(b) => {
             if looks_like_json(b) && resp_ct.contains("html") {
@@ -80,20 +85,27 @@ pub fn compute_checks(cap: &Capture, filter: &Filter, config: &Config, top: usiz
         }
         // content-type mismatches
         for detail in content_type_issues(e) {
-            let key = ("content-type".to_string(), e.host.clone(), e.norm_path.clone(), detail);
+            let key = (
+                "content-type".to_string(),
+                e.host.clone(),
+                e.norm_path.clone(),
+                detail,
+            );
             map.entry(key).or_default().push(e.id.clone());
         }
     }
 
     let mut findings: Vec<CheckFinding> = map
         .into_iter()
-        .map(|((rule, host, norm_path, detail), entry_ids)| CheckFinding {
-            rule,
-            host,
-            norm_path,
-            detail,
-            entry_ids,
-        })
+        .map(
+            |((rule, host, norm_path, detail), entry_ids)| CheckFinding {
+                rule,
+                host,
+                norm_path,
+                detail,
+                entry_ids,
+            },
+        )
         .collect();
     findings.sort_by(|a, b| {
         b.entry_ids
@@ -134,7 +146,11 @@ mod tests {
     fn cfg_required(host: &str, headers: &[&str]) -> Config {
         let yaml = format!(
             "required_headers:\n  - host: \"{host}\"\n    headers: [{}]\n",
-            headers.iter().map(|h| format!("\"{h}\"")).collect::<Vec<_>>().join(", ")
+            headers
+                .iter()
+                .map(|h| format!("\"{h}\""))
+                .collect::<Vec<_>>()
+                .join(", ")
         );
         Config::from_yaml_str(&yaml).unwrap()
     }
@@ -155,7 +171,12 @@ mod tests {
         let mut e = sample_entry(0, "api.x", "GET", "/data", 200);
         e.req_headers = vec![("Authorization".into(), "Bearer x".into())];
         let cfg = cfg_required("api.x", &["Authorization"]);
-        let r = compute_checks(&sample_capture(vec![e]), &Filter::parse(&[]).unwrap(), &cfg, 50);
+        let r = compute_checks(
+            &sample_capture(vec![e]),
+            &Filter::parse(&[]).unwrap(),
+            &cfg,
+            50,
+        );
         assert!(r.findings.iter().all(|f| f.rule != "missing-header"));
     }
 
@@ -164,8 +185,16 @@ mod tests {
         let mut e = sample_entry(0, "api.x", "POST", "/data", 200);
         e.req_headers = vec![("Content-Type".into(), "text/plain".into())];
         e.req_body = Some(r#"{"a":1}"#.to_string());
-        let r = compute_checks(&sample_capture(vec![e]), &Filter::parse(&[]).unwrap(), &Config::default(), 50);
-        assert!(r.findings.iter().any(|f| f.rule == "content-type"
-            && f.detail.contains("JSON body")));
+        let r = compute_checks(
+            &sample_capture(vec![e]),
+            &Filter::parse(&[]).unwrap(),
+            &Config::default(),
+            50,
+        );
+        assert!(
+            r.findings
+                .iter()
+                .any(|f| f.rule == "content-type" && f.detail.contains("JSON body"))
+        );
     }
 }

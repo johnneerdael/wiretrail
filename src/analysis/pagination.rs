@@ -5,8 +5,17 @@ use ahash::{AHashMap, AHashSet};
 use serde::Serialize;
 
 const PAGE_KEYS: &[&str] = &[
-    "page", "offset", "cursor", "page_token", "after", "before", "start",
-    "limit", "p", "pagenumber", "page_number",
+    "page",
+    "offset",
+    "cursor",
+    "page_token",
+    "after",
+    "before",
+    "start",
+    "limit",
+    "p",
+    "pagenumber",
+    "page_number",
 ];
 
 #[derive(Debug, Serialize)]
@@ -57,7 +66,11 @@ pub fn compute_pagination(
     let mut by_route: AHashMap<(String, String, String), Vec<&Entry>> = AHashMap::new();
     for e in &entries {
         by_route
-            .entry((e.method.to_ascii_uppercase(), e.host.clone(), e.norm_path.clone()))
+            .entry((
+                e.method.to_ascii_uppercase(),
+                e.host.clone(),
+                e.norm_path.clone(),
+            ))
             .or_default()
             .push(e);
     }
@@ -129,7 +142,11 @@ pub fn compute_pagination(
         }
     }
 
-    pages.sort_by(|a, b| b.page_count.cmp(&a.page_count).then(a.norm_path.cmp(&b.norm_path)));
+    pages.sort_by(|a, b| {
+        b.page_count
+            .cmp(&a.page_count)
+            .then(a.norm_path.cmp(&b.norm_path))
+    });
     nplus1.sort_by(|a, b| b.fanout.cmp(&a.fanout).then(a.norm_path.cmp(&b.norm_path)));
     pages.truncate(top);
     nplus1.truncate(top);
@@ -189,7 +206,9 @@ fn has_duplicate(values: &[String]) -> bool {
 fn parent_list_call(entries: &[&Entry], host: &str, before_offset: f64) -> Option<String> {
     entries
         .iter()
-        .filter(|e| e.host == host && e.started_offset_ms < before_offset && !is_id_bearing(&e.norm_path))
+        .filter(|e| {
+            e.host == host && e.started_offset_ms < before_offset && !is_id_bearing(&e.norm_path)
+        })
         .max_by(|a, b| {
             a.started_offset_ms
                 .partial_cmp(&b.started_offset_ms)
@@ -212,7 +231,11 @@ pub fn render_pagination_text(r: &PaginationResult) -> String {
             if p.excessive {
                 tags.push("excessive");
             }
-            let tagstr = if tags.is_empty() { String::new() } else { format!(" [{}]", tags.join(", ")) };
+            let tagstr = if tags.is_empty() {
+                String::new()
+            } else {
+                format!(" [{}]", tags.join(", "))
+            };
             out.push_str(&format!(
                 "  {} pages  {} {}{}  (by {}){}\n",
                 p.page_count,
@@ -241,7 +264,7 @@ pub fn render_pagination_text(r: &PaginationResult) -> String {
 mod tests {
     use super::compute_pagination;
     use crate::filter::Filter;
-    use crate::model::{sample_capture, sample_entry, Entry};
+    use crate::model::{Entry, sample_capture, sample_entry};
 
     fn page(index: usize, page: &str) -> Entry {
         let mut e = sample_entry(index, "api.x", "GET", "/items", 200);
@@ -281,7 +304,14 @@ mod tests {
             e.started_offset_ms = i as f64 * 20.0;
             es.push(e);
         }
-        let r = compute_pagination(&sample_capture(es), &Filter::parse(&[]).unwrap(), 20, 5, 2000, 10);
+        let r = compute_pagination(
+            &sample_capture(es),
+            &Filter::parse(&[]).unwrap(),
+            20,
+            5,
+            2000,
+            10,
+        );
         assert_eq!(r.nplus1.len(), 1);
         let n = &r.nplus1[0];
         assert_eq!(n.fanout, 5);

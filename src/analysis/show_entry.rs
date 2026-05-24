@@ -97,7 +97,10 @@ pub fn entry_detail(e: &Entry, unsafe_include: bool) -> EntryDetail {
 pub fn render_entry_detail_text(d: &EntryDetail) -> String {
     let mut out = String::new();
     out.push_str(&format!("== wiretrail entry {} ==\n", d.id));
-    out.push_str(&format!("{} {}  [{}] {}\n", d.method, d.url, d.status, d.status_text));
+    out.push_str(&format!(
+        "{} {}  [{}] {}\n",
+        d.method, d.url, d.status, d.status_text
+    ));
     out.push_str(&format!(
         "host: {}  http: {}  type: {}\n",
         d.host, d.http_version, d.resource_type
@@ -140,7 +143,10 @@ mod tests {
     fn cap() -> crate::model::Capture {
         let mut e = sample_entry(0, "api.x", "POST", "/login", 200);
         e.req_headers = vec![("Authorization".into(), "Bearer secret".into())];
-        e.query = vec![("access_token".into(), "leak".into()), ("page".into(), "2".into())];
+        e.query = vec![
+            ("access_token".into(), "leak".into()),
+            ("page".into(), "2".into()),
+        ];
         e.resp_body = Some(r#"{"token":"abc","ok":true}"#.to_string());
         let e1 = sample_entry(1, "api.x", "GET", "/other", 200);
         sample_capture(vec![e, e1])
@@ -159,7 +165,11 @@ mod tests {
         let c = cap();
         let d = entry_detail(find_entry(&c, "e000000").unwrap(), false);
         // header value redacted
-        let auth = d.req_headers.iter().find(|(n, _)| n == "Authorization").unwrap();
+        let auth = d
+            .req_headers
+            .iter()
+            .find(|(n, _)| n == "Authorization")
+            .unwrap();
         assert_eq!(auth.1, "<redacted>");
         // sensitive query redacted, safe one kept
         let tok = d.query.iter().find(|(n, _)| n == "access_token").unwrap();
@@ -174,7 +184,11 @@ mod tests {
     fn unsafe_shows_raw() {
         let c = cap();
         let d = entry_detail(find_entry(&c, "e000000").unwrap(), true);
-        let auth = d.req_headers.iter().find(|(n, _)| n == "Authorization").unwrap();
+        let auth = d
+            .req_headers
+            .iter()
+            .find(|(n, _)| n == "Authorization")
+            .unwrap();
         assert_eq!(auth.1, "Bearer secret");
     }
 

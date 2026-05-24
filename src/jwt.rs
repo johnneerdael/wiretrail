@@ -117,7 +117,7 @@ pub fn token_hash(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{base64url_decode, decode_jwt, summarize, token_hash, JwtParts};
+    use super::{JwtParts, base64url_decode, decode_jwt, summarize, token_hash};
     use serde_json::json;
 
     // jwt.io default token: header {"alg":"HS256","typ":"JWT"},
@@ -127,14 +127,20 @@ mod tests {
     #[test]
     fn base64url_decodes_header() {
         let bytes = base64url_decode("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9").unwrap();
-        assert_eq!(String::from_utf8(bytes).unwrap(), r#"{"alg":"HS256","typ":"JWT"}"#);
+        assert_eq!(
+            String::from_utf8(bytes).unwrap(),
+            r#"{"alg":"HS256","typ":"JWT"}"#
+        );
     }
 
     #[test]
     fn decodes_jwt_header_and_claims() {
         let parts = decode_jwt(SAMPLE).unwrap();
         assert_eq!(parts.header.get("alg").unwrap(), "HS256");
-        assert_eq!(parts.claims.get("iat").unwrap().as_i64().unwrap(), 1516239022);
+        assert_eq!(
+            parts.claims.get("iat").unwrap().as_i64().unwrap(),
+            1516239022
+        );
     }
 
     #[test]
