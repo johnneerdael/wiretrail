@@ -42,6 +42,8 @@ pub fn find_entry<'a>(cap: &'a Capture, id_arg: &str) -> Option<&'a Entry> {
 
 /// Build a redacted, serializable detail view of one entry.
 pub fn entry_detail(e: &Entry, unsafe_include: bool) -> EntryDetail {
+    let body_max = if unsafe_include { usize::MAX } else { BODY_MAX };
+
     let query = e
         .query
         .iter()
@@ -61,12 +63,12 @@ pub fn entry_detail(e: &Entry, unsafe_include: bool) -> EntryDetail {
         .req_body
         .as_deref()
         .filter(|b| !b.is_empty())
-        .map(|b| redact_body(b, unsafe_include, BODY_MAX));
+        .map(|b| redact_body(b, unsafe_include, body_max));
     let resp_body_snippet = e
         .resp_body
         .as_deref()
         .filter(|b| !b.is_empty())
-        .map(|b| redact_body(b, unsafe_include, BODY_MAX));
+        .map(|b| redact_body(b, unsafe_include, body_max));
 
     EntryDetail {
         id: e.id.clone(),
@@ -137,7 +139,7 @@ pub fn render_entry_detail_text(d: &EntryDetail) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{entry_detail, find_entry};
+    use super::{BODY_MAX, entry_detail, find_entry};
     use crate::model::{sample_capture, sample_entry};
 
     fn cap() -> crate::model::Capture {
@@ -190,6 +192,16 @@ mod tests {
             .find(|(n, _)| n == "Authorization")
             .unwrap();
         assert_eq!(auth.1, "Bearer secret");
+    }
+
+    #[test]
+    fn unsafe_show_entry_does_not_truncate_body() {
+        let mut e = sample_entry(0, "api.x", "GET", "/manifest.mpd", 200);
+        e.resp_body = Some(format!("{}END_SENTINEL", "x".repeat(BODY_MAX + 50)));
+
+        let d = entry_detail(&e, true);
+
+        assert!(d.resp_body_snippet.as_deref().unwrap().contains("END_SENTINEL"));
     }
 
     #[test]

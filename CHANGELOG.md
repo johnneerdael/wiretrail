@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1](https://github.com/johnneerdael/wiretrail/compare/v0.3.0...v0.3.1) - 2026-05-26
+
+### Fixed
+
+- Avoid truncating `show-entry` response bodies when `--unsafe-include-secrets` is enabled.
+
 ## [0.9.0](https://github.com/mandrean/har-rs/compare/v0.8.1...v0.9.0) - 2026-03-21
 
 ### Added
