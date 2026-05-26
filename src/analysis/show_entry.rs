@@ -201,7 +201,12 @@ mod tests {
 
         let d = entry_detail(&e, true);
 
-        assert!(d.resp_body_snippet.as_deref().unwrap().contains("END_SENTINEL"));
+        assert!(
+            d.resp_body_snippet
+                .as_deref()
+                .unwrap()
+                .contains("END_SENTINEL")
+        );
     }
 
     #[test]
