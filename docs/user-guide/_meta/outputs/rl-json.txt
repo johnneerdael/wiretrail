@@ -1,0 +1,30 @@
+$ wiretrail checkout.har rate-limit --json | jq '.result.groups[0]'
+# exit 1
+{
+  "host": "search.shop.example",
+  "norm_path": "/v1/suggest",
+  "count_429": 4,
+  "retry_after_secs": [
+    5.0,
+    5.0,
+    5.0,
+    5.0
+  ],
+  "ratelimit_headers": {
+    "x-ratelimit-limit": "30",
+    "x-ratelimit-remaining": "0",
+    "x-ratelimit-reset": "1792487693"
+  },
+  "cooldown_violated": true,
+  "violating_ids": [
+    "e000078",
+    "e000079",
+    "e000080"
+  ],
+  "entry_ids": [
+    "e000077",
+    "e000078",
+    "e000079",
+    "e000080"
+  ]
+}

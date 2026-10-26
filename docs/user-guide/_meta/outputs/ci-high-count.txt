@@ -1,0 +1,3 @@
+$ wiretrail checkout.har diagnose --top 20 --json | jq '[.result.findings[] | select(.severity == "high")] | length'
+# exit 1
+4

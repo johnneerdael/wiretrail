@@ -1,0 +1,3 @@
+$ wiretrail checkout.har show-entry e000076 | grep 'authorization'
+# exit 0
+  authorization: <redacted>

@@ -1,0 +1,15 @@
+$ wiretrail checkout.har auth --json | jq '.result.refreshes'
+# exit 1
+[
+  {
+    "id": "e000014",
+    "host": "auth.shop.example",
+    "status": 200,
+    "success": true,
+    "concurrent": false,
+    "old_token_reused": true,
+    "reusing_ids": [
+      "e000015"
+    ]
+  }
+]

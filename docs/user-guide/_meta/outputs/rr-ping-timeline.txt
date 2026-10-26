@@ -1,0 +1,10 @@
+$ wiretrail checkout.har timeline --filter "path:/v1/session/ping" --top 5
+# exit 0
+== wiretrail timeline ==
+    6.0s     52ms  e000038 POST api.shop.example/v1/session/ping  [200] 11 B DUP
+    7.5s     33ms  e000041 POST api.shop.example/v1/session/ping  [200] 11 B DUP
+    9.0s     30ms  e000042 POST api.shop.example/v1/session/ping  [200] 11 B DUP
+   10.5s     50ms  e000050 POST api.shop.example/v1/session/ping  [200] 11 B DUP
+   12.0s     42ms  e000052 POST api.shop.example/v1/session/ping  [200] 11 B DUP
+
+next useful commands: slowest · duplicates · show-entry

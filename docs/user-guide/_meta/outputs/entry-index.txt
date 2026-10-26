@@ -1,0 +1,26 @@
+$ wiretrail checkout.har show-entry 14
+# exit 0
+== wiretrail entry e000014 ==
+POST https://auth.shop.example/oauth/token  [200] OK
+host: auth.shop.example  http: h2  type: api
+server ip: 203.0.113.31
+offset: 1300ms  duration: 407ms
+request headers:
+  accept: application/json, text/plain, */*
+  accept-encoding: gzip, deflate, br
+  user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+  origin: https://shop.example
+  referer: https://shop.example/
+  content-type: application/json
+  content-length: 89
+response headers:
+  content-type: application/json
+  date: Tue, 20 Oct 2026 09:14:03 GMT
+  server: shopfront
+  x-request-id: req_32074e7281
+  cf-ray: 543e056979de5c42-AMS
+  set-cookie: <redacted>
+request body: {"grant_type":"refresh_token","refresh_token":"<redacted>"}
+response body: {"access_token":"<redacted>","expires_in":3600,"refresh_token":"<redacted>","token_type":"<redacted>"}
+
+next useful commands: timeline · duplicates · errors

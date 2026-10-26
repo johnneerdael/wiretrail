@@ -1,0 +1,11 @@
+$ wiretrail checkout.har extract '$.error.code' --filter "host:api.shop.example status:>=500"
+# exit 0
+== wiretrail extract ==
+e000054  bad_gateway
+e000069  upstream_unavailable
+e000070  upstream_unavailable
+e000072  upstream_unavailable
+e000073  upstream_unavailable
+e000076  internal_error
+
+next useful commands: search · show-entry · errors

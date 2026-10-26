@@ -1,0 +1,9 @@
+$ wiretrail baseline.har cascade
+# exit 1
+== wiretrail cascade ==
+
+first failure: e000030 [502] api.shop.example/v1/inventory/{id}
+  before: e000027, e000028, e000029
+  after:  e000031, e000032, e000033
+
+next useful commands: errors · transitions · show-entry

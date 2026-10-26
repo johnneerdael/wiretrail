@@ -1,0 +1,23 @@
+$ wiretrail checkout.har hosts --filter "status:>=400"
+# exit 1
+== wiretrail hosts ==
+
+api.shop.example  (10 req, 10 err, 7 dup)
+  latency p50/p95/max: 184ms / 243ms / 243ms
+  bytes sent/received: 240 B / 689 B
+  methods: GET:5 POST:5
+  status: 4xx:4 5xx:6
+
+search.shop.example  (4 req, 4 err, 0 dup)
+  latency p50/p95/max: 29ms / 33ms / 33ms
+  bytes sent/received: 0 B / 252 B
+  methods: GET:4
+  status: 4xx:4
+
+payments.shop.example  (1 req, 1 err, 0 dup)
+  latency p50/p95/max: 201ms / 201ms / 201ms
+  bytes sent/received: 49 B / 70 B
+  methods: POST:1
+  status: 4xx:1
+
+next useful commands: subsystems · endpoints · errors

@@ -1,0 +1,18 @@
+$ echo '{"log":{"version":"1.2","entries":[]}}' > noentries.har; wiretrail noentries.har; echo "exit code: $?"
+# exit 0
+== wiretrail summary ==
+entries: 0 total, 0 after filter
+duration (first start to last response): 0ms
+
+status classes:
+
+resource types:
+
+top hosts (by request count):
+
+slowest requests:
+
+biggest payloads:
+
+next useful commands: duplicates · errors · slowest
+exit code: 0

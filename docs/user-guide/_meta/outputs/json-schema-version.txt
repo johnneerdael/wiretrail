@@ -1,0 +1,7 @@
+$ for c in summary hosts errors duplicates diagnose; do wiretrail checkout.har $c --json | jq -r '"\(.command) schema_version=\(.schema_version)"'; done
+# exit 1
+summary schema_version=1
+hosts schema_version=1
+errors schema_version=1
+duplicates schema_version=1
+diagnose schema_version=1

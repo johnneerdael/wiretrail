@@ -1,0 +1,3 @@
+$ wiretrail checkout.har diff --filter "path:/v1/session/ping" > /dev/null; echo "exit code: $?"
+# exit 0
+exit code: 0

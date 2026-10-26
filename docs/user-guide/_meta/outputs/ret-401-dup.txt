@@ -1,0 +1,9 @@
+$ wiretrail quirks/unauthorized-twice.har duplicates
+# exit 1
+== wiretrail duplicates ==
+
+   3x  GET api.test.example/v1/y
+  statuses: 200:1 401:2
+  entries: e000000, e000001, e000002
+
+next useful commands: retries · errors · show-entry

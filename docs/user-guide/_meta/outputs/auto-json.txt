@@ -1,0 +1,67 @@
+$ wiretrail checkout.har auto --json | jq '{drilldowns: [.result.drilldowns[] | {severity, kind, command, filter}], not_drilled: [.result.not_drilled[].kind]}'
+# exit 1
+{
+  "drilldowns": [
+    {
+      "severity": "high",
+      "kind": "retry-exhaustion",
+      "command": "retries",
+      "filter": null
+    },
+    {
+      "severity": "high",
+      "kind": "5xx-cluster",
+      "command": "errors",
+      "filter": "host:api.shop.example"
+    },
+    {
+      "severity": "high",
+      "kind": "rate-limit-no-backoff",
+      "command": "rate-limit",
+      "filter": null
+    },
+    {
+      "severity": "high",
+      "kind": "token-refresh-race",
+      "command": "auth",
+      "filter": null
+    },
+    {
+      "severity": "medium",
+      "kind": "request-storm",
+      "command": "storms",
+      "filter": null
+    },
+    {
+      "severity": "medium",
+      "kind": "request-storm",
+      "command": "storms",
+      "filter": null
+    },
+    {
+      "severity": "medium",
+      "kind": "wasteful-duplicates",
+      "command": "diff",
+      "filter": "host:api.shop.example path:/v1/products/*/price"
+    },
+    {
+      "severity": "medium",
+      "kind": "wasteful-duplicates",
+      "command": "diff",
+      "filter": "host:api.shop.example path:/v1/session/ping"
+    },
+    {
+      "severity": "medium",
+      "kind": "4xx",
+      "command": "errors",
+      "filter": null
+    },
+    {
+      "severity": "medium",
+      "kind": "auth-failures",
+      "command": "auth",
+      "filter": null
+    }
+  ],
+  "not_drilled": []
+}

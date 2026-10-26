@@ -1,0 +1,3 @@
+$ wiretrail checkout.har errors --json | jq -r '.result.groups[0].entry_ids[0]'
+# exit 1
+e000069

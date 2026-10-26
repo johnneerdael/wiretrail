@@ -1,0 +1,17 @@
+$ wiretrail checkout.har compare --help
+# exit 0
+Compare this capture against a baseline HAR (regression diff)
+
+Usage: wiretrail <FILE> compare [OPTIONS] <BASELINE>
+
+Arguments:
+  <BASELINE>  Path to the baseline HAR to diff against
+
+Options:
+      --fail-on <FAIL_ON>       Exit non-zero only when max severity reaches this level (CI gate) [possible values: critical, high, medium, low]
+      --json                    Emit machine-readable JSON
+      --top <TOP>               Max items per list (top-N) [default: 10]
+      --filter <FILTER>         Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>         Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets  Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                    Print help

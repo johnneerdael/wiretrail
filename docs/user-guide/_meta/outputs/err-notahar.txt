@@ -1,0 +1,3 @@
+$ wiretrail not-a-har.json
+# exit 2
+wiretrail: failed to parse HAR JSON

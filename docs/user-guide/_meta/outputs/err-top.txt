@@ -1,0 +1,5 @@
+$ wiretrail checkout.har hosts --top abc
+# exit 2
+error: invalid value 'abc' for '--top <TOP>': invalid digit found in string
+
+For more information, try '--help'.

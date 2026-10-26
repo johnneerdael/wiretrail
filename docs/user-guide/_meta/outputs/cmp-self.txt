@@ -1,0 +1,6 @@
+$ wiretrail baseline.har compare baseline.har
+# exit 0
+== wiretrail compare ==
+max severity: none
+
+next useful commands: diagnose · errors · slowest

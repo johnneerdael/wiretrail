@@ -1,0 +1,85 @@
+$ wiretrail checkout.har handoff --filter "path:/v1/cart/sync" --top 1
+# exit 1
+== wiretrail handoff ==
+
+# e000069 [503] POST api.shop.example/v1/cart/sync
+  time: 2026-10-20T09:14:27+00:00 (+25000ms)
+  correlation: req_fa6f840121, e1e598c1a6e1ae1d-AMS
+  server ip: 203.0.113.30
+  curl -X POST 'https://api.shop.example/v1/cart/sync' \
+    -H 'accept: application/json, text/plain, */*' \
+    -H 'accept-encoding: gzip, deflate, br' \
+    -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+    -H 'origin: https://shop.example' \
+    -H 'referer: https://shop.example/' \
+    -H 'authorization: <redacted>' \
+    -H 'x-app-version: 4.12.0' \
+    -H 'content-type: application/json' \
+    -H 'content-length: 48' \
+    --data '{"cart":"c_55d1","items":[{"qty":1,"sku":1042}]}'
+
+# e000070 [503] POST api.shop.example/v1/cart/sync
+  time: 2026-10-20T09:14:28.200+00:00 (+26200ms)
+  correlation: req_3ad0e75ca3, 621d02ab9bfa8af9-AMS
+  server ip: 203.0.113.30
+  curl -X POST 'https://api.shop.example/v1/cart/sync' \
+    -H 'accept: application/json, text/plain, */*' \
+    -H 'accept-encoding: gzip, deflate, br' \
+    -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+    -H 'origin: https://shop.example' \
+    -H 'referer: https://shop.example/' \
+    -H 'authorization: <redacted>' \
+    -H 'x-app-version: 4.12.0' \
+    -H 'content-type: application/json' \
+    -H 'content-length: 48' \
+    --data '{"cart":"c_55d1","items":[{"qty":1,"sku":1042}]}'
+
+# e000072 [503] POST api.shop.example/v1/cart/sync
+  time: 2026-10-20T09:14:30.700+00:00 (+28700ms)
+  correlation: req_67572df288, 09dae61232440c77-AMS
+  server ip: 203.0.113.30
+  curl -X POST 'https://api.shop.example/v1/cart/sync' \
+    -H 'accept: application/json, text/plain, */*' \
+    -H 'accept-encoding: gzip, deflate, br' \
+    -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+    -H 'origin: https://shop.example' \
+    -H 'referer: https://shop.example/' \
+    -H 'authorization: <redacted>' \
+    -H 'x-app-version: 4.12.0' \
+    -H 'content-type: application/json' \
+    -H 'content-length: 48' \
+    --data '{"cart":"c_55d1","items":[{"qty":1,"sku":1042}]}'
+
+# e000073 [503] POST api.shop.example/v1/cart/sync
+  time: 2026-10-20T09:14:35.900+00:00 (+33900ms)
+  correlation: req_44df04452c, 81977ad73022751d-AMS
+  server ip: 203.0.113.30
+  curl -X POST 'https://api.shop.example/v1/cart/sync' \
+    -H 'accept: application/json, text/plain, */*' \
+    -H 'accept-encoding: gzip, deflate, br' \
+    -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+    -H 'origin: https://shop.example' \
+    -H 'referer: https://shop.example/' \
+    -H 'authorization: <redacted>' \
+    -H 'x-app-version: 4.12.0' \
+    -H 'content-type: application/json' \
+    -H 'content-length: 48' \
+    --data '{"cart":"c_55d1","items":[{"qty":1,"sku":1042}]}'
+
+# e000076 [500] POST api.shop.example/v1/cart/sync
+  time: 2026-10-20T09:14:44.100+00:00 (+42100ms)
+  correlation: req_1c776b9fff, 775f0aeadf5f3512-AMS
+  server ip: 203.0.113.30
+  curl -X POST 'https://api.shop.example/v1/cart/sync' \
+    -H 'accept: application/json, text/plain, */*' \
+    -H 'accept-encoding: gzip, deflate, br' \
+    -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+    -H 'origin: https://shop.example' \
+    -H 'referer: https://shop.example/' \
+    -H 'authorization: <redacted>' \
+    -H 'x-app-version: 4.12.0' \
+    -H 'content-type: application/json' \
+    -H 'content-length: 48' \
+    --data '{"cart":"c_55d1","items":[{"qty":1,"sku":1042}]}'
+
+next useful commands: errors · slowest · curl

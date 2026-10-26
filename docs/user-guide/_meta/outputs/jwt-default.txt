@@ -1,0 +1,24 @@
+$ wiretrail checkout.har jwt
+# exit 1
+== wiretrail jwt ==
+
+8e37a634a25062a2 (4x, req.header.authorization) [EXPIRED]
+  iss: https://auth.shop.example/
+  aud: shop-web
+  sub (hashed): b1ca0ff720b2652d
+  exp: 1792487342 (expired 301s ago)
+
+fd2ef4823d488917 (56x, resp.body)
+  iss: https://auth.shop.example/
+  aud: shop-web
+  sub (hashed): b1ca0ff720b2652d
+  exp: 1792491243 (3600s left)
+
+4bbf025fbfd0c0a4 (7x, req.header.x-device-token)
+  iss: https://device.shop.example/
+  aud: shop-search
+  sub (hashed): 72879224ce3bde2b
+  exp: 1792491862 (4211s left)
+  warning: token iat is in the future (clock skew?)
+
+next useful commands: auth · show-entry · errors

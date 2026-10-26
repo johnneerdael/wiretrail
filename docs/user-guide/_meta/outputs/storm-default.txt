@@ -1,0 +1,25 @@
+$ wiretrail checkout.har storms
+# exit 1
+== wiretrail storms ==
+
+host api.shop.example  13 calls in 1.0s (13.0/s)
+  window: 3.8s - 4.8s
+  entries: e000024, e000025, e000026, e000027, e000028, e000029, e000030, e000031, e000032, e000033, e000034, e000035, e000036
+
+endpoint api.shop.example/v1/products/{id}/price  12 calls in 1.0s (12.0/s)
+  window: 4.2s - 4.9s
+  entries: e000026, e000027, e000028, e000029, e000030, e000031, e000032, e000033, e000034, e000035, e000036, e000037
+
+host cdn.shop.example  8 calls in 1.0s (8.0/s)
+  window: 330ms - 450ms
+  entries: e000002, e000003, e000004, e000005, e000006, e000007, e000008, e000009
+
+host search.shop.example  6 calls in 1.0s (6.0/s)
+  window: 9.0s - 10.0s
+  entries: e000043, e000044, e000045, e000046, e000047, e000048
+
+endpoint search.shop.example/v1/suggest  6 calls in 1.0s (6.0/s)
+  window: 9.0s - 10.0s
+  entries: e000043, e000044, e000045, e000046, e000047, e000048
+
+next useful commands: pagination · duplicates · timeline

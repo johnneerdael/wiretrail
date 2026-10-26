@@ -1,0 +1,7 @@
+$ wiretrail checkout.har nonsense
+# exit 2
+error: unexpected argument 'nonsense' found
+
+Usage: wiretrail [OPTIONS] <FILE> [COMMAND]
+
+For more information, try '--help'.

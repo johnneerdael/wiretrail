@@ -1,0 +1,11 @@
+$ wiretrail checkout.har extract '$.error.message' --filter "status:>=400" --top 6
+# exit 0
+== wiretrail extract ==
+e000011  JWT expired
+e000012  JWT expired
+e000013  JWT expired
+e000015  JWT expired
+e000054  bad gateway
+e000069  inventory service unavailable
+
+next useful commands: search · show-entry · errors

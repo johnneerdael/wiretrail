@@ -1,0 +1,6 @@
+$ wiretrail checkout.har search "(" --regex
+# exit 2
+wiretrail: invalid regex: regex parse error:
+    (
+    ^
+error: unclosed group

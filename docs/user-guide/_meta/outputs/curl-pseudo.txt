@@ -1,0 +1,15 @@
+$ wiretrail checkout.har curl e000011
+# exit 0
+== wiretrail curl ==
+
+# e000011 [SAFE: safe]
+curl -X GET 'https://api.shop.example/v1/auth/session' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-encoding: gzip, deflate, br' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+  -H 'origin: https://shop.example' \
+  -H 'referer: https://shop.example/' \
+  -H 'authorization: <redacted>' \
+  -H 'x-app-version: 4.12.0'
+
+next useful commands: show-entry · errors · duplicates

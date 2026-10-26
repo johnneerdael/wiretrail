@@ -1,0 +1,8 @@
+$ wiretrail checkout.har errors --filter "status:0"
+# exit 1
+== wiretrail errors ==
+
+   1x  [0] GET cdn.shop.example/img/banner.webp
+  entries: e000059
+
+next useful commands: transitions · redirects · show-entry

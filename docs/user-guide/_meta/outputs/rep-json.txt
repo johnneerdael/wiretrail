@@ -1,0 +1,10 @@
+$ wiretrail checkout.har report --json | jq -r '.result.markdown' | head -8
+# exit 0
+# wiretrail report
+
+- Creator: WireTrail demo generator (synthetic) 1
+- HAR version: 1.2
+- Entries: 99
+- Window: 70.0s
+
+## Executive Summary

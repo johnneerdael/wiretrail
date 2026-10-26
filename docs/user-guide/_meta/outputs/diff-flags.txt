@@ -1,0 +1,8 @@
+$ wiretrail checkout.har diff --filter "path:/v1/flags"
+# exit 0
+== wiretrail diff ==
+
+GET api.shop.example/v1/flags  (6 calls, body: none)
+  query cb varies: 1792487642, 1792487649, 1792487656
+
+next useful commands: duplicates · show-entry · endpoints

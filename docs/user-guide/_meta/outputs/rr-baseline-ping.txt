@@ -1,0 +1,9 @@
+$ wiretrail baseline.har duplicates --filter "path:/v1/session/ping"
+# exit 1
+== wiretrail duplicates ==
+
+   3x  POST api.shop.example/v1/session/ping
+  statuses: 200:3
+  entries: e000018, e000020, e000021
+
+next useful commands: retries · errors · show-entry

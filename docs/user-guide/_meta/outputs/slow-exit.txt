@@ -1,0 +1,3 @@
+$ wiretrail checkout.har slowest --top 1 > /dev/null; echo "exit code: $?"
+# exit 0
+exit code: 0

@@ -1,0 +1,15 @@
+$ wiretrail checkout.har cascade --window-ms 500 --min-downstream 2
+# exit 1
+== wiretrail cascade ==
+
+first failure: e000011 [401] api.shop.example/v1/auth/session
+  before: e000008, e000009, e000010
+  after:  e000012, e000013, e000014
+
+cascades:
+  e000011 [auth] -> 3 downstream failures
+    e000012, e000013, e000015
+  e000012 [request] -> 2 downstream failures
+    e000013, e000015
+
+next useful commands: errors · transitions · show-entry

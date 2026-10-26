@@ -1,0 +1,11 @@
+$ wiretrail checkout.har validate
+# exit 1
+== wiretrail validate ==
+HAR 1.2 via WireTrail demo generator (synthetic)  (99 entries)
+with timings: 99% · response bodies: 81% · POST req bodies: 100%
+auth headers: true · cookies: true
+
+anomalies:
+  status-0: 1
+
+next useful commands: summary · diagnose · errors

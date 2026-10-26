@@ -1,0 +1,9 @@
+$ wiretrail checkout.har duplicates --filter "path:/v1/flags"
+# exit 1
+== wiretrail duplicates ==
+
+   6x  GET api.shop.example/v1/flags
+  statuses: 200:6
+  entries: e000019, e000040, e000051, e000061, e000066, e000071
+
+next useful commands: retries · errors · show-entry

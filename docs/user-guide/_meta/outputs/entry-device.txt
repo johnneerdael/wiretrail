@@ -1,0 +1,25 @@
+$ wiretrail checkout.har show-entry e000043
+# exit 0
+== wiretrail entry e000043 ==
+GET https://search.shop.example/v1/suggest?q=r  [200] OK
+host: search.shop.example  http: h2  type: api
+server ip: 203.0.113.40
+offset: 9000ms  duration: 44ms
+query:
+  q = r
+request headers:
+  accept: application/json, text/plain, */*
+  accept-encoding: gzip, deflate, br
+  user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+  origin: https://shop.example
+  referer: https://shop.example/
+  x-device-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2RldmljZS5zaG9wLmV4YW1wbGUvIiwiYXVkIjoic2hvcC1zZWFyY2giLCJzdWIiOiJkZXZpY2VfNDFiNyIsImlhdCI6MTc5MjQ4ODI2MiwiZXhwIjoxNzkyNDkxODYyfQ.loE_3tvaxiDj8FMqqUqivLUS9FtgizVf0ZpLeV4f4b8
+response headers:
+  content-type: application/json
+  date: Tue, 20 Oct 2026 09:14:11 GMT
+  server: shopfront
+  x-ratelimit-limit: 30
+  x-ratelimit-remaining: 29
+response body: {"hits":["rning shoes"],"q":"r"}
+
+next useful commands: timeline · duplicates · errors

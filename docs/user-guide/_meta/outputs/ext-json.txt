@@ -1,0 +1,14 @@
+$ wiretrail checkout.har extract '$.error.code' --filter "status:>=500" --top 2 --json | jq '.result'
+# exit 0
+{
+  "values": [
+    {
+      "id": "e000054",
+      "value": "bad_gateway"
+    },
+    {
+      "id": "e000069",
+      "value": "upstream_unavailable"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+$ wiretrail quirks/two-hosts-refresh.har auth
+# exit 1
+== wiretrail auth ==
+
+hosts with inconsistent Authorization: api-a.test.example
+
+token rotation:
+  api-a.test.example (2 distinct tokens)
+
+token refreshes:
+  e000002 api-a.test.example [200] [old-token-reused]
+
+next useful commands: jwt · transitions · errors

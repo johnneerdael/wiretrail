@@ -1,0 +1,15 @@
+$ wiretrail checkout.har timeline
+# exit 0
+== wiretrail timeline ==
+     0ms     21ms  e000000 GET www.shop.example/  [301] 0 B
+    70ms    261ms  e000001 GET shop.example/  [200] 19.4 KiB
+   330ms    126ms  e000002 GET cdn.shop.example/assets/app.5b1e0c7d.js  [200] 184.0 KiB
+   335ms    199ms  e000003 GET cdn.shop.example/assets/vendor.9c2d41ab.js  [200] 412.0 KiB
+   340ms     53ms  e000004 GET cdn.shop.example/assets/app.2e7f1a40.css  [200] 38.0 KiB
+   345ms     77ms  e000005 GET cdn.shop.example/fonts/inter-var.woff2  [200] 98.0 KiB
+   350ms     34ms  e000006 GET cdn.shop.example/img/logo.svg  [200] 2.0 KiB
+   420ms     26ms  e000007 GET cdn.shop.example/img/hero.png  [302] 0 B DUP
+   430ms     38ms  e000008 GET cdn.shop.example/cfg/{blob}/manifest.json  [200] 30 B
+   450ms     1.9s  e000009 GET cdn.shop.example/img/hero.webp  [200] 2.1 MiB
+
+next useful commands: slowest · duplicates · show-entry

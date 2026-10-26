@@ -1,0 +1,16 @@
+$ wiretrail checkout.har compare baseline.har --json | jq '.result.new_errors[:2]'
+# exit 1
+[
+  {
+    "endpoint": "POST api.shop.example/v1/cart/sync",
+    "status": 503,
+    "count": 5,
+    "severity": "high"
+  },
+  {
+    "endpoint": "GET search.shop.example/v1/suggest",
+    "status": 429,
+    "count": 4,
+    "severity": "medium"
+  }
+]

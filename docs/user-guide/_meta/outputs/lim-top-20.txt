@@ -1,0 +1,3 @@
+$ wiretrail quirks/many-error-groups.har diagnose --top 20 | grep '^\[HIGH\]'
+# exit 1
+[HIGH] 5xx-cluster — 3x 503 on GET /broken

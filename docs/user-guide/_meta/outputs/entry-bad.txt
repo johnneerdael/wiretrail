@@ -1,0 +1,3 @@
+$ wiretrail checkout.har show-entry e999999
+# exit 2
+wiretrail: no entry with id or index 'e999999'

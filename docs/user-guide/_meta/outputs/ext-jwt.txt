@@ -1,0 +1,6 @@
+$ wiretrail checkout.har extract '$.access_token'
+# exit 0
+== wiretrail extract ==
+e000014  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2F1dGguc2hvcC5leGFtcGxlLyIsImF1ZCI6InNob3Atd2ViIiwic3ViIjoidXNlcl84ZjIxYzQiLCJpYXQiOjE3OTI0ODc2NDMsImV4cCI6MTc5MjQ5MTI0M30.loE_3tvaxiDj8FMqqUqivLUS9FtgizVf0ZpLeV4f4b8
+
+next useful commands: search · show-entry · errors

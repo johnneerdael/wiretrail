@@ -1,0 +1,74 @@
+$ wiretrail checkout.har auto --filter "host:search.shop.example"
+# exit 1
+== wiretrail summary ==
+entries: 99 total, 12 after filter
+duration (first start to last response): 70.0s
+
+status classes:
+  2xx: 8
+  4xx: 4
+
+resource types:
+  api: 12
+
+top hosts (by request count):
+     12  search.shop.example
+
+top duplicate calls:
+     2x  GET search.shop.example /v1/suggest q=shoes  (e000077)
+
+slowest requests:
+      47ms  e000047 GET search.shop.example/v1/suggest  [200]
+      45ms  e000048 GET search.shop.example/v1/suggest  [200]
+      44ms  e000043 GET search.shop.example/v1/suggest  [200]
+      38ms  e000081 GET search.shop.example/v1/suggest  [200]
+      35ms  e000046 GET search.shop.example/v1/suggest  [200]
+      33ms  e000079 GET search.shop.example/v1/suggest  [429]
+      30ms  e000049 GET search.shop.example/v1/suggest  [200]
+      30ms  e000078 GET search.shop.example/v1/suggest  [429]
+      29ms  e000044 GET search.shop.example/v1/suggest  [200]
+      29ms  e000080 GET search.shop.example/v1/suggest  [429]
+
+biggest payloads:
+        63 B  e000077 search.shop.example/v1/suggest
+        63 B  e000078 search.shop.example/v1/suggest
+        63 B  e000079 search.shop.example/v1/suggest
+        63 B  e000080 search.shop.example/v1/suggest
+        44 B  e000049 search.shop.example/v1/suggest
+        42 B  e000048 search.shop.example/v1/suggest
+        40 B  e000047 search.shop.example/v1/suggest
+        38 B  e000046 search.shop.example/v1/suggest
+        36 B  e000045 search.shop.example/v1/suggest
+        35 B  e000081 search.shop.example/v1/suggest
+
+hints:
+  - 4 error responses (4xx/5xx/failed)
+
+recommended next steps:
+  [HIGH] rate-limit
+         calls during 429 cooldown on search.shop.example /v1/suggest — 4 429s, follow-ups before Retry-After elapsed
+  [MEDIUM] errors
+         4x 429 on GET /v1/suggest — too many requests
+
+────────────────────────────────────────
+[HIGH] rate-limit-no-backoff — calls during 429 cooldown on search.shop.example /v1/suggest
+$ wiretrail checkout.har rate-limit
+== wiretrail rate-limit ==
+
+search.shop.example /v1/suggest  (4x 429) [cooldown violated]
+  retry-after: 5s, 5s, 5s, 5s
+  x-ratelimit-limit: 30
+  x-ratelimit-remaining: 0
+  x-ratelimit-reset: 1792487693
+  called during cooldown: e000078, e000079, e000080
+
+────────────────────────────────────────
+[MEDIUM] 4xx — 4x 429 on GET /v1/suggest
+$ wiretrail checkout.har errors
+== wiretrail errors ==
+
+   4x  [429] GET search.shop.example/v1/suggest
+  message: too many requests
+  code: rate_limited
+  body: {"error":{"code":"rate_limited","message":"too many requests"}}
+  entries: e000077, e000078, e000079, e000080

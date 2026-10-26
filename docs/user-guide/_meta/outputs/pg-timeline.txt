@@ -1,0 +1,21 @@
+$ wiretrail checkout.har timeline --filter "path:/v1/products*" --top 20
+# exit 0
+== wiretrail timeline ==
+    3.0s    560ms  e000022 GET api.shop.example/v1/products  [200] 30 B
+    3.4s    553ms  e000023 GET api.shop.example/v1/products  [200] 30 B
+    3.8s    558ms  e000024 GET api.shop.example/v1/products  [200] 30 B DUP
+    4.1s    558ms  e000025 GET api.shop.example/v1/products  [200] 30 B DUP
+    4.2s     97ms  e000026 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.3s    133ms  e000027 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.3s    115ms  e000028 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.4s    102ms  e000029 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.4s     98ms  e000030 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.5s     96ms  e000031 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.6s     1.0s  e000032 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.6s    101ms  e000033 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.7s    100ms  e000034 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.7s    104ms  e000035 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.8s    137ms  e000036 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+    4.9s    142ms  e000037 GET api.shop.example/v1/products/{id}/price  [200] 20 B DUP
+
+next useful commands: slowest · duplicates · show-entry

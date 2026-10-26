@@ -1,0 +1,7 @@
+$ wiretrail baseline.har compare baseline.har --fail-on high; echo "exit code: $?"
+# exit 0
+== wiretrail compare ==
+max severity: none
+
+next useful commands: diagnose · errors · slowest
+exit code: 0

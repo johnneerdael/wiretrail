@@ -1,0 +1,3 @@
+$ wiretrail checkout.har jwt --json | jq -c '.result.tokens[0] | {has_field: has("raw_token"), is_set: (.raw_token != null)}'
+# exit 1
+{"has_field":true,"is_set":false}

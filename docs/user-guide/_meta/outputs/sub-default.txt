@@ -1,0 +1,37 @@
+$ wiretrail checkout.har subsystems
+# exit 1
+== wiretrail subsystems ==
+
+api.shop.example  [-]  (63 req, 10 err, 53 dup)
+  window: 900ms - 69.8s
+  hosts: api.shop.example
+
+cdn.shop.example  [-]  (15 req, 1 err, 8 dup)
+  window: 330ms - 36.4s
+  hosts: cdn.shop.example
+
+search.shop.example  [-]  (12 req, 4 err, 2 dup)
+  window: 9.0s - 58.0s
+  hosts: search.shop.example
+
+Sentry  [-]  (3 req, 0 err, 3 dup)
+  window: 2.5s - 40.0s
+  hosts: o0.ingest.sentry.io
+
+payments.shop.example  [-]  (3 req, 1 err, 2 dup)
+  window: 63.8s - 66.5s
+  hosts: payments.shop.example
+
+auth.shop.example  [-]  (1 req, 0 err, 0 dup)
+  window: 1.3s - 1.3s
+  hosts: auth.shop.example
+
+shop.example  [-]  (1 req, 0 err, 0 dup)
+  window: 70ms - 70ms
+  hosts: shop.example
+
+www.shop.example  [-]  (1 req, 0 err, 0 dup)
+  window: 0ms - 0ms
+  hosts: www.shop.example
+
+next useful commands: hosts · endpoints · duplicates

@@ -1,0 +1,13 @@
+$ cd proj && wiretrail ../checkout.har subsystems --config ../config/ownership-only.yaml --top 2
+# exit 1
+== wiretrail subsystems ==
+
+Storefront API  [web-platform]  (63 req, 10 err, 53 dup)
+  window: 900ms - 69.8s
+  hosts: api.shop.example
+
+cdn.shop.example  [-]  (15 req, 1 err, 8 dup)
+  window: 330ms - 36.4s
+  hosts: cdn.shop.example
+
+next useful commands: hosts · endpoints · duplicates

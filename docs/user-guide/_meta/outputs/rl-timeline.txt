@@ -1,0 +1,17 @@
+$ wiretrail checkout.har timeline --filter "host:search.shop.example" --top 30
+# exit 0
+== wiretrail timeline ==
+    9.0s     44ms  e000043 GET search.shop.example/v1/suggest  [200] 32 B
+    9.2s     29ms  e000044 GET search.shop.example/v1/suggest  [200] 34 B
+    9.4s     24ms  e000045 GET search.shop.example/v1/suggest  [200] 36 B
+    9.6s     35ms  e000046 GET search.shop.example/v1/suggest  [200] 38 B
+    9.8s     47ms  e000047 GET search.shop.example/v1/suggest  [200] 40 B
+   10.0s     45ms  e000048 GET search.shop.example/v1/suggest  [200] 42 B
+   10.2s     30ms  e000049 GET search.shop.example/v1/suggest  [200] 44 B
+   46.0s     25ms  e000077 GET search.shop.example/v1/suggest  [429] 63 B DUP
+   46.8s     30ms  e000078 GET search.shop.example/v1/suggest  [429] 63 B
+   48.1s     33ms  e000079 GET search.shop.example/v1/suggest  [429] 63 B
+   52.2s     29ms  e000080 GET search.shop.example/v1/suggest  [429] 63 B
+   58.0s     38ms  e000081 GET search.shop.example/v1/suggest  [200] 35 B RETRY
+
+next useful commands: slowest · duplicates · show-entry

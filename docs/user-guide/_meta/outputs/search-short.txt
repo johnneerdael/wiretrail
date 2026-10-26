@@ -1,0 +1,11 @@
+$ wiretrail quirks/short-secrets.har search hunter2
+# exit 0
+== wiretrail search ==
+
+e000000 (req.body)
+  …{"user":"ann","password":"hunter2"}…
+
+e000000 (resp.body)
+  …{"ok":true,"password":"hunter2","token":"abc123","note":"passwo…
+
+next useful commands: show-entry · extract · errors

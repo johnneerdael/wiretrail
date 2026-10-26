@@ -1,0 +1,3 @@
+$ wiretrail baseline.har compare baseline.har --fail-on low > /dev/null; echo "exit code: $?"
+# exit 0
+exit code: 0

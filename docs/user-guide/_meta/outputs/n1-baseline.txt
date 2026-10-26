@@ -1,0 +1,6 @@
+$ wiretrail baseline.har timeline --filter "path:/v1/prices"
+# exit 0
+== wiretrail timeline ==
+    4.0s    152ms  e000017 POST api.shop.example/v1/prices  [200] 132 B
+
+next useful commands: slowest · duplicates · show-entry

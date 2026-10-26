@@ -1,0 +1,17 @@
+$ wiretrail checkout.har duplicates --filter "host:api.shop.example method:post" --top 3
+# exit 1
+== wiretrail duplicates ==
+
+  12x  POST api.shop.example/v1/session/ping
+  statuses: 200:12
+  entries: e000038, e000041, e000042, e000050, e000052, e000055, e000058, e000060, e000062, e000063, e000065, e000068
+
+   5x [retry pattern]  POST api.shop.example/v1/cart/sync
+  statuses: 500:1 503:4
+  entries: e000069, e000070, e000072, e000073, e000076
+
+   3x  POST api.shop.example/graphql
+  statuses: 200:3
+  entries: e000082, e000083, e000084
+
+next useful commands: retries · errors · show-entry

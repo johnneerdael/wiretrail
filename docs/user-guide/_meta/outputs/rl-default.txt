@@ -1,0 +1,12 @@
+$ wiretrail checkout.har rate-limit
+# exit 1
+== wiretrail rate-limit ==
+
+search.shop.example /v1/suggest  (4x 429) [cooldown violated]
+  retry-after: 5s, 5s, 5s, 5s
+  x-ratelimit-limit: 30
+  x-ratelimit-remaining: 0
+  x-ratelimit-reset: 1792487693
+  called during cooldown: e000078, e000079, e000080
+
+next useful commands: errors · retries · transitions

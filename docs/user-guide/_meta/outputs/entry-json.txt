@@ -1,0 +1,19 @@
+$ wiretrail checkout.har show-entry e000076 --json | jq '.result | {id, method, status, norm_path, timings, req_body_snippet, resp_body_snippet}'
+# exit 0
+{
+  "id": "e000076",
+  "method": "POST",
+  "status": 500,
+  "norm_path": "/v1/cart/sync",
+  "timings": {
+    "blocked": null,
+    "dns": null,
+    "connect": null,
+    "ssl": null,
+    "send": 1.0,
+    "wait": 187.0,
+    "receive": 4.0
+  },
+  "req_body_snippet": "{\"cart\":\"c_55d1\",\"items\":[{\"qty\":1,\"sku\":1042}]}",
+  "resp_body_snippet": "{\"error\":{\"code\":\"internal_error\",\"message\":\"internal server error\"}}"
+}

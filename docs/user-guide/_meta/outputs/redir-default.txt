@@ -1,0 +1,13 @@
+$ wiretrail checkout.har redirects
+# exit 1
+== wiretrail redirects ==
+
+   6x  [302] GET cdn.shop.example/img/hero.png [storm]
+  -> cdn.shop.example
+  entries: e000007, e000020, e000039, e000053, e000067, e000074
+
+   1x  [301] GET www.shop.example/ [cross-host]
+  -> shop.example
+  entries: e000000
+
+next useful commands: timeline · errors · show-entry

@@ -1,0 +1,8 @@
+$ wiretrail checkout.har startup --window-ms 5000 --top 2 --json | jq '.result | {window_ms, requests_in_window, max_concurrency, critical_path_ms}'
+# exit 0
+{
+  "window_ms": 5000.0,
+  "requests_in_window": 38,
+  "max_concurrency": 5,
+  "critical_path_ms": 3465.0
+}

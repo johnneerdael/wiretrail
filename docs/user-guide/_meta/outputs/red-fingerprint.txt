@@ -1,0 +1,4 @@
+$ wiretrail quirks/unmasked-places.har summary | grep -A1 'top duplicate'
+# exit 1
+top duplicate calls:
+     2x  GET api.test.example /v1/ping session=s3cr3t-short-value  (e000000)

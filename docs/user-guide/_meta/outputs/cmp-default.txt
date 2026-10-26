@@ -1,0 +1,28 @@
+$ wiretrail checkout.har compare baseline.har
+# exit 1
+== wiretrail compare ==
+max severity: high
+new hosts: auth.shop.example, www.shop.example
+new endpoints: 4
+removed endpoints: 1
+
+new errors:
+  [high] POST api.shop.example/v1/cart/sync -> 503 (5x)
+  [medium] GET search.shop.example/v1/suggest -> 429 (4x)
+  [medium] GET api.shop.example/v1/cart -> 401 (2x)
+  [medium] GET api.shop.example/v1/auth/session -> 401 (1x)
+  [medium] GET api.shop.example/v1/notifications -> 401 (1x)
+  [medium] POST payments.shop.example/v1/charges -> 402 (1x)
+
+latency regressions:
+  [medium] POST api.shop.example/v1/orders p50 319ms -> 2409ms
+  [medium] GET cdn.shop.example/img/hero.webp p50 541ms -> 1921ms
+  [medium] POST api.shop.example/v1/uploads/avatar p50 294ms -> 1104ms
+  [medium] OPTIONS payments.shop.example/v1/charges p50 277ms -> 887ms
+  [medium] GET api.shop.example/v1/products p50 128ms -> 558ms
+
+payload growth:
+  [low] GET api.shop.example/v1/config 3391B -> 11291B
+  [low] POST api.shop.example/v1/cart/sync 11B -> 83B
+
+next useful commands: diagnose · errors · slowest

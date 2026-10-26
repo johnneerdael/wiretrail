@@ -1,0 +1,16 @@
+$ wiretrail checkout.har export | jq -s 'group_by(.host) | map({host: .[0].host, bytes: (map(.bytes) | add)}) | sort_by(-.bytes) | .[0:3]'
+# exit 0
+[
+  {
+    "host": "cdn.shop.example",
+    "bytes": 3015095
+  },
+  {
+    "host": "api.shop.example",
+    "bytes": 61335
+  },
+  {
+    "host": "shop.example",
+    "bytes": 19840
+  }
+]

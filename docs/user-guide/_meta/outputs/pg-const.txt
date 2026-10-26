@@ -1,0 +1,8 @@
+$ wiretrail quirks/constant-limit.har pagination
+# exit 1
+== wiretrail pagination ==
+
+pagination sequences:
+  3 pages  GET api.test.example/v1/items  (by limit,page) [repeated-cursor]
+
+next useful commands: storms · duplicates · endpoints

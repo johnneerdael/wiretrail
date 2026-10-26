@@ -1,0 +1,25 @@
+$ wiretrail checkout.har retries
+# exit 1
+== wiretrail retries ==
+
+POST api.shop.example/v1/cart/sync  (5 attempts, 4 retries, final 500)
+  triggered by: 503, 500
+  backoff gaps: 1.2s, 2.5s, 5.2s, 8.2s
+  entries: e000069, e000070, e000072, e000073, e000076
+
+GET api.shop.example/v1/inventory/{id}  (2 attempts, 1 retries, final 200)
+  triggered by: 502
+  backoff gaps: 800ms
+  entries: e000054, e000056
+
+GET cdn.shop.example/img/banner.webp  (2 attempts, 1 retries, final 200)
+  triggered by: 0
+  backoff gaps: 4.5s
+  entries: e000059, e000064
+
+GET search.shop.example/v1/suggest  (2 attempts, 1 retries, final 200)
+  triggered by: 429
+  backoff gaps: 12.0s
+  entries: e000077, e000081
+
+next useful commands: errors · transitions · show-entry

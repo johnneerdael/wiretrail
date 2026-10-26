@@ -1,0 +1,68 @@
+$ wiretrail checkout.har report
+# exit 0
+# wiretrail report
+
+- Creator: WireTrail demo generator (synthetic) 1
+- HAR version: 1.2
+- Entries: 99
+- Window: 70.0s
+
+## Executive Summary
+
+99 requests after filter, 16 error responses, 10 duplicate groups in the top list.
+
+## Subsystems
+
+| Subsystem | Requests | Window | Errors | Dups |
+|---|---:|---|---:|---:|
+| api.shop.example | 63 | 900ms - 69.8s | 10 | 53 |
+| cdn.shop.example | 15 | 330ms - 36.4s | 1 | 8 |
+| search.shop.example | 12 | 9.0s - 58.0s | 4 | 2 |
+| Sentry | 3 | 2.5s - 40.0s | 0 | 3 |
+| payments.shop.example | 3 | 63.8s - 66.5s | 1 | 2 |
+| auth.shop.example | 1 | 1.3s - 1.3s | 0 | 0 |
+| shop.example | 1 | 70ms - 70ms | 0 | 0 |
+| www.shop.example | 1 | 0ms - 0ms | 0 | 0 |
+
+## Duplicate Index
+
+- 12x `GET api.shop.example/v1/products/{id}/price`
+- 12x `POST api.shop.example/v1/session/ping`
+- 6x `GET api.shop.example/v1/flags`
+- 6x `GET cdn.shop.example/img/hero.png`
+- 5x `POST api.shop.example/v1/cart/sync` (retry pattern)
+- 4x `GET api.shop.example/v1/cart`
+- 3x `POST api.shop.example/graphql`
+- 3x `POST api.shop.example/v1/track`
+- 3x `POST o0.ingest.sentry.io/api/{id}/envelope/`
+- 2x `GET api.shop.example/v1/auth/session`
+
+## Errors
+
+- 4x [503] `POST api.shop.example/v1/cart/sync` — inventory service unavailable
+- 4x [429] `GET search.shop.example/v1/suggest` — too many requests
+- 2x [401] `GET api.shop.example/v1/cart` — JWT expired
+- 1x [502] `GET api.shop.example/v1/inventory/{id}` — bad gateway
+- 1x [500] `POST api.shop.example/v1/cart/sync` — internal server error
+- 1x [402] `POST payments.shop.example/v1/charges` — Your card was declined.
+- 1x [401] `GET api.shop.example/v1/auth/session` — JWT expired
+- 1x [401] `GET api.shop.example/v1/notifications` — JWT expired
+- 1x [0] `GET cdn.shop.example/img/banner.webp`
+
+## Redirect Storms
+
+- 6x [302] `GET cdn.shop.example/img/hero.png`
+
+## Slowest Requests
+
+- 2.4s `POST api.shop.example/v1/orders` [201] — server wait/TTFB
+- 1.9s `GET cdn.shop.example/img/hero.webp` [200] — download/receive
+- 1.9s `GET cdn.shop.example/img/banner.webp` [0] — TCP connect
+- 1.1s `POST api.shop.example/v1/uploads/avatar` [201] — request upload
+- 1.0s `GET api.shop.example/v1/products/{id}/price` [200] — queueing/blocked
+- 887ms `OPTIONS payments.shop.example/v1/charges` [204] — DNS
+- 803ms `POST o0.ingest.sentry.io/api/{id}/envelope/` [200] — TCP connect
+- 560ms `GET api.shop.example/v1/products` [200] — server wait/TTFB
+- 558ms `GET api.shop.example/v1/products` [200] — server wait/TTFB
+- 558ms `GET api.shop.example/v1/products` [200] — server wait/TTFB
+

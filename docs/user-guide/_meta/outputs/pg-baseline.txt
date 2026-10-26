@@ -1,0 +1,8 @@
+$ wiretrail baseline.har pagination
+# exit 1
+== wiretrail pagination ==
+
+pagination sequences:
+  3 pages  GET api.shop.example/v1/products  (by limit,page) [repeated-cursor]
+
+next useful commands: storms · duplicates · endpoints

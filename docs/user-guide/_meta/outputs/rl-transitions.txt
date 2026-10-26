@@ -1,0 +1,17 @@
+$ wiretrail checkout.har transitions --filter "host:search.shop.example"
+# exit 1
+== wiretrail transitions ==
+
+429 -> 429  [rate-limit-persisted]  GET search.shop.example/v1/suggest
+  e000077 -> e000078  (gap 800ms)
+
+429 -> 429  [rate-limit-persisted]  GET search.shop.example/v1/suggest
+  e000078 -> e000079  (gap 1.3s)
+
+429 -> 429  [rate-limit-persisted]  GET search.shop.example/v1/suggest
+  e000079 -> e000080  (gap 4.1s)
+
+429 -> 200  [rate-limit-recovered]  GET search.shop.example/v1/suggest
+  e000080 -> e000081  (gap 5.8s)
+
+next useful commands: errors · retries · show-entry

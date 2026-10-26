@@ -1,0 +1,19 @@
+$ wiretrail checkout.har compare baseline.har --json | jq '.result | {max_severity, new_hosts, removed_hosts, new_endpoints, removed_endpoints}'
+# exit 1
+{
+  "max_severity": "high",
+  "new_hosts": [
+    "auth.shop.example",
+    "www.shop.example"
+  ],
+  "removed_hosts": [],
+  "new_endpoints": [
+    "GET api.shop.example/v1/products/{id}/price",
+    "GET cdn.shop.example/img/hero.png",
+    "GET www.shop.example/",
+    "POST auth.shop.example/oauth/token"
+  ],
+  "removed_endpoints": [
+    "POST api.shop.example/v1/prices"
+  ]
+}

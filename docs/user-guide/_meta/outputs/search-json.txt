@@ -1,0 +1,9 @@
+$ wiretrail checkout.har search "declined" --json | jq '.result.matches'
+# exit 0
+[
+  {
+    "id": "e000087",
+    "location": "resp.body",
+    "snippet": "{\"error\":{\"code\":\"card_declined\",\"message\":\"Your card was decli"
+  }
+]

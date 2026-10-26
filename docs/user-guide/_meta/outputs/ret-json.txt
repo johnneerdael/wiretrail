@@ -1,0 +1,17 @@
+$ wiretrail checkout.har retries --top 1 --json | jq '.result.groups[0] | {attempts, retry_count, trigger_statuses, gaps_ms, final_status}'
+# exit 1
+{
+  "attempts": 5,
+  "retry_count": 4,
+  "trigger_statuses": [
+    503,
+    500
+  ],
+  "gaps_ms": [
+    1200.0,
+    2500.0,
+    5200.0,
+    8200.0
+  ],
+  "final_status": 500
+}

@@ -1,0 +1,10 @@
+$ wiretrail checkout.har summary --json | jq '.next_commands'
+# exit 1
+[
+  "auth",
+  "diff",
+  "errors",
+  "rate-limit",
+  "retries",
+  "storms"
+]

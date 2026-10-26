@@ -1,0 +1,15 @@
+$ wiretrail checkout.har auto --help
+# exit 0
+Smart one-shot: summary + auto-drill the top recommendations inline
+
+Usage: wiretrail <FILE> auto [OPTIONS]
+
+Options:
+      --all                          Drill into every triggered recommendation, including LOW
+      --min-severity <MIN_SEVERITY>  Only drill recommendations at or above this severity (default: medium) [possible values: critical, high, medium, low]
+      --json                         Emit machine-readable JSON
+      --top <TOP>                    Max items per list (top-N) [default: 10]
+      --filter <FILTER>              Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>              Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets       Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                         Print help

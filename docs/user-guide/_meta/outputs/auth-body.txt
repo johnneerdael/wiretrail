@@ -1,0 +1,10 @@
+$ wiretrail quirks/refresh-in-body.har auth
+# exit 1
+== wiretrail auth ==
+
+hosts with inconsistent Authorization: api.test.example
+
+token rotation:
+  api.test.example (2 distinct tokens)
+
+next useful commands: jwt · transitions · errors

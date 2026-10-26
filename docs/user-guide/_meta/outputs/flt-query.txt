@@ -1,0 +1,17 @@
+$ wiretrail checkout.har --filter "path:*page=2*" summary --top 1
+# exit 0
+== wiretrail summary ==
+entries: 99 total, 0 after filter
+duration (first start to last response): 70.0s
+
+status classes:
+
+resource types:
+
+top hosts (by request count):
+
+slowest requests:
+
+biggest payloads:
+
+next useful commands: duplicates · errors · slowest

@@ -1,0 +1,23 @@
+$ wiretrail checkout.har hosts --top 3
+# exit 1
+== wiretrail hosts ==
+
+api.shop.example  (63 req, 10 err, 53 dup)
+  latency p50/p95/max: 85ms / 560ms / 2.4s
+  bytes sent/received: 980 B / 59.9 KiB
+  methods: GET:36 OPTIONS:1 POST:25 PUT:1
+  status: 2xx:53 4xx:4 5xx:6
+
+cdn.shop.example  (15 req, 1 err, 8 dup)
+  latency p50/p95/max: 38ms / 1.9s / 1.9s
+  bytes sent/received: 0 B / 2.9 MiB
+  methods: GET:15
+  status: 2xx:8 3xx:6 other:1
+
+search.shop.example  (12 req, 4 err, 2 dup)
+  latency p50/p95/max: 30ms / 47ms / 47ms
+  bytes sent/received: 0 B / 553 B
+  methods: GET:12
+  status: 2xx:8 4xx:4
+
+next useful commands: subsystems · endpoints · errors

@@ -1,0 +1,13 @@
+$ wiretrail checkout.har rules --pack payments --json | jq '.result.findings'
+# exit 1
+[
+  {
+    "rule": "payments: idempotency key on charges",
+    "severity": "high",
+    "detail": "missing required header: Idempotency-Key",
+    "entry_ids": [
+      "e000086",
+      "e000087"
+    ]
+  }
+]

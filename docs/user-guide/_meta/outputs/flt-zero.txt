@@ -1,0 +1,6 @@
+$ wiretrail checkout.har timeline --filter "status:0"
+# exit 0
+== wiretrail timeline ==
+   15.0s     1.9s  e000059 GET cdn.shop.example/img/banner.webp  [0] 0 B
+
+next useful commands: slowest · duplicates · show-entry

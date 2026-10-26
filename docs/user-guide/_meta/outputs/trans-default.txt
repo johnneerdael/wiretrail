@@ -1,0 +1,32 @@
+$ wiretrail checkout.har transitions
+# exit 1
+== wiretrail transitions ==
+
+401 -> 200  [auth-recovered]  GET api.shop.example/v1/auth/session
+  e000011 -> e000016  (gap 700ms)
+
+401 -> 200  [auth-recovered]  GET api.shop.example/v1/cart
+  e000013 -> e000017  (gap 520ms)
+
+401 -> 200  [auth-recovered]  GET api.shop.example/v1/notifications
+  e000015 -> e000018  (gap 380ms)
+
+502 -> 200  [recovered-5xx]  GET api.shop.example/v1/inventory/{id}
+  e000054 -> e000056  (gap 800ms)
+
+503 -> 500  [error-changed]  POST api.shop.example/v1/cart/sync
+  e000073 -> e000076  (gap 8.2s)
+
+429 -> 429  [rate-limit-persisted]  GET search.shop.example/v1/suggest
+  e000077 -> e000078  (gap 800ms)
+
+429 -> 429  [rate-limit-persisted]  GET search.shop.example/v1/suggest
+  e000078 -> e000079  (gap 1.3s)
+
+429 -> 429  [rate-limit-persisted]  GET search.shop.example/v1/suggest
+  e000079 -> e000080  (gap 4.1s)
+
+429 -> 200  [rate-limit-recovered]  GET search.shop.example/v1/suggest
+  e000080 -> e000081  (gap 5.8s)
+
+next useful commands: errors · retries · show-entry

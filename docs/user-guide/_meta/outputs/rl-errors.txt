@@ -1,0 +1,11 @@
+$ wiretrail checkout.har errors --filter "host:search.shop.example"
+# exit 1
+== wiretrail errors ==
+
+   4x  [429] GET search.shop.example/v1/suggest
+  message: too many requests
+  code: rate_limited
+  body: {"error":{"code":"rate_limited","message":"too many requests"}}
+  entries: e000077, e000078, e000079, e000080
+
+next useful commands: transitions · redirects · show-entry

@@ -1,0 +1,17 @@
+$ wiretrail checkout.har slowest --filter "host:api.shop.example" --top 3
+# exit 0
+== wiretrail slowest ==
+
+    2.4s  e000090 POST api.shop.example/v1/orders  [201]
+  bottleneck: server wait/TTFB
+  phases: wait 2.4s / receive 8ms / send 1ms / connect 0ms / dns 0ms / ssl 0ms / blocked 0ms
+
+    1.1s  e000092 POST api.shop.example/v1/uploads/avatar  [201]
+  bottleneck: request upload
+  phases: wait 150ms / receive 4ms / send 950ms / connect 0ms / dns 0ms / ssl 0ms / blocked 0ms
+
+    1.0s  e000032 GET api.shop.example/v1/products/{id}/price  [200]
+  bottleneck: queueing/blocked
+  phases: wait 124ms / receive 4ms / send 1ms / connect 0ms / dns 0ms / ssl 0ms / blocked 880ms
+
+next useful commands: timeline · hosts · show-entry

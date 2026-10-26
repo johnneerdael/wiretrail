@@ -1,0 +1,7 @@
+$ wiretrail quirks/retry-after-date.har rate-limit
+# exit 1
+== wiretrail rate-limit ==
+
+api.test.example /v1/x  (1x 429)
+
+next useful commands: errors · retries · transitions
