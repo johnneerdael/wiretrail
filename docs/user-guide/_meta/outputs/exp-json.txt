@@ -1,0 +1,15 @@
+$ wiretrail checkout.har export --json --filter "status:>=500" | head -1 | jq 'keys'
+# exit 0
+[
+  "bytes",
+  "content_type",
+  "correlation",
+  "duration_ms",
+  "host",
+  "id",
+  "method",
+  "norm_path",
+  "offset_ms",
+  "resource_type",
+  "status"
+]

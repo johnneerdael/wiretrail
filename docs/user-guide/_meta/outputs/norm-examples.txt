@@ -1,0 +1,8 @@
+$ wiretrail checkout.har endpoints --top 40 | grep -E '\{id\}|\{blob\}'
+# exit 1
+  12  GET api.shop.example/v1/products/{id}/price
+   3  POST o0.ingest.sentry.io/api/{id}/envelope/
+   2  GET api.shop.example/v1/inventory/{id}
+   1  PUT api.shop.example/v1/cart/items/{id}
+   1  GET api.shop.example/v1/receipts/{id}/download
+   1  GET cdn.shop.example/cfg/{blob}/manifest.json

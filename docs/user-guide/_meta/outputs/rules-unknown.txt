@@ -1,0 +1,5 @@
+$ wiretrail checkout.har rules --pack nonsense
+# exit 0
+== wiretrail rules ==
+
+next useful commands: checks · errors · diagnose

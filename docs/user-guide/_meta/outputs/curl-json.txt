@@ -1,0 +1,7 @@
+$ wiretrail checkout.har curl e000076 --json | jq '.result.commands[0] | {id, safe, label}'
+# exit 0
+{
+  "id": "e000076",
+  "safe": false,
+  "label": "mutating method POST"
+}

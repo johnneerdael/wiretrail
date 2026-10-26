@@ -1,0 +1,10 @@
+$ wiretrail checkout.har retries --filter "path:/v1/cart/sync"
+# exit 1
+== wiretrail retries ==
+
+POST api.shop.example/v1/cart/sync  (5 attempts, 4 retries, final 500)
+  triggered by: 503, 500
+  backoff gaps: 1.2s, 2.5s, 5.2s, 8.2s
+  entries: e000069, e000070, e000072, e000073, e000076
+
+next useful commands: errors · transitions · show-entry

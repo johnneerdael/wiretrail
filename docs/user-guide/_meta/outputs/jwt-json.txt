@@ -1,0 +1,26 @@
+$ wiretrail checkout.har jwt --json | jq '.result.tokens[] | {token_hash, source, occurrences, first_entry_id, last_entry_id, expired: .summary.expired}'
+# exit 1
+{
+  "token_hash": "8e37a634a25062a2",
+  "source": "req.header.authorization",
+  "occurrences": 4,
+  "first_entry_id": "e000011",
+  "last_entry_id": "e000015",
+  "expired": true
+}
+{
+  "token_hash": "fd2ef4823d488917",
+  "source": "resp.body",
+  "occurrences": 56,
+  "first_entry_id": "e000014",
+  "last_entry_id": "e000098",
+  "expired": false
+}
+{
+  "token_hash": "4bbf025fbfd0c0a4",
+  "source": "req.header.x-device-token",
+  "occurrences": 7,
+  "first_entry_id": "e000043",
+  "last_entry_id": "e000049",
+  "expired": false
+}

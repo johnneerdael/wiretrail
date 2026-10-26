@@ -1,0 +1,8 @@
+$ wiretrail checkout.har search "card" --filter "host:payments.shop.example"
+# exit 0
+== wiretrail search ==
+
+e000087 (resp.body)
+  …{"error":{"code":"card_declined","message":"Your card was …
+
+next useful commands: show-entry · extract · errors

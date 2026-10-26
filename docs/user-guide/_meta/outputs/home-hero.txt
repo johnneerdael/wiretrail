@@ -1,0 +1,20 @@
+$ wiretrail checkout.har diagnose --top 3
+# exit 1
+== wiretrail diagnose ==
+
+[HIGH] retry-exhaustion — 4 retries, final 500 on POST /v1/cart/sync
+  repeated retries did not recover
+  evidence: e000069, e000070, e000072, e000073, e000076
+  -> wiretrail <file> retries
+
+[HIGH] 5xx-cluster — 4x 503 on POST /v1/cart/sync
+  inventory service unavailable
+  evidence: e000069, e000070, e000072, e000073
+  -> wiretrail <file> errors --filter "host:api.shop.example"
+
+[HIGH] rate-limit-no-backoff — calls during 429 cooldown on search.shop.example /v1/suggest
+  4 429s, follow-ups before Retry-After elapsed
+  evidence: e000077, e000078, e000079, e000080
+  -> wiretrail <file> rate-limit
+
+next useful commands: errors · auth · duplicates

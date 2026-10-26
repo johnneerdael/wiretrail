@@ -1,0 +1,28 @@
+$ wiretrail checkout.har show-entry e000098
+# exit 0
+== wiretrail entry e000098 ==
+GET https://api.shop.example/v1/receipts/9921/download?d=<redacted>&token=<redacted>&sig=<redacted>&page=1  [200] OK
+host: api.shop.example  http: h2  type: other
+server ip: 203.0.113.30
+offset: 69800ms  duration: 153ms
+query:
+  d = <redacted>
+  token = <redacted>
+  sig = <redacted>
+  page = 1
+request headers:
+  accept: application/json, text/plain, */*
+  accept-encoding: gzip, deflate, br
+  user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+  origin: https://shop.example
+  referer: https://shop.example/
+  authorization: <redacted>
+  x-app-version: 4.12.0
+response headers:
+  content-type: application/pdf
+  date: Tue, 20 Oct 2026 09:15:11 GMT
+  server: shopfront
+  x-request-id: req_dcbc99960d
+  cf-ray: 1c8e860bbc1669cc-AMS
+
+next useful commands: timeline · duplicates · errors

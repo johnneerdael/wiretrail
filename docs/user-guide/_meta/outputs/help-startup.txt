@@ -1,0 +1,14 @@
+$ wiretrail checkout.har startup --help
+# exit 0
+Boot/startup profile: concurrency, critical path, slow dependencies
+
+Usage: wiretrail <FILE> startup [OPTIONS]
+
+Options:
+      --window-ms <WINDOW_MS>   Boot window in milliseconds (0 = whole capture) [default: 30000]
+      --json                    Emit machine-readable JSON
+      --top <TOP>               Max items per list (top-N) [default: 10]
+      --filter <FILTER>         Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>         Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets  Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                    Print help

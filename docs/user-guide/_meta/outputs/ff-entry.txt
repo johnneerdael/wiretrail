@@ -1,0 +1,28 @@
+$ wiretrail checkout.har show-entry e000011
+# exit 0
+== wiretrail entry e000011 ==
+GET https://api.shop.example/v1/auth/session  [401] Unauthorized
+host: api.shop.example  http: h2  type: api
+server ip: 203.0.113.30
+offset: 1000ms  duration: 94ms
+request headers:
+  :authority: api.shop.example
+  :method: GET
+  :path: /v1/auth/session
+  :scheme: https
+  accept: application/json, text/plain, */*
+  accept-encoding: gzip, deflate, br
+  user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+  origin: https://shop.example
+  referer: https://shop.example/
+  authorization: <redacted>
+  x-app-version: 4.12.0
+response headers:
+  content-type: application/json
+  date: Tue, 20 Oct 2026 09:14:03 GMT
+  server: shopfront
+  x-request-id: req_07a2ad2e14
+  cf-ray: 1639524a7ea30bdb-AMS
+response body: {"error":{"code":"token_expired","message":"JWT expired"}}
+
+next useful commands: timeline · duplicates · errors

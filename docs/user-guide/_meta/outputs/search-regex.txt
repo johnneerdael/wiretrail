@@ -1,0 +1,14 @@
+$ wiretrail checkout.har search '"code":"[a-z_]+"' --regex --filter "status:>=500" --top 3
+# exit 0
+== wiretrail search ==
+
+e000054 (resp.body)
+  …{"error":{"code":"bad_gateway","message":"bad gate…
+
+e000069 (resp.body)
+  …{"error":{"code":"upstream_unavailable","message":…
+
+e000070 (resp.body)
+  …{"error":{"code":"upstream_unavailable","message":…
+
+next useful commands: show-entry · extract · errors

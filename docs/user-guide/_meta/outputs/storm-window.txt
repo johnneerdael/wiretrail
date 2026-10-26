@@ -1,0 +1,17 @@
+$ wiretrail checkout.har storms --window-ms 300 --min-count 5
+# exit 1
+== wiretrail storms ==
+
+host cdn.shop.example  8 calls in 300ms (26.7/s)
+  window: 330ms - 450ms
+  entries: e000002, e000003, e000004, e000005, e000006, e000007, e000008, e000009
+
+host api.shop.example  6 calls in 300ms (20.0/s)
+  window: 4.2s - 4.5s
+  entries: e000026, e000027, e000028, e000029, e000030, e000031
+
+endpoint api.shop.example/v1/products/{id}/price  6 calls in 300ms (20.0/s)
+  window: 4.2s - 4.5s
+  entries: e000026, e000027, e000028, e000029, e000030, e000031
+
+next useful commands: pagination · duplicates · timeline

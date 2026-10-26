@@ -1,0 +1,13 @@
+$ wiretrail checkout.har storms --filter "path:/v1/products/*/price"
+# exit 1
+== wiretrail storms ==
+
+host api.shop.example  12 calls in 1.0s (12.0/s)
+  window: 4.2s - 4.9s
+  entries: e000026, e000027, e000028, e000029, e000030, e000031, e000032, e000033, e000034, e000035, e000036, e000037
+
+endpoint api.shop.example/v1/products/{id}/price  12 calls in 1.0s (12.0/s)
+  window: 4.2s - 4.9s
+  entries: e000026, e000027, e000028, e000029, e000030, e000031, e000032, e000033, e000034, e000035, e000036, e000037
+
+next useful commands: pagination · duplicates · timeline

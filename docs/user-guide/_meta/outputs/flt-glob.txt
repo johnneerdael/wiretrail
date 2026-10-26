@@ -1,0 +1,26 @@
+$ wiretrail checkout.har --filter "host:*.shop.example status:>=500" errors
+# exit 1
+== wiretrail errors ==
+
+   4x  [503] POST api.shop.example/v1/cart/sync
+  message: inventory service unavailable
+  code: upstream_unavailable
+  correlation: req_fa6f840121, e1e598c1a6e1ae1d-AMS
+  body: {"error":{"code":"upstream_unavailable","message":"inventory service unavailable"}}
+  entries: e000069, e000070, e000072, e000073
+
+   1x  [502] GET api.shop.example/v1/inventory/{id}
+  message: bad gateway
+  code: bad_gateway
+  correlation: req_52f70893f4, 5b85690bce927766-AMS
+  body: {"error":{"code":"bad_gateway","message":"bad gateway"}}
+  entries: e000054
+
+   1x  [500] POST api.shop.example/v1/cart/sync
+  message: internal server error
+  code: internal_error
+  correlation: req_1c776b9fff, 775f0aeadf5f3512-AMS
+  body: {"error":{"code":"internal_error","message":"internal server error"}}
+  entries: e000076
+
+next useful commands: transitions · redirects · show-entry

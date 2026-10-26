@@ -1,0 +1,6 @@
+$ wiretrail checkout.har extract '$.grant_type' --target req
+# exit 0
+== wiretrail extract ==
+e000014  refresh_token
+
+next useful commands: search · show-entry · errors

@@ -1,0 +1,32 @@
+$ wiretrail checkout.har --filter "path:/v1/products/*/price" summary --top 1
+# exit 1
+== wiretrail summary ==
+entries: 99 total, 12 after filter
+duration (first start to last response): 70.0s
+
+status classes:
+  2xx: 12
+
+resource types:
+  api: 12
+
+top hosts (by request count):
+     12  api.shop.example
+
+top duplicate calls:
+    12x  GET api.shop.example /v1/products/{id}/price   (e000026)
+
+slowest requests:
+      1.0s  e000032 GET api.shop.example/v1/products/{id}/price  [200]
+
+biggest payloads:
+        20 B  e000026 api.shop.example/v1/products/{id}/price
+
+hints:
+  - 12x duplicate calls: GET api.shop.example /v1/products/{id}/price 
+
+recommended next steps:
+  [MEDIUM] storms
+         12 host calls/s burst to api.shop.example — burst of calls in a 1s window
+
+next useful commands: storms

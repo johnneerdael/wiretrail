@@ -1,0 +1,12 @@
+$ wiretrail checkout.har jwt --filter "host:search.shop.example"
+# exit 0
+== wiretrail jwt ==
+
+4bbf025fbfd0c0a4 (7x, req.header.x-device-token)
+  iss: https://device.shop.example/
+  aud: shop-search
+  sub (hashed): 72879224ce3bde2b
+  exp: 1792491862 (4211s left)
+  warning: token iat is in the future (clock skew?)
+
+next useful commands: auth · show-entry · errors

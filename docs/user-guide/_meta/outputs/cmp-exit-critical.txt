@@ -1,0 +1,3 @@
+$ wiretrail checkout.har compare baseline.har --fail-on critical > /dev/null; echo "exit code: $?"
+# exit 0
+exit code: 0

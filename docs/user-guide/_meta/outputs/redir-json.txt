@@ -1,0 +1,26 @@
+$ wiretrail checkout.har redirects --top 2 --json | jq '.result.groups[] | del(.entry_ids)'
+# exit 1
+{
+  "host": "cdn.shop.example",
+  "method": "GET",
+  "norm_path": "/img/hero.png",
+  "status": 302,
+  "count": 6,
+  "target_host": "cdn.shop.example",
+  "cross_host": false,
+  "is_storm": true,
+  "first_offset_ms": 420.0,
+  "last_offset_ms": 36400.0
+}
+{
+  "host": "www.shop.example",
+  "method": "GET",
+  "norm_path": "/",
+  "status": 301,
+  "count": 1,
+  "target_host": "shop.example",
+  "cross_host": true,
+  "is_storm": false,
+  "first_offset_ms": 0.0,
+  "last_offset_ms": 0.0
+}

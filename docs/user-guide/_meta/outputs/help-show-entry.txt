@@ -1,0 +1,16 @@
+$ wiretrail checkout.har show-entry --help
+# exit 0
+Full redacted detail for one entry (by id `e000123` or index)
+
+Usage: wiretrail <FILE> show-entry [OPTIONS] <ID>
+
+Arguments:
+  <ID>  Entry id (e000123) or bare index
+
+Options:
+      --json                    Emit machine-readable JSON
+      --top <TOP>               Max items per list (top-N) [default: 10]
+      --filter <FILTER>         Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>         Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets  Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                    Print help

@@ -1,0 +1,9 @@
+$ wiretrail checkout.har compare baseline.har --filter "path:/v1/orders"
+# exit 1
+== wiretrail compare ==
+max severity: medium
+
+latency regressions:
+  [medium] POST api.shop.example/v1/orders p50 319ms -> 2409ms
+
+next useful commands: diagnose · errors · slowest

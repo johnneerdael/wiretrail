@@ -1,0 +1,21 @@
+$ wiretrail checkout.har errors --filter "path:/v1/cart/sync" --json | jq '.result.groups[] | {status, count, error_code, entry_ids}'
+# exit 1
+{
+  "status": 503,
+  "count": 4,
+  "error_code": "upstream_unavailable",
+  "entry_ids": [
+    "e000069",
+    "e000070",
+    "e000072",
+    "e000073"
+  ]
+}
+{
+  "status": 500,
+  "count": 1,
+  "error_code": "internal_error",
+  "entry_ids": [
+    "e000076"
+  ]
+}

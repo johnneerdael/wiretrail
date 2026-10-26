@@ -1,0 +1,15 @@
+$ wiretrail checkout.har storms --help
+# exit 0
+Bursts of many calls to the same host or endpoint within a window
+
+Usage: wiretrail <FILE> storms [OPTIONS]
+
+Options:
+      --window-ms <WINDOW_MS>   Window width in milliseconds [default: 1000]
+      --min-count <MIN_COUNT>   Minimum calls in the window to count as a storm [default: 5]
+      --json                    Emit machine-readable JSON
+      --top <TOP>               Max items per list (top-N) [default: 10]
+      --filter <FILTER>         Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>         Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets  Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                    Print help

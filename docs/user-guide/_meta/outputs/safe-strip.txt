@@ -1,0 +1,17 @@
+$ jq '(.log.entries[] | .request.headers, .response.headers) |= map(select(.name | ascii_downcase | IN("authorization","cookie","set-cookie","proxy-authorization","x-api-key","x-device-token") | not)) | del(.log.entries[].request.cookies, .log.entries[].response.cookies, .log.entries[].request.postData, .log.entries[].response.content.text)' checkout.har > stripped.har && wiretrail stripped.har validate
+# exit 1
+== wiretrail validate ==
+HAR 1.2 via WireTrail demo generator (synthetic)  (99 entries)
+with timings: 99% · response bodies: 0% · POST req bodies: 0%
+auth headers: false · cookies: false
+sanitized: yes (no auth/cookies and few response bodies)
+
+anomalies:
+  status-0: 1
+
+sufficiency:
+  - few/no response bodies captured — `errors`/`search`/`extract` limited
+  - no Authorization headers — `auth`/`jwt` limited
+  - no request bodies on POST/PUT/PATCH — `diff` body verdicts limited
+
+next useful commands: summary · diagnose · errors

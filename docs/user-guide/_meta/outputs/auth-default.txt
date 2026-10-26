@@ -1,0 +1,18 @@
+$ wiretrail checkout.har auth
+# exit 1
+== wiretrail auth ==
+
+auth failures:
+  2x [401] api.shop.example /v1/cart
+  1x [401] api.shop.example /v1/auth/session
+  1x [401] api.shop.example /v1/notifications
+
+hosts with inconsistent Authorization: api.shop.example, payments.shop.example
+
+token rotation:
+  api.shop.example (2 distinct tokens)
+
+token refreshes:
+  e000014 auth.shop.example [200] [old-token-reused]
+
+next useful commands: jwt · transitions · errors

@@ -1,0 +1,16 @@
+$ wiretrail checkout.har startup --window-ms 0 --top 3
+# exit 0
+== wiretrail startup ==
+99 requests in 69.8s · max concurrency 5 · critical path 10.3s
+
+critical path (sequential spine):
+      21ms  e000000 GET www.shop.example/  [301]
+     261ms  e000001 GET shop.example/  [200]
+     199ms  e000003 GET cdn.shop.example/assets/vendor.9c2d41ab.js  [200]
+
+slowest in window:
+      2.4s  e000090 POST api.shop.example/v1/orders
+      1.9s  e000009 GET cdn.shop.example/img/hero.webp
+      1.9s  e000059 GET cdn.shop.example/img/banner.webp
+
+next useful commands: slowest · timeline · storms

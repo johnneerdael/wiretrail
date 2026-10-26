@@ -1,0 +1,8 @@
+$ wiretrail checkout.har export --filter "status:>=500" --top 1
+# exit 0
+{"id":"e000054","offset_ms":13000.0,"duration_ms":221.0,"method":"GET","host":"api.shop.example","norm_path":"/v1/inventory/{id}","status":502,"bytes":56,"content_type":"application/json","resource_type":"api","correlation":"req_52f70893f4"}
+{"id":"e000069","offset_ms":25000.0,"duration_ms":243.0,"method":"POST","host":"api.shop.example","norm_path":"/v1/cart/sync","status":503,"bytes":83,"content_type":"application/json","resource_type":"api","correlation":"req_fa6f840121"}
+{"id":"e000070","offset_ms":26200.0,"duration_ms":210.0,"method":"POST","host":"api.shop.example","norm_path":"/v1/cart/sync","status":503,"bytes":83,"content_type":"application/json","resource_type":"api","correlation":"req_3ad0e75ca3"}
+{"id":"e000072","offset_ms":28700.0,"duration_ms":184.0,"method":"POST","host":"api.shop.example","norm_path":"/v1/cart/sync","status":503,"bytes":83,"content_type":"application/json","resource_type":"api","correlation":"req_67572df288"}
+{"id":"e000073","offset_ms":33900.0,"duration_ms":234.0,"method":"POST","host":"api.shop.example","norm_path":"/v1/cart/sync","status":503,"bytes":83,"content_type":"application/json","resource_type":"api","correlation":"req_44df04452c"}
+{"id":"e000076","offset_ms":42100.0,"duration_ms":192.0,"method":"POST","host":"api.shop.example","norm_path":"/v1/cart/sync","status":500,"bytes":69,"content_type":"application/json","resource_type":"api","correlation":"req_1c776b9fff"}

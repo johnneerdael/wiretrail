@@ -1,0 +1,43 @@
+$ wiretrail checkout.har report --config config/ownership-only.yaml --top 3
+# exit 0
+# wiretrail report
+
+- Creator: WireTrail demo generator (synthetic) 1
+- HAR version: 1.2
+- Entries: 99
+- Window: 70.0s
+
+## Executive Summary
+
+99 requests after filter, 16 error responses, 3 duplicate groups in the top list.
+
+## Subsystems
+
+| Subsystem | Requests | Window | Errors | Dups |
+|---|---:|---|---:|---:|
+| Storefront API | 63 | 900ms - 69.8s | 10 | 53 |
+| cdn.shop.example | 15 | 330ms - 36.4s | 1 | 8 |
+| search.shop.example | 12 | 9.0s - 58.0s | 4 | 2 |
+
+## Duplicate Index
+
+- 12x `GET api.shop.example/v1/products/{id}/price`
+- 12x `POST api.shop.example/v1/session/ping`
+- 6x `GET api.shop.example/v1/flags`
+
+## Errors
+
+- 4x [503] `POST api.shop.example/v1/cart/sync` — inventory service unavailable
+- 4x [429] `GET search.shop.example/v1/suggest` — too many requests
+- 2x [401] `GET api.shop.example/v1/cart` — JWT expired
+
+## Redirect Storms
+
+- 6x [302] `GET cdn.shop.example/img/hero.png`
+
+## Slowest Requests
+
+- 2.4s `POST api.shop.example/v1/orders` [201] — server wait/TTFB
+- 1.9s `GET cdn.shop.example/img/hero.webp` [200] — download/receive
+- 1.9s `GET cdn.shop.example/img/banner.webp` [0] — TCP connect
+

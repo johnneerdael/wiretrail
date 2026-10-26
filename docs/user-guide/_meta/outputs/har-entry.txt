@@ -1,0 +1,28 @@
+$ jq '.log.entries[0] | {startedDateTime, time, request: (.request | {method, url, httpVersion}), response: (.response | {status, statusText, content: (.content | {size, mimeType})}), timings}' checkout.har
+# exit 0
+{
+  "startedDateTime": "2026-10-20T09:14:02.000Z",
+  "time": 21,
+  "request": {
+    "method": "GET",
+    "url": "http://www.shop.example/",
+    "httpVersion": "h2"
+  },
+  "response": {
+    "status": 301,
+    "statusText": "Moved Permanently",
+    "content": {
+      "size": 0,
+      "mimeType": "text/html"
+    }
+  },
+  "timings": {
+    "blocked": -1,
+    "dns": -1,
+    "connect": -1,
+    "ssl": -1,
+    "send": 1,
+    "wait": 18,
+    "receive": 2
+  }
+}

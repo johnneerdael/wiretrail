@@ -1,0 +1,15 @@
+$ wiretrail checkout.har diagnose --filter "host:search.shop.example"
+# exit 1
+== wiretrail diagnose ==
+
+[HIGH] rate-limit-no-backoff — calls during 429 cooldown on search.shop.example /v1/suggest
+  4 429s, follow-ups before Retry-After elapsed
+  evidence: e000077, e000078, e000079, e000080
+  -> wiretrail <file> rate-limit
+
+[MEDIUM] 4xx — 4x 429 on GET /v1/suggest
+  too many requests
+  evidence: e000077, e000078, e000079, e000080
+  -> wiretrail <file> errors
+
+next useful commands: errors · auth · duplicates

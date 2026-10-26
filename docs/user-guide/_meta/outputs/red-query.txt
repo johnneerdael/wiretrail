@@ -1,0 +1,7 @@
+$ wiretrail checkout.har show-entry e000098 | grep -E '^GET|^  (d|token|sig|page) ='
+# exit 0
+GET https://api.shop.example/v1/receipts/9921/download?d=<redacted>&token=<redacted>&sig=<redacted>&page=1  [200] OK
+  d = <redacted>
+  token = <redacted>
+  sig = <redacted>
+  page = 1

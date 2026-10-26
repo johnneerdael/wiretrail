@@ -1,0 +1,16 @@
+$ wiretrail checkout.har curl e000014 --unsafe-include-secrets
+# exit 0
+== wiretrail curl ==
+
+# e000014 [UNSAFE: mutating method POST]
+curl -X POST 'https://auth.shop.example/oauth/token' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-encoding: gzip, deflate, br' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+  -H 'origin: https://shop.example' \
+  -H 'referer: https://shop.example/' \
+  -H 'content-type: application/json' \
+  -H 'content-length: 89' \
+  --data '{"grant_type":"refresh_token","refresh_token":"rt_demo_7f3a9c1e7f3a9c1e7f3a9c1e7f3a9c1e"}'
+
+next useful commands: show-entry · errors · duplicates

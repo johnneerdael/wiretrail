@@ -1,0 +1,8 @@
+$ wiretrail checkout.har extract '$.ts' --target req --filter "path:/v1/session/ping" --top 3
+# exit 0
+== wiretrail extract ==
+e000038  1792487648000
+e000041  1792487649500
+e000042  1792487651000
+
+next useful commands: search · show-entry · errors

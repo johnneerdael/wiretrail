@@ -1,0 +1,34 @@
+$ wiretrail checkout.har export | jq -s 'map(select(.duration_ms > 1000)) | map({id, host, norm_path, duration_ms})'
+# exit 0
+[
+  {
+    "id": "e000009",
+    "host": "cdn.shop.example",
+    "norm_path": "/img/hero.webp",
+    "duration_ms": 1921.0
+  },
+  {
+    "id": "e000032",
+    "host": "api.shop.example",
+    "norm_path": "/v1/products/{id}/price",
+    "duration_ms": 1009.0
+  },
+  {
+    "id": "e000059",
+    "host": "cdn.shop.example",
+    "norm_path": "/img/banner.webp",
+    "duration_ms": 1900.0
+  },
+  {
+    "id": "e000090",
+    "host": "api.shop.example",
+    "norm_path": "/v1/orders",
+    "duration_ms": 2409.0
+  },
+  {
+    "id": "e000092",
+    "host": "api.shop.example",
+    "norm_path": "/v1/uploads/avatar",
+    "duration_ms": 1104.0
+  }
+]

@@ -1,0 +1,34 @@
+$ wiretrail checkout.har diff
+# exit 1
+== wiretrail diff ==
+
+POST api.shop.example/v1/session/ping  (12 calls, body: volatile-only)
+
+GET search.shop.example/v1/suggest  (12 calls, body: none)
+  query q varies: r, ru, run
+  headers vary: x-device-token
+
+GET api.shop.example/v1/flags  (6 calls, body: none)
+  query cb varies: 1792487642, 1792487649, 1792487656
+
+GET api.shop.example/v1/cart  (4 calls, body: none)
+  headers vary: authorization
+
+GET api.shop.example/v1/products  (4 calls, body: none)
+  query page varies: 1, 2, 3
+
+POST api.shop.example/graphql  (3 calls, body: meaningful)
+  headers vary: content-length
+
+POST api.shop.example/v1/track  (3 calls, body: meaningful)
+
+GET api.shop.example/v1/auth/session  (2 calls, body: none)
+  headers vary: authorization
+
+GET api.shop.example/v1/notifications  (2 calls, body: none)
+  headers vary: authorization
+
+POST payments.shop.example/v1/charges  (2 calls, body: identical)
+  headers vary: idempotency-key
+
+next useful commands: duplicates · show-entry · endpoints

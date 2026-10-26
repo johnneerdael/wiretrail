@@ -1,0 +1,20 @@
+$ wiretrail checkout.har timeline --filter "status:>=400" --top 20
+# exit 0
+== wiretrail timeline ==
+    1.0s     94ms  e000011 GET api.shop.example/v1/auth/session  [401] 58 B
+    1.1s     56ms  e000012 GET api.shop.example/v1/cart  [401] 58 B DUP
+    1.2s     35ms  e000013 GET api.shop.example/v1/cart  [401] 58 B DUP
+    1.3s     51ms  e000015 GET api.shop.example/v1/notifications  [401] 58 B
+   13.0s    221ms  e000054 GET api.shop.example/v1/inventory/{id}  [502] 56 B
+   25.0s    243ms  e000069 POST api.shop.example/v1/cart/sync  [503] 83 B DUP
+   26.2s    210ms  e000070 POST api.shop.example/v1/cart/sync  [503] 83 B RETRY
+   28.7s    184ms  e000072 POST api.shop.example/v1/cart/sync  [503] 83 B RETRY
+   33.9s    234ms  e000073 POST api.shop.example/v1/cart/sync  [503] 83 B RETRY
+   42.1s    192ms  e000076 POST api.shop.example/v1/cart/sync  [500] 69 B RETRY
+   46.0s     25ms  e000077 GET search.shop.example/v1/suggest  [429] 63 B
+   46.8s     30ms  e000078 GET search.shop.example/v1/suggest  [429] 63 B
+   48.1s     33ms  e000079 GET search.shop.example/v1/suggest  [429] 63 B
+   52.2s     29ms  e000080 GET search.shop.example/v1/suggest  [429] 63 B
+   64.0s    201ms  e000087 POST payments.shop.example/v1/charges  [402] 70 B
+
+next useful commands: slowest · duplicates · show-entry

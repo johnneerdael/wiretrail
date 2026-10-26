@@ -1,0 +1,6 @@
+$ wiretrail checkout.har compare baseline.har --filter "path:/v1/session/ping"
+# exit 0
+== wiretrail compare ==
+max severity: none
+
+next useful commands: diagnose · errors · slowest

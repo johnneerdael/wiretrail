@@ -1,0 +1,202 @@
+$ wiretrail checkout.har auto --min-severity high
+# exit 1
+== wiretrail summary ==
+entries: 99 total, 99 after filter
+duration (first start to last response): 70.0s
+
+status classes:
+  2xx: 76
+  3xx: 7
+  4xx: 9
+  5xx: 6
+  other: 1
+
+resource types:
+  analytics: 3
+  api: 77
+  document: 3
+  media: 9
+  other: 3
+  static: 4
+
+top hosts (by request count):
+     63  api.shop.example
+     15  cdn.shop.example
+     12  search.shop.example
+      3  o0.ingest.sentry.io
+      3  payments.shop.example
+      1  auth.shop.example
+      1  shop.example
+      1  www.shop.example
+
+top duplicate calls:
+    12x  GET api.shop.example /v1/products/{id}/price   (e000026)
+    12x  POST api.shop.example /v1/session/ping   (e000038)
+     6x  GET api.shop.example /v1/flags   (e000019)
+     6x  GET cdn.shop.example /img/hero.png   (e000007)
+     5x  POST api.shop.example /v1/cart/sync   (e000069)
+     4x  GET api.shop.example /v1/cart   (e000012)
+     3x  POST api.shop.example /graphql   (e000082)
+     3x  POST api.shop.example /v1/track   (e000093)
+     3x  POST o0.ingest.sentry.io /api/{id}/envelope/   (e000021)
+     2x  GET api.shop.example /v1/auth/session   (e000011)
+
+slowest requests:
+      2.4s  e000090 POST api.shop.example/v1/orders  [201]
+      1.9s  e000009 GET cdn.shop.example/img/hero.webp  [200]
+      1.9s  e000059 GET cdn.shop.example/img/banner.webp  [0]
+      1.1s  e000092 POST api.shop.example/v1/uploads/avatar  [201]
+      1.0s  e000032 GET api.shop.example/v1/products/{id}/price  [200]
+     887ms  e000086 OPTIONS payments.shop.example/v1/charges  [204]
+     803ms  e000021 POST o0.ingest.sentry.io/api/{id}/envelope/  [200]
+     560ms  e000022 GET api.shop.example/v1/products  [200]
+     558ms  e000024 GET api.shop.example/v1/products  [200]
+     558ms  e000025 GET api.shop.example/v1/products  [200]
+
+biggest payloads:
+     2.1 MiB  e000009 cdn.shop.example/img/hero.webp
+   412.0 KiB  e000003 cdn.shop.example/assets/vendor.9c2d41ab.js
+   184.0 KiB  e000002 cdn.shop.example/assets/app.5b1e0c7d.js
+    98.0 KiB  e000005 cdn.shop.example/fonts/inter-var.woff2
+    60.0 KiB  e000064 cdn.shop.example/img/banner.webp
+    47.1 KiB  e000098 api.shop.example/v1/receipts/{id}/download
+    38.0 KiB  e000004 cdn.shop.example/assets/app.2e7f1a40.css
+    19.4 KiB  e000001 shop.example/
+    11.0 KiB  e000010 api.shop.example/v1/config
+     2.0 KiB  e000006 cdn.shop.example/img/logo.svg
+
+hints:
+  - 12x duplicate calls: GET api.shop.example /v1/products/{id}/price 
+  - 16 error responses (4xx/5xx/failed)
+
+recommended next steps:
+  [HIGH] retries
+         4 retries, final 500 on POST /v1/cart/sync — repeated retries did not recover
+  [HIGH] errors --filter "host:api.shop.example"
+         4x 503 on POST /v1/cart/sync — inventory service unavailable
+  [HIGH] rate-limit
+         calls during 429 cooldown on search.shop.example /v1/suggest — 4 429s, follow-ups before Retry-After elapsed
+  [HIGH] auth
+         suspicious token refresh on auth.shop.example — refresh succeeded but later calls reused the old token
+  [MEDIUM] storms
+         13 host calls/s burst to api.shop.example — burst of calls in a 1s window
+  [MEDIUM] storms
+         12 endpoint calls/s burst to api.shop.example/v1/products/{id}/price — burst of calls in a 1s window
+  [MEDIUM] diff --filter "host:api.shop.example path:/v1/products/*/price"
+         12x identical GET /v1/products/{id}/price — repeated identical calls (not retries)
+  [MEDIUM] diff --filter "host:api.shop.example path:/v1/session/ping"
+         12x identical POST /v1/session/ping — repeated identical calls (not retries)
+  [MEDIUM] errors
+         4x 429 on GET /v1/suggest — too many requests
+  [MEDIUM] auth
+         4 auth failures (401/403) — requests rejected for authentication/authorization
+
+────────────────────────────────────────
+[HIGH] retry-exhaustion — 4 retries, final 500 on POST /v1/cart/sync
+$ wiretrail checkout.har retries
+== wiretrail retries ==
+
+POST api.shop.example/v1/cart/sync  (5 attempts, 4 retries, final 500)
+  triggered by: 503, 500
+  backoff gaps: 1.2s, 2.5s, 5.2s, 8.2s
+  entries: e000069, e000070, e000072, e000073, e000076
+
+GET api.shop.example/v1/inventory/{id}  (2 attempts, 1 retries, final 200)
+  triggered by: 502
+  backoff gaps: 800ms
+  entries: e000054, e000056
+
+GET cdn.shop.example/img/banner.webp  (2 attempts, 1 retries, final 200)
+  triggered by: 0
+  backoff gaps: 4.5s
+  entries: e000059, e000064
+
+GET search.shop.example/v1/suggest  (2 attempts, 1 retries, final 200)
+  triggered by: 429
+  backoff gaps: 12.0s
+  entries: e000077, e000081
+
+────────────────────────────────────────
+[HIGH] 5xx-cluster — 4x 503 on POST /v1/cart/sync
+$ wiretrail checkout.har errors --filter "host:api.shop.example"
+== wiretrail errors ==
+
+   4x  [503] POST api.shop.example/v1/cart/sync
+  message: inventory service unavailable
+  code: upstream_unavailable
+  correlation: req_fa6f840121, e1e598c1a6e1ae1d-AMS
+  body: {"error":{"code":"upstream_unavailable","message":"inventory service unavailable"}}
+  entries: e000069, e000070, e000072, e000073
+
+   2x  [401] GET api.shop.example/v1/cart
+  message: JWT expired
+  code: token_expired
+  correlation: req_e80ca59c03, 1bd5f212c6ef5780-AMS
+  body: {"error":{"code":"token_expired","message":"JWT expired"}}
+  entries: e000012, e000013
+
+   1x  [502] GET api.shop.example/v1/inventory/{id}
+  message: bad gateway
+  code: bad_gateway
+  correlation: req_52f70893f4, 5b85690bce927766-AMS
+  body: {"error":{"code":"bad_gateway","message":"bad gateway"}}
+  entries: e000054
+
+   1x  [500] POST api.shop.example/v1/cart/sync
+  message: internal server error
+  code: internal_error
+  correlation: req_1c776b9fff, 775f0aeadf5f3512-AMS
+  body: {"error":{"code":"internal_error","message":"internal server error"}}
+  entries: e000076
+
+   1x  [401] GET api.shop.example/v1/auth/session
+  message: JWT expired
+  code: token_expired
+  correlation: req_07a2ad2e14, 1639524a7ea30bdb-AMS
+  body: {"error":{"code":"token_expired","message":"JWT expired"}}
+  entries: e000011
+
+   1x  [401] GET api.shop.example/v1/notifications
+  message: JWT expired
+  code: token_expired
+  correlation: req_ca4f9b978d, fc614e4fa44e02a0-AMS
+  body: {"error":{"code":"token_expired","message":"JWT expired"}}
+  entries: e000015
+
+────────────────────────────────────────
+[HIGH] rate-limit-no-backoff — calls during 429 cooldown on search.shop.example /v1/suggest
+$ wiretrail checkout.har rate-limit
+== wiretrail rate-limit ==
+
+search.shop.example /v1/suggest  (4x 429) [cooldown violated]
+  retry-after: 5s, 5s, 5s, 5s
+  x-ratelimit-limit: 30
+  x-ratelimit-remaining: 0
+  x-ratelimit-reset: 1792487693
+  called during cooldown: e000078, e000079, e000080
+
+────────────────────────────────────────
+[HIGH] token-refresh-race — suspicious token refresh on auth.shop.example
+$ wiretrail checkout.har auth
+== wiretrail auth ==
+
+auth failures:
+  2x [401] api.shop.example /v1/cart
+  1x [401] api.shop.example /v1/auth/session
+  1x [401] api.shop.example /v1/notifications
+
+hosts with inconsistent Authorization: api.shop.example, payments.shop.example
+
+token rotation:
+  api.shop.example (2 distinct tokens)
+
+token refreshes:
+  e000014 auth.shop.example [200] [old-token-reused]
+
+not drilled (below threshold):
+  [MEDIUM] request-storm — 13 host calls/s burst to api.shop.example   (run: wiretrail checkout.har storms)
+  [MEDIUM] request-storm — 12 endpoint calls/s burst to api.shop.example/v1/products/{id}/price   (run: wiretrail checkout.har storms)
+  [MEDIUM] wasteful-duplicates — 12x identical GET /v1/products/{id}/price   (run: wiretrail checkout.har diff --filter "host:api.shop.example path:/v1/products/*/price")
+  [MEDIUM] wasteful-duplicates — 12x identical POST /v1/session/ping   (run: wiretrail checkout.har diff --filter "host:api.shop.example path:/v1/session/ping")
+  [MEDIUM] 4xx — 4x 429 on GET /v1/suggest   (run: wiretrail checkout.har errors)
+  [MEDIUM] auth-failures — 4 auth failures (401/403)   (run: wiretrail checkout.har auth)

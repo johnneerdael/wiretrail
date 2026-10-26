@@ -1,0 +1,16 @@
+$ wiretrail checkout.har diagnose --top 3 --json | jq '.result.findings[0]'
+# exit 1
+{
+  "severity": "high",
+  "kind": "retry-exhaustion",
+  "title": "4 retries, final 500 on POST /v1/cart/sync",
+  "detail": "repeated retries did not recover",
+  "evidence_ids": [
+    "e000069",
+    "e000070",
+    "e000072",
+    "e000073",
+    "e000076"
+  ],
+  "suggested_command": "retries"
+}

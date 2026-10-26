@@ -1,0 +1,22 @@
+$ wiretrail checkout.har compare baseline.har --filter "host:api.shop.example" --top 3
+# exit 1
+== wiretrail compare ==
+max severity: high
+new endpoints: 1
+removed endpoints: 1
+
+new errors:
+  [high] POST api.shop.example/v1/cart/sync -> 503 (5x)
+  [medium] GET api.shop.example/v1/cart -> 401 (2x)
+  [medium] GET api.shop.example/v1/auth/session -> 401 (1x)
+
+latency regressions:
+  [medium] POST api.shop.example/v1/orders p50 319ms -> 2409ms
+  [medium] POST api.shop.example/v1/uploads/avatar p50 294ms -> 1104ms
+  [medium] GET api.shop.example/v1/products p50 128ms -> 558ms
+
+payload growth:
+  [low] GET api.shop.example/v1/config 3391B -> 11291B
+  [low] POST api.shop.example/v1/cart/sync 11B -> 83B
+
+next useful commands: diagnose · errors · slowest

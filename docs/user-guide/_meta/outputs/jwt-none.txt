@@ -1,0 +1,11 @@
+$ wiretrail baseline.har jwt --filter "host:payments.shop.example"
+# exit 0
+== wiretrail jwt ==
+
+a95f03985aea31e9 (1x, req.header.authorization)
+  iss: https://auth.shop.example/
+  aud: shop-web
+  sub (hashed): b1ca0ff720b2652d
+  exp: 1792490642 (2936s left)
+
+next useful commands: auth · show-entry · errors

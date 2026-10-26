@@ -1,0 +1,7 @@
+$ wiretrail quirks/volatile-substring.har diff
+# exit 0
+== wiretrail diff ==
+
+POST api.test.example/v1/orders  (2 calls, body: volatile-only)
+
+next useful commands: duplicates · show-entry · endpoints

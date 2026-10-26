@@ -1,0 +1,53 @@
+$ wiretrail checkout.har hosts
+# exit 1
+== wiretrail hosts ==
+
+api.shop.example  (63 req, 10 err, 53 dup)
+  latency p50/p95/max: 85ms / 560ms / 2.4s
+  bytes sent/received: 980 B / 59.9 KiB
+  methods: GET:36 OPTIONS:1 POST:25 PUT:1
+  status: 2xx:53 4xx:4 5xx:6
+
+cdn.shop.example  (15 req, 1 err, 8 dup)
+  latency p50/p95/max: 38ms / 1.9s / 1.9s
+  bytes sent/received: 0 B / 2.9 MiB
+  methods: GET:15
+  status: 2xx:8 3xx:6 other:1
+
+search.shop.example  (12 req, 4 err, 2 dup)
+  latency p50/p95/max: 30ms / 47ms / 47ms
+  bytes sent/received: 0 B / 553 B
+  methods: GET:12
+  status: 2xx:8 4xx:4
+
+o0.ingest.sentry.io  (3 req, 0 err, 3 dup)
+  latency p50/p95/max: 56ms / 803ms / 803ms
+  bytes sent/received: 57 B / 39 B
+  methods: POST:3
+  status: 2xx:3
+
+payments.shop.example  (3 req, 1 err, 2 dup)
+  latency p50/p95/max: 245ms / 887ms / 887ms
+  bytes sent/received: 98 B / 104 B
+  methods: OPTIONS:1 POST:2
+  status: 2xx:2 4xx:1
+
+auth.shop.example  (1 req, 0 err, 0 dup)
+  latency p50/p95/max: 407ms / 407ms / 407ms
+  bytes sent/received: 89 B / 342 B
+  methods: POST:1
+  status: 2xx:1
+
+shop.example  (1 req, 0 err, 0 dup)
+  latency p50/p95/max: 261ms / 261ms / 261ms
+  bytes sent/received: 0 B / 19.4 KiB
+  methods: GET:1
+  status: 2xx:1
+
+www.shop.example  (1 req, 0 err, 0 dup)
+  latency p50/p95/max: 21ms / 21ms / 21ms
+  bytes sent/received: 0 B / 0 B
+  methods: GET:1
+  status: 3xx:1
+
+next useful commands: subsystems · endpoints · errors

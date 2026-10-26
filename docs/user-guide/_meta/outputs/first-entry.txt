@@ -1,0 +1,27 @@
+$ wiretrail checkout.har show-entry e000076
+# exit 0
+== wiretrail entry e000076 ==
+POST https://api.shop.example/v1/cart/sync  [500] Internal Server Error
+host: api.shop.example  http: h2  type: api
+server ip: 203.0.113.30
+offset: 42100ms  duration: 192ms
+request headers:
+  accept: application/json, text/plain, */*
+  accept-encoding: gzip, deflate, br
+  user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+  origin: https://shop.example
+  referer: https://shop.example/
+  authorization: <redacted>
+  x-app-version: 4.12.0
+  content-type: application/json
+  content-length: 48
+response headers:
+  content-type: application/json
+  date: Tue, 20 Oct 2026 09:14:44 GMT
+  server: shopfront
+  x-request-id: req_1c776b9fff
+  cf-ray: 775f0aeadf5f3512-AMS
+request body: {"cart":"c_55d1","items":[{"qty":1,"sku":1042}]}
+response body: {"error":{"code":"internal_error","message":"internal server error"}}
+
+next useful commands: timeline · duplicates · errors

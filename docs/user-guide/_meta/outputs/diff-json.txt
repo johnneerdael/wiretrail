@@ -1,0 +1,11 @@
+$ wiretrail checkout.har diff --filter "path:/v1/session/ping" --json | jq '.result.groups[0] | del(.entry_ids)'
+# exit 0
+{
+  "host": "api.shop.example",
+  "method": "POST",
+  "norm_path": "/v1/session/ping",
+  "count": 12,
+  "varying_query": [],
+  "varying_header_names": [],
+  "body_verdict": "volatile-only"
+}

@@ -1,0 +1,13 @@
+$ wiretrail checkout.har checks --json | jq '.result.findings[0]'
+# exit 1
+{
+  "rule": "content-type",
+  "host": "api.shop.example",
+  "norm_path": "/v1/track",
+  "detail": "request JSON body without application/json content-type",
+  "entry_ids": [
+    "e000093",
+    "e000094",
+    "e000095"
+  ]
+}

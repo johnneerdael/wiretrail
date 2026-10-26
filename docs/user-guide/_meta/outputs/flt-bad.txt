@@ -1,0 +1,3 @@
+$ wiretrail checkout.har --filter "colour:red" summary
+# exit 2
+wiretrail: invalid filter: unknown filter key: colour

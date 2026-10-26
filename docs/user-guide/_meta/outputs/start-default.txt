@@ -1,0 +1,26 @@
+$ wiretrail checkout.har startup --top 8
+# exit 0
+== wiretrail startup ==
+73 requests in 30.0s · max concurrency 5 · critical path 5.6s
+
+critical path (sequential spine):
+      21ms  e000000 GET www.shop.example/  [301]
+     261ms  e000001 GET shop.example/  [200]
+     199ms  e000003 GET cdn.shop.example/assets/vendor.9c2d41ab.js  [200]
+     214ms  e000010 GET api.shop.example/v1/config  [200]
+      35ms  e000013 GET api.shop.example/v1/cart  [401]
+     407ms  e000014 POST auth.shop.example/oauth/token  [200]
+      53ms  e000017 GET api.shop.example/v1/cart  [200]
+      97ms  e000019 GET api.shop.example/v1/flags  [200]
+
+slowest in window:
+      1.9s  e000009 GET cdn.shop.example/img/hero.webp
+      1.9s  e000059 GET cdn.shop.example/img/banner.webp
+      1.0s  e000032 GET api.shop.example/v1/products/{id}/price
+     803ms  e000021 POST o0.ingest.sentry.io/api/{id}/envelope/
+     560ms  e000022 GET api.shop.example/v1/products
+     558ms  e000024 GET api.shop.example/v1/products
+     558ms  e000025 GET api.shop.example/v1/products
+     553ms  e000023 GET api.shop.example/v1/products
+
+next useful commands: slowest · timeline · storms

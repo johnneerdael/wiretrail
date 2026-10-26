@@ -1,0 +1,5 @@
+$ wiretrail baseline.har storms --min-count 10
+# exit 0
+== wiretrail storms ==
+
+next useful commands: pagination · duplicates · timeline

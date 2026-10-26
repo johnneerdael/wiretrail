@@ -1,0 +1,7 @@
+$ wiretrail baseline.har auth
+# exit 1
+== wiretrail auth ==
+
+hosts with inconsistent Authorization: api.shop.example, payments.shop.example
+
+next useful commands: jwt · transitions · errors

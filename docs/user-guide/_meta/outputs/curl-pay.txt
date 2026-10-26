@@ -1,0 +1,17 @@
+$ wiretrail checkout.har curl --filter "path:/v1/charges method:post" --top 1
+# exit 0
+== wiretrail curl ==
+
+# e000087 [UNSAFE: payment/order endpoint]
+curl -X POST 'https://payments.shop.example/v1/charges' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-encoding: gzip, deflate, br' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+  -H 'origin: https://shop.example' \
+  -H 'referer: https://shop.example/' \
+  -H 'authorization: <redacted>' \
+  -H 'content-type: application/json' \
+  -H 'content-length: 49' \
+  --data '{"amount":8900,"currency":"EUR","order":"o_4410"}'
+
+next useful commands: show-entry · errors · duplicates

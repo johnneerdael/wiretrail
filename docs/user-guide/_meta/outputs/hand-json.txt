@@ -1,0 +1,16 @@
+$ wiretrail checkout.har handoff --filter "path:/v1/cart/sync" --top 1 --json | jq '.result.items[0] | del(.curl)'
+# exit 1
+{
+  "id": "e000069",
+  "method": "POST",
+  "host": "api.shop.example",
+  "norm_path": "/v1/cart/sync",
+  "status": 503,
+  "timestamp": "2026-10-20T09:14:27+00:00",
+  "offset_ms": 25000.0,
+  "correlation_ids": [
+    "req_fa6f840121",
+    "e1e598c1a6e1ae1d-AMS"
+  ],
+  "server_ip": "203.0.113.30"
+}

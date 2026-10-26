@@ -1,0 +1,5 @@
+$ wiretrail quirks/unauthorized-twice.har retries
+# exit 0
+== wiretrail retries ==
+
+next useful commands: errors · transitions · show-entry

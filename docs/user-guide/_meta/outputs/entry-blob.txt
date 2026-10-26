@@ -1,0 +1,20 @@
+$ wiretrail checkout.har show-entry e000008
+# exit 0
+== wiretrail entry e000008 ==
+GET https://cdn.shop.example/cfg/<redacted>/manifest.json  [200] OK
+host: cdn.shop.example  http: h2  type: api
+server ip: 203.0.113.20
+offset: 430ms  duration: 38ms
+request headers:
+  accept: application/json, text/plain, */*
+  accept-encoding: gzip, deflate, br
+  user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+  origin: https://shop.example
+  referer: https://shop.example/
+response headers:
+  content-type: application/json
+  date: Tue, 20 Oct 2026 09:14:02 GMT
+  server: shopfront
+response body: {"region":"nl","theme":"dark"}
+
+next useful commands: timeline · duplicates · errors

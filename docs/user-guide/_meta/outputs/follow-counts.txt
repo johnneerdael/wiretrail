@@ -1,0 +1,5 @@
+$ for f in checkout baseline sanitized; do printf '%s.har: ' $f; wiretrail $f.har export | wc -l | tr -d ' '; done
+# exit 0
+checkout.har: 99
+baseline.har: 53
+sanitized.har: 99

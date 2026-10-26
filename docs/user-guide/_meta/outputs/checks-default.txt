@@ -1,0 +1,14 @@
+$ wiretrail checkout.har checks
+# exit 1
+== wiretrail checks ==
+
+[content-type] api.shop.example /v1/track
+  request JSON body without application/json content-type (3 entries)
+
+[content-type] api.shop.example /v1/legacy/status
+  JSON response served as text/html (1 entries)
+
+[content-type] api.shop.example /v1/cart/items/{id}
+  empty body with JSON content-type (1 entries)
+
+next useful commands: errors · show-entry · endpoints

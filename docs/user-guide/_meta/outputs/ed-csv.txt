@@ -1,0 +1,7 @@
+$ wiretrail checkout.har export --format csv --filter "host:payments.shop.example"
+# exit 0
+id,offset_ms,duration_ms,method,host,norm_path,status,bytes,content_type,resource_type,correlation
+e000086,63800,887,OPTIONS,payments.shop.example,/v1/charges,204,0,,other,
+e000087,64000,201,POST,payments.shop.example,/v1/charges,402,70,application/json,api,req_e4cd9f9aab
+e000088,66500,245,POST,payments.shop.example,/v1/charges,200,34,application/json,api,req_466e1b8780
+

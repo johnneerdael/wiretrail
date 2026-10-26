@@ -1,0 +1,3 @@
+$ wiretrail checkout.har compare nope.har
+# exit 2
+wiretrail: baseline: failed to read HAR file

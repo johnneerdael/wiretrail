@@ -1,0 +1,3 @@
+$ wiretrail checkout.har errors --json | jq '[.result.groups[].count] | add'
+# exit 1
+16

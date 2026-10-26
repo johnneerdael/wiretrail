@@ -1,0 +1,12 @@
+$ wiretrail checkout.har cascade --json | jq '.result.cascades[0]'
+# exit 1
+{
+  "trigger_id": "e000011",
+  "trigger_kind": "auth",
+  "downstream_failures": 3,
+  "downstream_ids": [
+    "e000012",
+    "e000013",
+    "e000015"
+  ]
+}

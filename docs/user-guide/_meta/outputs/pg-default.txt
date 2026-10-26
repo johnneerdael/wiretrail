@@ -1,0 +1,11 @@
+$ wiretrail checkout.har pagination
+# exit 1
+== wiretrail pagination ==
+
+pagination sequences:
+  4 pages  GET api.shop.example/v1/products  (by limit,page) [repeated-cursor]
+
+N+1 fan-out:
+  12x  GET api.shop.example/v1/products/{id}/price  (after e000025)
+
+next useful commands: storms · duplicates · endpoints

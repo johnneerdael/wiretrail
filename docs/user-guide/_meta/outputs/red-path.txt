@@ -1,0 +1,3 @@
+$ wiretrail checkout.har show-entry e000008 | grep '^GET'
+# exit 0
+GET https://cdn.shop.example/cfg/<redacted>/manifest.json  [200] OK

@@ -1,0 +1,8 @@
+$ wiretrail checkout.har pagination --fanout-min 20
+# exit 1
+== wiretrail pagination ==
+
+pagination sequences:
+  4 pages  GET api.shop.example/v1/products  (by limit,page) [repeated-cursor]
+
+next useful commands: storms · duplicates · endpoints

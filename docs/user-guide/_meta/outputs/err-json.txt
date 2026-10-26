@@ -1,0 +1,18 @@
+$ wiretrail checkout.har errors --top 1 --json | jq '.result.groups[0] | del(.entry_ids)'
+# exit 1
+{
+  "host": "api.shop.example",
+  "method": "POST",
+  "norm_path": "/v1/cart/sync",
+  "status": 503,
+  "count": 4,
+  "error_message": "inventory service unavailable",
+  "error_code": "upstream_unavailable",
+  "body_snippet": "{\"error\":{\"code\":\"upstream_unavailable\",\"message\":\"inventory service unavailable\"}}",
+  "correlation_ids": [
+    "req_fa6f840121",
+    "e1e598c1a6e1ae1d-AMS"
+  ],
+  "first_offset_ms": 25000.0,
+  "last_offset_ms": 33900.0
+}

@@ -1,0 +1,8 @@
+$ wiretrail checkout.har transitions --filter "path:/v1/cart"
+# exit 1
+== wiretrail transitions ==
+
+401 -> 200  [auth-recovered]  GET api.shop.example/v1/cart
+  e000013 -> e000017  (gap 520ms)
+
+next useful commands: errors · retries · show-entry

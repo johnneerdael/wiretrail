@@ -1,0 +1,33 @@
+$ wiretrail checkout.har --filter "host:search.shop.example" summary --top 1
+# exit 1
+== wiretrail summary ==
+entries: 99 total, 12 after filter
+duration (first start to last response): 70.0s
+
+status classes:
+  2xx: 8
+  4xx: 4
+
+resource types:
+  api: 12
+
+top hosts (by request count):
+     12  search.shop.example
+
+top duplicate calls:
+     2x  GET search.shop.example /v1/suggest q=shoes  (e000077)
+
+slowest requests:
+      47ms  e000047 GET search.shop.example/v1/suggest  [200]
+
+biggest payloads:
+        63 B  e000077 search.shop.example/v1/suggest
+
+hints:
+  - 4 error responses (4xx/5xx/failed)
+
+recommended next steps:
+  [HIGH] rate-limit
+         calls during 429 cooldown on search.shop.example /v1/suggest — 4 429s, follow-ups before Retry-After elapsed
+
+next useful commands: rate-limit

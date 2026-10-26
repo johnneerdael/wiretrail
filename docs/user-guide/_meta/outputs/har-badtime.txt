@@ -1,0 +1,7 @@
+$ jq '.log.entries[0].startedDateTime = "yesterday"' checkout.har > badtime.har; wiretrail badtime.har timeline --top 2
+# exit 0
+== wiretrail timeline ==
+     0ms     21ms  e000000 GET www.shop.example/  [301] 0 B
+     0ms    261ms  e000001 GET shop.example/  [200] 19.4 KiB
+
+next useful commands: slowest · duplicates · show-entry

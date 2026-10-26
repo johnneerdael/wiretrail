@@ -1,0 +1,3 @@
+$ wiretrail checkout.har export --filter "path:/cfg/*" | jq -r '[.id, .norm_path] | join("  ")'
+# exit 0
+e000008  /cfg/{blob}/manifest.json

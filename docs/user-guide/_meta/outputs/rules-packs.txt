@@ -1,0 +1,23 @@
+$ wiretrail checkout.har rules --pack auth,security,caching,payments,rest,graphql --top 20
+# exit 1
+== wiretrail rules ==
+
+[high] caching: GET 200 needs Cache-Control
+  missing required header: Cache-Control (48 entries)
+
+[high] auth: Authorization required
+  missing required header: Authorization (40 entries)
+
+[high] payments: idempotency key on charges
+  missing required header: Idempotency-Key (2 entries)
+
+[high] security: no secrets in query
+  opaque secret in query param `d` (1 entries)
+
+[medium] rest: no mutation over GET
+  GET request carries a body (1 entries)
+
+[low] graphql: operationName required
+  GraphQL POST without operationName (2 entries)
+
+next useful commands: checks · errors · diagnose

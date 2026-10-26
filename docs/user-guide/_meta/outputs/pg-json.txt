@@ -1,0 +1,11 @@
+$ wiretrail checkout.har pagination --json | jq '.result.nplus1[0] | del(.entry_ids)'
+# exit 1
+{
+  "host": "api.shop.example",
+  "method": "GET",
+  "norm_path": "/v1/products/{id}/price",
+  "fanout": 12,
+  "parent_id": "e000025",
+  "first_offset_ms": 4200.0,
+  "last_offset_ms": 4860.0
+}

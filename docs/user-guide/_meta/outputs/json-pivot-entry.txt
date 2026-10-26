@@ -1,0 +1,7 @@
+$ wiretrail checkout.har show-entry "$(wiretrail checkout.har errors --json | jq -r '.result.groups[0].entry_ids[0]')" --json | jq '.result | {id, status, norm_path}'
+# exit 0
+{
+  "id": "e000069",
+  "status": 503,
+  "norm_path": "/v1/cart/sync"
+}

@@ -1,0 +1,8 @@
+$ wiretrail checkout.har search "internal server error"
+# exit 0
+== wiretrail search ==
+
+e000076 (resp.body)
+  …or":{"code":"internal_error","message":"internal server error"}}…
+
+next useful commands: show-entry · extract · errors

@@ -1,0 +1,7 @@
+$ wiretrail checkout.har timeline --filter "path:/img/banner.webp"
+# exit 0
+== wiretrail timeline ==
+   15.0s     1.9s  e000059 GET cdn.shop.example/img/banner.webp  [0] 0 B DUP
+   19.5s     71ms  e000064 GET cdn.shop.example/img/banner.webp  [200] 60.0 KiB RETRY
+
+next useful commands: slowest · duplicates · show-entry

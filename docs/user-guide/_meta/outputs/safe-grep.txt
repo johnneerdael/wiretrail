@@ -1,0 +1,4 @@
+$ grep -c -i 'authorization' checkout.har stripped.har
+# exit 0
+checkout.har:59
+stripped.har:0

@@ -1,0 +1,5 @@
+$ wiretrail checkout.har diff --filter "path:/v1/products/*/price"
+# exit 0
+== wiretrail diff ==
+
+next useful commands: duplicates · show-entry · endpoints

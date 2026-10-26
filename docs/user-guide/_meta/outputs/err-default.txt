@@ -1,0 +1,63 @@
+$ wiretrail checkout.har errors
+# exit 1
+== wiretrail errors ==
+
+   4x  [503] POST api.shop.example/v1/cart/sync
+  message: inventory service unavailable
+  code: upstream_unavailable
+  correlation: req_fa6f840121, e1e598c1a6e1ae1d-AMS
+  body: {"error":{"code":"upstream_unavailable","message":"inventory service unavailable"}}
+  entries: e000069, e000070, e000072, e000073
+
+   4x  [429] GET search.shop.example/v1/suggest
+  message: too many requests
+  code: rate_limited
+  body: {"error":{"code":"rate_limited","message":"too many requests"}}
+  entries: e000077, e000078, e000079, e000080
+
+   2x  [401] GET api.shop.example/v1/cart
+  message: JWT expired
+  code: token_expired
+  correlation: req_e80ca59c03, 1bd5f212c6ef5780-AMS
+  body: {"error":{"code":"token_expired","message":"JWT expired"}}
+  entries: e000012, e000013
+
+   1x  [502] GET api.shop.example/v1/inventory/{id}
+  message: bad gateway
+  code: bad_gateway
+  correlation: req_52f70893f4, 5b85690bce927766-AMS
+  body: {"error":{"code":"bad_gateway","message":"bad gateway"}}
+  entries: e000054
+
+   1x  [500] POST api.shop.example/v1/cart/sync
+  message: internal server error
+  code: internal_error
+  correlation: req_1c776b9fff, 775f0aeadf5f3512-AMS
+  body: {"error":{"code":"internal_error","message":"internal server error"}}
+  entries: e000076
+
+   1x  [402] POST payments.shop.example/v1/charges
+  message: Your card was declined.
+  code: card_declined
+  correlation: req_e4cd9f9aab, 8afbe09b31f39a02-AMS
+  body: {"error":{"code":"card_declined","message":"Your card was declined."}}
+  entries: e000087
+
+   1x  [401] GET api.shop.example/v1/auth/session
+  message: JWT expired
+  code: token_expired
+  correlation: req_07a2ad2e14, 1639524a7ea30bdb-AMS
+  body: {"error":{"code":"token_expired","message":"JWT expired"}}
+  entries: e000011
+
+   1x  [401] GET api.shop.example/v1/notifications
+  message: JWT expired
+  code: token_expired
+  correlation: req_ca4f9b978d, fc614e4fa44e02a0-AMS
+  body: {"error":{"code":"token_expired","message":"JWT expired"}}
+  entries: e000015
+
+   1x  [0] GET cdn.shop.example/img/banner.webp
+  entries: e000059
+
+next useful commands: transitions · redirects · show-entry

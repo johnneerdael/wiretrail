@@ -1,0 +1,9 @@
+$ wiretrail quirks/tls-in-connect.har slowest
+# exit 0
+== wiretrail slowest ==
+
+   731ms  e000000 GET tls.test.example/  [200]
+  bottleneck: TCP connect
+  phases: wait 20ms / receive 5ms / send 1ms / connect 700ms / dns 5ms / ssl 600ms / blocked 0ms
+
+next useful commands: timeline · hosts · show-entry

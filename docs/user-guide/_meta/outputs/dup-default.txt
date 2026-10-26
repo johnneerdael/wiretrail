@@ -1,0 +1,45 @@
+$ wiretrail checkout.har duplicates
+# exit 1
+== wiretrail duplicates ==
+
+  12x  GET api.shop.example/v1/products/{id}/price
+  statuses: 200:12
+  entries: e000026, e000027, e000028, e000029, e000030, e000031, e000032, e000033, e000034, e000035, e000036, e000037
+
+  12x  POST api.shop.example/v1/session/ping
+  statuses: 200:12
+  entries: e000038, e000041, e000042, e000050, e000052, e000055, e000058, e000060, e000062, e000063, e000065, e000068
+
+   6x  GET api.shop.example/v1/flags
+  statuses: 200:6
+  entries: e000019, e000040, e000051, e000061, e000066, e000071
+
+   6x  GET cdn.shop.example/img/hero.png
+  statuses: 302:6
+  entries: e000007, e000020, e000039, e000053, e000067, e000074
+
+   5x [retry pattern]  POST api.shop.example/v1/cart/sync
+  statuses: 500:1 503:4
+  entries: e000069, e000070, e000072, e000073, e000076
+
+   4x  GET api.shop.example/v1/cart
+  statuses: 200:2 401:2
+  entries: e000012, e000013, e000017, e000085
+
+   3x  POST api.shop.example/graphql
+  statuses: 200:3
+  entries: e000082, e000083, e000084
+
+   3x  POST api.shop.example/v1/track
+  statuses: 200:3
+  entries: e000093, e000094, e000095
+
+   3x  POST o0.ingest.sentry.io/api/{id}/envelope/
+  statuses: 200:3
+  entries: e000021, e000057, e000075
+
+   2x  GET api.shop.example/v1/auth/session
+  statuses: 200:1 401:1
+  entries: e000011, e000016
+
+next useful commands: retries · errors · show-entry

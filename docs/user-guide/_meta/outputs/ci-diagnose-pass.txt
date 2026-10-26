@@ -1,0 +1,8 @@
+$ wiretrail baseline.har diagnose --top 20; echo "exit code: $?"
+# exit 0
+== wiretrail diagnose ==
+
+no notable findings
+
+next useful commands: errors · auth · duplicates
+exit code: 0

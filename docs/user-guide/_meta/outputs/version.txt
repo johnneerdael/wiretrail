@@ -1,0 +1,3 @@
+$ wiretrail --version
+# exit 0
+wiretrail 0.3.2

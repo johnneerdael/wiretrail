@@ -1,0 +1,11 @@
+$ wiretrail checkout.har storms --top 1 --json | jq '.result.storms[0] | del(.entry_ids)'
+# exit 1
+{
+  "scope_kind": "host",
+  "scope": "api.shop.example",
+  "peak_count": 13,
+  "window_ms": 1000,
+  "first_offset_ms": 3800.0,
+  "last_offset_ms": 4800.0,
+  "calls_per_sec": 13.0
+}

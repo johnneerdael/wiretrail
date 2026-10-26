@@ -1,0 +1,19 @@
+$ wiretrail checkout.har export | jq -s 'group_by(.host) | map({host: .[0].host, requests: length, ms: (map(.duration_ms) | add)}) | sort_by(-.ms) | .[0:3]'
+# exit 0
+[
+  {
+    "host": "api.shop.example",
+    "requests": 63,
+    "ms": 11797
+  },
+  {
+    "host": "cdn.shop.example",
+    "requests": 15,
+    "ms": 4585
+  },
+  {
+    "host": "payments.shop.example",
+    "requests": 3,
+    "ms": 1333
+  }
+]

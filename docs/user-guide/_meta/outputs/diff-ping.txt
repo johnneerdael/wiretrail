@@ -1,0 +1,7 @@
+$ wiretrail checkout.har diff --filter "path:/v1/session/ping"
+# exit 0
+== wiretrail diff ==
+
+POST api.shop.example/v1/session/ping  (12 calls, body: volatile-only)
+
+next useful commands: duplicates · show-entry · endpoints

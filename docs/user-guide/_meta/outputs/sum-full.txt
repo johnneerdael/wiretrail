@@ -1,0 +1,94 @@
+$ wiretrail checkout.har
+# exit 1
+== wiretrail summary ==
+entries: 99 total, 99 after filter
+duration (first start to last response): 70.0s
+
+status classes:
+  2xx: 76
+  3xx: 7
+  4xx: 9
+  5xx: 6
+  other: 1
+
+resource types:
+  analytics: 3
+  api: 77
+  document: 3
+  media: 9
+  other: 3
+  static: 4
+
+top hosts (by request count):
+     63  api.shop.example
+     15  cdn.shop.example
+     12  search.shop.example
+      3  o0.ingest.sentry.io
+      3  payments.shop.example
+      1  auth.shop.example
+      1  shop.example
+      1  www.shop.example
+
+top duplicate calls:
+    12x  GET api.shop.example /v1/products/{id}/price   (e000026)
+    12x  POST api.shop.example /v1/session/ping   (e000038)
+     6x  GET api.shop.example /v1/flags   (e000019)
+     6x  GET cdn.shop.example /img/hero.png   (e000007)
+     5x  POST api.shop.example /v1/cart/sync   (e000069)
+     4x  GET api.shop.example /v1/cart   (e000012)
+     3x  POST api.shop.example /graphql   (e000082)
+     3x  POST api.shop.example /v1/track   (e000093)
+     3x  POST o0.ingest.sentry.io /api/{id}/envelope/   (e000021)
+     2x  GET api.shop.example /v1/auth/session   (e000011)
+
+slowest requests:
+      2.4s  e000090 POST api.shop.example/v1/orders  [201]
+      1.9s  e000009 GET cdn.shop.example/img/hero.webp  [200]
+      1.9s  e000059 GET cdn.shop.example/img/banner.webp  [0]
+      1.1s  e000092 POST api.shop.example/v1/uploads/avatar  [201]
+      1.0s  e000032 GET api.shop.example/v1/products/{id}/price  [200]
+     887ms  e000086 OPTIONS payments.shop.example/v1/charges  [204]
+     803ms  e000021 POST o0.ingest.sentry.io/api/{id}/envelope/  [200]
+     560ms  e000022 GET api.shop.example/v1/products  [200]
+     558ms  e000024 GET api.shop.example/v1/products  [200]
+     558ms  e000025 GET api.shop.example/v1/products  [200]
+
+biggest payloads:
+     2.1 MiB  e000009 cdn.shop.example/img/hero.webp
+   412.0 KiB  e000003 cdn.shop.example/assets/vendor.9c2d41ab.js
+   184.0 KiB  e000002 cdn.shop.example/assets/app.5b1e0c7d.js
+    98.0 KiB  e000005 cdn.shop.example/fonts/inter-var.woff2
+    60.0 KiB  e000064 cdn.shop.example/img/banner.webp
+    47.1 KiB  e000098 api.shop.example/v1/receipts/{id}/download
+    38.0 KiB  e000004 cdn.shop.example/assets/app.2e7f1a40.css
+    19.4 KiB  e000001 shop.example/
+    11.0 KiB  e000010 api.shop.example/v1/config
+     2.0 KiB  e000006 cdn.shop.example/img/logo.svg
+
+hints:
+  - 12x duplicate calls: GET api.shop.example /v1/products/{id}/price 
+  - 16 error responses (4xx/5xx/failed)
+
+recommended next steps:
+  [HIGH] retries
+         4 retries, final 500 on POST /v1/cart/sync — repeated retries did not recover
+  [HIGH] errors --filter "host:api.shop.example"
+         4x 503 on POST /v1/cart/sync — inventory service unavailable
+  [HIGH] rate-limit
+         calls during 429 cooldown on search.shop.example /v1/suggest — 4 429s, follow-ups before Retry-After elapsed
+  [HIGH] auth
+         suspicious token refresh on auth.shop.example — refresh succeeded but later calls reused the old token
+  [MEDIUM] storms
+         13 host calls/s burst to api.shop.example — burst of calls in a 1s window
+  [MEDIUM] storms
+         12 endpoint calls/s burst to api.shop.example/v1/products/{id}/price — burst of calls in a 1s window
+  [MEDIUM] diff --filter "host:api.shop.example path:/v1/products/*/price"
+         12x identical GET /v1/products/{id}/price — repeated identical calls (not retries)
+  [MEDIUM] diff --filter "host:api.shop.example path:/v1/session/ping"
+         12x identical POST /v1/session/ping — repeated identical calls (not retries)
+  [MEDIUM] errors
+         4x 429 on GET /v1/suggest — too many requests
+  [MEDIUM] auth
+         4 auth failures (401/403) — requests rejected for authentication/authorization
+
+next useful commands: auth · diff · errors · rate-limit · retries · storms

@@ -1,0 +1,10 @@
+$ for spec in 'show-entry e000076' 'curl e000076' 'search internal' 'extract $.error.code' 'compare baseline.har' 'report' 'rules --pack payments' 'auto'; do printf '%s: ' "$spec"; wiretrail checkout.har $spec --json --top 2 | jq -r '.result | to_entries | map(.key + (if (.value|type)=="array" and (.value|length)>0 and (.value[0]|type)=="object" then " [" + (.value[0]|keys_unsorted|join(", ")) + "]" else "" end)) | join(", ")'; done
+# exit 1
+show-entry e000076: id, index, method, url, host, norm_path, status, status_text, http_version, server_ip, resource_type, content_type, started_offset_ms, duration_ms, query, req_headers, resp_headers, correlation, timings, req_body_snippet, resp_body_snippet
+curl e000076: commands [id, safe, label, command]
+search internal: matches [id, location, snippet]
+extract $.error.code: values [id, value]
+compare baseline.har: new_hosts, removed_hosts, new_endpoints, removed_endpoints, new_errors [endpoint, status, count, severity], latency_regressions [endpoint, base_p50_ms, new_p50_ms, severity], payload_growth [endpoint, base_bytes, new_bytes, severity], max_severity
+report: markdown
+rules --pack payments: findings [rule, severity, detail, entry_ids]
+auto: drilldowns [command, detail, evidence_ids, filter, kind, result, severity, title], not_drilled, summary

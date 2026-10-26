@@ -1,0 +1,52 @@
+$ wiretrail --help
+# exit 0
+Fast HAR analyzer CLI
+
+Usage: wiretrail [OPTIONS] <FILE> [COMMAND]
+
+Commands:
+  summary      Executive summary of the capture (default)
+  hosts        Per-host request/latency/byte/error breakdown
+  subsystems   Group hosts into named subsystems (vendor heuristics + config)
+  endpoints    Normalized endpoint inventory
+  duplicates   Repeated requests (method + path + query fingerprint)
+  retries      Repeated requests that follow a failed attempt
+  errors       4xx/5xx/failed responses grouped by endpoint
+  redirects    Redirect responses, chains, and storms
+  slowest      Top-N slowest requests with timing breakdown
+  transitions  Status-code transition sequences (401->200, 429->429, ...)
+  timeline     Chronological per-request timeline
+  show-entry   Full redacted detail for one entry (by id `e000123` or index)
+  report       Compose a dossier-style markdown report
+  curl         Sanitized curl replay commands (one entry, or all filtered)
+  storms       Bursts of many calls to the same host or endpoint within a window
+  pagination   Pagination loops and N+1 fan-out clusters
+  rate-limit   Rate-limit (429) events, Retry-After, and cooldown violations
+  jwt          Find and decode JWTs (redacted: no signature, hashed sub)
+  auth         Auth failures (401/403), inconsistent auth, and token-refresh flows
+  handoff      Backend trace-handoff blocks for failed + slowest requests
+  diff         What varies across repeated calls to the same endpoint
+  checks       Built-in checks: required headers (config) + content-type mismatch
+  diagnose     Ranked root-cause findings synthesized from all analyses
+  startup      Boot/startup profile: concurrency, critical path, slow dependencies
+  cascade      Earliest failure and downstream failure cascades
+  validate     Capture-quality and analysis-sufficiency report
+  search       Search request/response bodies (redaction-safe)
+  extract      Extract a JSON path from request/response bodies
+  export       Flatten entries to NDJSON or CSV
+  compare      Compare this capture against a baseline HAR (regression diff)
+  rules        Evaluate config rules and built-in rule packs against the capture
+  auto         Smart one-shot: summary + auto-drill the top recommendations inline
+  help         Print this message or the help of the given subcommand(s)
+
+Arguments:
+  <FILE>  Path to the HAR file
+
+Options:
+      --json                    Emit machine-readable JSON
+      --top <TOP>               Max items per list (top-N) [default: 10]
+      --filter <FILTER>         Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>         Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets  Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                    Print help
+  -V, --version                 Print version

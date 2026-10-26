@@ -1,0 +1,17 @@
+$ wiretrail checkout.har slowest --filter "time:>1000" --top 3
+# exit 0
+== wiretrail slowest ==
+
+    2.4s  e000090 POST api.shop.example/v1/orders  [201]
+  bottleneck: server wait/TTFB
+  phases: wait 2.4s / receive 8ms / send 1ms / connect 0ms / dns 0ms / ssl 0ms / blocked 0ms
+
+    1.9s  e000009 GET cdn.shop.example/img/hero.webp  [200]
+  bottleneck: download/receive
+  phases: wait 120ms / receive 1.8s / send 1ms / connect 0ms / dns 0ms / ssl 0ms / blocked 0ms
+
+    1.9s  e000059 GET cdn.shop.example/img/banner.webp  [0]
+  bottleneck: TCP connect
+  phases: wait 0ms / receive 0ms / send 0ms / connect 1.9s / dns 30ms / ssl 0ms / blocked 0ms
+
+next useful commands: timeline · hosts · show-entry

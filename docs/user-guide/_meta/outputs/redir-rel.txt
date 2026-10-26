@@ -1,0 +1,8 @@
+$ wiretrail quirks/relative-redirect.har redirects
+# exit 1
+== wiretrail redirects ==
+
+   6x  [302] GET cdn.test.example/a.png [storm]
+  entries: e000000, e000001, e000002, e000003, e000004, e000005
+
+next useful commands: timeline · errors · show-entry

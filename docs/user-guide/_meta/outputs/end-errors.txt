@@ -1,0 +1,31 @@
+$ wiretrail checkout.har endpoints --filter "status:>=400" --top 6
+# exit 1
+== wiretrail endpoints ==
+
+   5  POST api.shop.example/v1/cart/sync
+  status: 500:1 503:4
+  content-types: application/json
+
+   4  GET search.shop.example/v1/suggest
+  status: 429:4
+  content-types: application/json
+  query keys: q
+
+   2  GET api.shop.example/v1/cart
+  status: 401:2
+  content-types: application/json
+
+   1  GET api.shop.example/v1/auth/session
+  status: 401:1
+  content-types: application/json
+
+   1  GET api.shop.example/v1/inventory/{id}
+  status: 502:1
+  content-types: application/json
+  query keys: store
+
+   1  GET api.shop.example/v1/notifications
+  status: 401:1
+  content-types: application/json
+
+next useful commands: errors · duplicates · show-entry

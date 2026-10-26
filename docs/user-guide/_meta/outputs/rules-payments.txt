@@ -1,0 +1,8 @@
+$ wiretrail checkout.har rules --pack payments
+# exit 1
+== wiretrail rules ==
+
+[high] payments: idempotency key on charges
+  missing required header: Idempotency-Key (2 entries)
+
+next useful commands: checks · errors · diagnose

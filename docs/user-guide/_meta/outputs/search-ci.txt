@@ -1,0 +1,11 @@
+$ wiretrail checkout.har search "JWT EXPIRED" --ignore-case --top 2
+# exit 0
+== wiretrail search ==
+
+e000011 (resp.body)
+  …ror":{"code":"token_expired","message":"JWT expired"}}…
+
+e000012 (resp.body)
+  …ror":{"code":"token_expired","message":"JWT expired"}}…
+
+next useful commands: show-entry · extract · errors

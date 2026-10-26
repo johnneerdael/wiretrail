@@ -1,0 +1,3 @@
+$ wiretrail quirks/unmasked-places.har show-entry e000002 | grep 'request body'
+# exit 0
+request body: user=ann&password=hunter2&grant_type=password

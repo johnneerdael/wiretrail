@@ -1,0 +1,16 @@
+$ wiretrail checkout.har pagination --help
+# exit 0
+Pagination loops and N+1 fan-out clusters
+
+Usage: wiretrail <FILE> pagination [OPTIONS]
+
+Options:
+      --max-pages <MAX_PAGES>    Page count above which a sequence is flagged excessive [default: 20]
+      --fanout-min <FANOUT_MIN>  Minimum fan-out to flag an N+1 cluster [default: 5]
+      --window-ms <WINDOW_MS>    Window (ms) for N+1 clustering [default: 2000]
+      --json                     Emit machine-readable JSON
+      --top <TOP>                Max items per list (top-N) [default: 10]
+      --filter <FILTER>          Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>          Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets   Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                     Print help

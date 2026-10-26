@@ -1,0 +1,13 @@
+$ wiretrail checkout.har validate --json | jq '.result | {pct_with_timings, pct_with_resp_body, sanitized, anomalies}'
+# exit 1
+{
+  "pct_with_timings": 0.98989898989899,
+  "pct_with_resp_body": 0.8080808080808081,
+  "sanitized": false,
+  "anomalies": [
+    {
+      "kind": "status-0",
+      "count": 1
+    }
+  ]
+}

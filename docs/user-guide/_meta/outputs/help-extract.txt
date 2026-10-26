@@ -1,0 +1,17 @@
+$ wiretrail checkout.har extract --help
+# exit 0
+Extract a JSON path from request/response bodies
+
+Usage: wiretrail <FILE> extract [OPTIONS] <PATH>
+
+Arguments:
+  <PATH>  JSON path, e.g. `$.errors[0].code`
+
+Options:
+      --target <TARGET>         Which body to query [default: resp] [possible values: req, resp]
+      --json                    Emit machine-readable JSON
+      --top <TOP>               Max items per list (top-N) [default: 10]
+      --filter <FILTER>         Filter clauses, e.g. --filter "host:api.foo.com status:>=400"
+      --config <CONFIG>         Path to a wiretrail.yaml config (default: ./wiretrail.yaml if present)
+      --unsafe-include-secrets  Show raw secret values (auth headers, tokens, bodies) instead of redacting
+  -h, --help                    Print help

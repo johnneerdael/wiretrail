@@ -1,0 +1,3 @@
+$ wiretrail baseline.har auto > /dev/null; echo "exit code: $?"
+# exit 0
+exit code: 0

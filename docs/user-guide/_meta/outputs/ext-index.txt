@@ -1,0 +1,6 @@
+$ wiretrail checkout.har extract 'items[0].sku' --target req --filter "path:/v1/cart/sync" --top 1
+# exit 0
+== wiretrail extract ==
+e000069  1042
+
+next useful commands: search · show-entry · errors

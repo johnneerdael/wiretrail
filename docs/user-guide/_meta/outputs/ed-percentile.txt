@@ -1,0 +1,7 @@
+$ wiretrail checkout.har export --filter "host:api.shop.example" | jq -s 'map(.duration_ms) | sort | {requests: length, median: .[length / 2 | floor], max: .[-1]}'
+# exit 0
+{
+  "requests": 63,
+  "median": 85.0,
+  "max": 2409.0
+}

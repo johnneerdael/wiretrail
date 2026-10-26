@@ -1,0 +1,8 @@
+$ wiretrail checkout.har rules --pack auth --filter "host:api.shop.example method:get"
+# exit 1
+== wiretrail rules ==
+
+[high] auth: Authorization required
+  missing required header: Authorization (2 entries)
+
+next useful commands: checks · errors · diagnose

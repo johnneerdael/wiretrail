@@ -1,0 +1,13 @@
+$ wiretrail checkout.har timeline --filter "host:api.shop.example" --top 8
+# exit 0
+== wiretrail timeline ==
+   900ms    214ms  e000010 GET api.shop.example/v1/config  [200] 11.0 KiB
+    1.0s     94ms  e000011 GET api.shop.example/v1/auth/session  [401] 58 B DUP
+    1.1s     56ms  e000012 GET api.shop.example/v1/cart  [401] 58 B DUP
+    1.2s     35ms  e000013 GET api.shop.example/v1/cart  [401] 58 B DUP
+    1.3s     51ms  e000015 GET api.shop.example/v1/notifications  [401] 58 B DUP
+    1.7s     83ms  e000016 GET api.shop.example/v1/auth/session  [200] 36 B DUP
+    1.7s     53ms  e000017 GET api.shop.example/v1/cart  [200] 45 B DUP
+    1.7s     84ms  e000018 GET api.shop.example/v1/notifications  [200] 12 B DUP
+
+next useful commands: slowest · duplicates · show-entry

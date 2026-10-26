@@ -1,0 +1,3 @@
+$ wiretrail quirks/unmasked-places.har errors | grep 'message:'
+# exit 1
+  message: invalid token abc123 for ann

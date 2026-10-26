@@ -1,0 +1,13 @@
+$ wiretrail baseline.har compare checkout.har
+# exit 1
+== wiretrail compare ==
+max severity: medium
+removed hosts: auth.shop.example, www.shop.example
+new endpoints: 1
+removed endpoints: 4
+
+latency regressions:
+  [medium] POST o0.ingest.sentry.io/api/{id}/envelope/ p50 56ms -> 815ms
+  [medium] POST payments.shop.example/v1/charges p50 201ms -> 424ms
+
+next useful commands: diagnose · errors · slowest

@@ -1,0 +1,23 @@
+$ wiretrail checkout.har errors --top 1 --json | jq '{tool, schema_version, command, warnings, next_commands, capture}'
+# exit 1
+{
+  "tool": "wiretrail",
+  "schema_version": 1,
+  "command": "errors",
+  "warnings": [],
+  "next_commands": [
+    "transitions",
+    "redirects",
+    "show-entry"
+  ],
+  "capture": {
+    "har_version": "1.2",
+    "creator": "WireTrail demo generator (synthetic)",
+    "creator_version": "1",
+    "browser": null,
+    "entry_count": 99,
+    "start_ms": 1792487642000,
+    "end_ms": 1792487711953,
+    "duration_ms": 69953.0
+  }
+}

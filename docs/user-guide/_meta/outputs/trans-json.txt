@@ -1,0 +1,13 @@
+$ wiretrail checkout.har transitions --filter "path:/v1/cart" --json | jq '.result.transitions[0]'
+# exit 1
+{
+  "host": "api.shop.example",
+  "method": "GET",
+  "norm_path": "/v1/cart",
+  "from_status": 401,
+  "to_status": 200,
+  "from_id": "e000013",
+  "to_id": "e000017",
+  "gap_ms": 520.0,
+  "label": "auth-recovered"
+}

@@ -1,0 +1,9 @@
+$ wiretrail checkout.har --filter "has:resp.header.retry-after" timeline
+# exit 0
+== wiretrail timeline ==
+   46.0s     25ms  e000077 GET search.shop.example/v1/suggest  [429] 63 B
+   46.8s     30ms  e000078 GET search.shop.example/v1/suggest  [429] 63 B
+   48.1s     33ms  e000079 GET search.shop.example/v1/suggest  [429] 63 B
+   52.2s     29ms  e000080 GET search.shop.example/v1/suggest  [429] 63 B
+
+next useful commands: slowest · duplicates · show-entry

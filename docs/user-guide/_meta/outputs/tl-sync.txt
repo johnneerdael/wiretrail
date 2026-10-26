@@ -1,0 +1,10 @@
+$ wiretrail checkout.har timeline --filter "path:/v1/cart/sync"
+# exit 0
+== wiretrail timeline ==
+   25.0s    243ms  e000069 POST api.shop.example/v1/cart/sync  [503] 83 B DUP
+   26.2s    210ms  e000070 POST api.shop.example/v1/cart/sync  [503] 83 B RETRY
+   28.7s    184ms  e000072 POST api.shop.example/v1/cart/sync  [503] 83 B RETRY
+   33.9s    234ms  e000073 POST api.shop.example/v1/cart/sync  [503] 83 B RETRY
+   42.1s    192ms  e000076 POST api.shop.example/v1/cart/sync  [500] 69 B RETRY
+
+next useful commands: slowest · duplicates · show-entry

@@ -1,0 +1,5 @@
+$ wiretrail checkout.har search "no such text anywhere"
+# exit 0
+== wiretrail search ==
+
+next useful commands: show-entry · extract · errors

@@ -1,0 +1,26 @@
+$ wiretrail checkout.har rules --config config/wiretrail.yaml
+# exit 1
+== wiretrail rules ==
+
+[high] No tracking hosts in a checkout capture
+  matched a forbidden rule (3 entries)
+
+[medium] Storefront calls are fast enough
+  latency 558ms exceeds budget 500ms (2 entries)
+
+[medium] Storefront calls are fast enough
+  latency 1009ms exceeds budget 500ms (1 entries)
+
+[medium] Storefront calls are fast enough
+  latency 1104ms exceeds budget 500ms (1 entries)
+
+[medium] Storefront calls are fast enough
+  latency 2409ms exceeds budget 500ms (1 entries)
+
+[medium] Storefront calls are fast enough
+  latency 553ms exceeds budget 500ms (1 entries)
+
+[medium] Storefront calls are fast enough
+  latency 560ms exceeds budget 500ms (1 entries)
+
+next useful commands: checks · errors · diagnose

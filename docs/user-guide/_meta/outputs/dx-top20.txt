@@ -1,0 +1,85 @@
+$ wiretrail checkout.har diagnose --top 20
+# exit 1
+== wiretrail diagnose ==
+
+[HIGH] retry-exhaustion — 4 retries, final 500 on POST /v1/cart/sync
+  repeated retries did not recover
+  evidence: e000069, e000070, e000072, e000073, e000076
+  -> wiretrail <file> retries
+
+[HIGH] 5xx-cluster — 4x 503 on POST /v1/cart/sync
+  inventory service unavailable
+  evidence: e000069, e000070, e000072, e000073
+  -> wiretrail <file> errors --filter "host:api.shop.example"
+
+[HIGH] rate-limit-no-backoff — calls during 429 cooldown on search.shop.example /v1/suggest
+  4 429s, follow-ups before Retry-After elapsed
+  evidence: e000077, e000078, e000079, e000080
+  -> wiretrail <file> rate-limit
+
+[HIGH] token-refresh-race — suspicious token refresh on auth.shop.example
+  refresh succeeded but later calls reused the old token
+  evidence: e000014, e000015
+  -> wiretrail <file> auth
+
+[MEDIUM] request-storm — 13 host calls/s burst to api.shop.example
+  burst of calls in a 1s window
+  evidence: e000024, e000025, e000026, e000027, e000028, e000029, e000030, e000031
+  -> wiretrail <file> storms
+
+[MEDIUM] request-storm — 12 endpoint calls/s burst to api.shop.example/v1/products/{id}/price
+  burst of calls in a 1s window
+  evidence: e000026, e000027, e000028, e000029, e000030, e000031, e000032, e000033
+  -> wiretrail <file> storms
+
+[MEDIUM] wasteful-duplicates — 12x identical GET /v1/products/{id}/price
+  repeated identical calls (not retries)
+  evidence: e000026, e000027, e000028, e000029, e000030, e000031, e000032, e000033
+  -> wiretrail <file> diff --filter "host:api.shop.example path:/v1/products/*/price"
+
+[MEDIUM] wasteful-duplicates — 12x identical POST /v1/session/ping
+  repeated identical calls (not retries)
+  evidence: e000038, e000041, e000042, e000050, e000052, e000055, e000058, e000060
+  -> wiretrail <file> diff --filter "host:api.shop.example path:/v1/session/ping"
+
+[MEDIUM] 4xx — 4x 429 on GET /v1/suggest
+  too many requests
+  evidence: e000077, e000078, e000079, e000080
+  -> wiretrail <file> errors
+
+[MEDIUM] auth-failures — 4 auth failures (401/403)
+  requests rejected for authentication/authorization
+  evidence: e000012, e000013, e000011, e000015
+  -> wiretrail <file> auth
+
+[MEDIUM] 4xx — 2x 401 on GET /v1/cart
+  JWT expired
+  evidence: e000012, e000013
+  -> wiretrail <file> errors
+
+[MEDIUM] 4xx — 1x 402 on POST /v1/charges
+  Your card was declined.
+  evidence: e000087
+  -> wiretrail <file> errors
+
+[MEDIUM] 4xx — 1x 401 on GET /v1/auth/session
+  JWT expired
+  evidence: e000011
+  -> wiretrail <file> errors
+
+[MEDIUM] 4xx — 1x 401 on GET /v1/notifications
+  JWT expired
+  evidence: e000015
+  -> wiretrail <file> errors
+
+[LOW] redirect-storm — 6x [302] redirect on cdn.shop.example /img/hero.png
+  repeated redirects
+  evidence: e000007, e000020, e000039, e000053, e000067, e000074
+  -> wiretrail <file> redirects
+
+[LOW] slow-backend — slowest call 2409ms on api.shop.example /v1/orders
+  dominated by server wait (TTFB)
+  evidence: e000090
+  -> wiretrail <file> slowest
+
+next useful commands: errors · auth · duplicates

@@ -1,0 +1,4 @@
+$ wiretrail checkout.har export | jq -r 'select(.id == "e000000" or .id == "e000098") | "\(.id) offset \(.offset_ms) ms"'
+# exit 0
+e000000 offset 0.0 ms
+e000098 offset 69800.0 ms
