@@ -20,7 +20,8 @@ Follow the `analysing-har` skill. Concretely:
    `rate-limit` → `errors`/`retries`/`cascade`/`slowest` → `auth`/`jwt` →
    `search`/`extract` → `handoff`/`report`/`show-entry`.
 5. **Report the findings** with the exact wiretrail evidence (entry IDs, counts,
-   statuses, snippets). The output is redacted and safe to quote directly.
+   statuses, snippets). Masking is pattern-based, so read what you quote: `search`,
+   `extract` and `show-entry` can print a secret it did not recognize (see the skill).
 6. Only use `--unsafe-include-secrets` if the user needs a *replayable* request, and
    warn them the output then contains live credentials.
 

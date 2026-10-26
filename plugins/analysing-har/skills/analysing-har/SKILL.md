@@ -10,14 +10,16 @@ description: Use when analysing or debugging a HAR (HTTP Archive) network captur
 `wiretrail` is a fast, deterministic, agent-friendly CLI for post-mortem analysis
 of HAR (HTTP Archive) captures. It answers narrow, repeatable questions in a single
 command — storms, duplicates, retries, errors, slow calls, auth flows, diffs —
-with structured terminal output and a stable `--json` schema. It **redacts secrets
-by default**, so its output is safe to quote back to the user.
+with structured terminal output and a stable `--json` schema. It **masks the secrets
+it recognizes by default**. That is not the same as "safe to quote": see
+[Redaction](#redaction-read-before-you-quote) below.
 
 Reach for wiretrail instead of grepping the raw HAR JSON or describing the file by
-hand: it parses a 143 MB capture in ~0.5 s and each command runs in well under a
-second.
+hand: on a 150 MB capture most commands take about half a second (`summary`, `diagnose`
+and `auto` take longer, about 2 to 5 seconds).
 
 **Source:** https://github.com/johnneerdael/wiretrail · `cargo install wiretrail`
+**User guide:** https://wiretrail.neerdael.nl/ (every block of output in it is real)
 
 ## When to use
 
@@ -59,9 +61,25 @@ wiretrail <FILE.har> [COMMAND] [OPTIONS]
 - Entry IDs (`e000123`) are stable across commands — pivot from a finding to
   `show-entry`/`curl` on the same id.
 
-**Redaction is on by default.** Quote wiretrail output directly. Only add
-`--unsafe-include-secrets` when the user needs a *replayable* request (auth headers,
-tokens, URL secrets) — and warn them the output then contains live credentials.
+Only add `--unsafe-include-secrets` when the user needs a *replayable* request (auth
+headers, tokens, URL secrets) — and warn them the output then contains live credentials.
+
+## Redaction: read before you quote
+
+Masking is pattern-based: known header names (`authorization`, `cookie`, `set-cookie`, …), JSON
+body keys that contain `token`/`secret`/`password`/…, secret-named query keys, and values that
+*look* random. It is **not** a guarantee. These places can print a secret:
+
+- `search` and `extract` mask by shape only: a short password, or a JWT (it contains dots), is printed.
+- A JWT in a header with another name (for example `x-device-token`) is printed by `show-entry`,
+  `curl` and `handoff`.
+- Form-encoded bodies (`application/x-www-form-urlencoded`) are not masked at all; only JSON bodies are.
+- `errors`, `report`, `diagnose`, `auto` and `summary` copy the server's message text unmasked.
+- `summary` prints the query values of a repeated call, and `duplicates --json` and `retries --json` carry them in `fingerprint`.
+
+So: do not paste raw `show-entry`, `curl`, `handoff`, `search` or `extract` output to the user without reading it,
+prefer `diagnose`, `report` and `summary` (they print counts and messages, not request content), and never echo a capture file. Full
+list: https://wiretrail.neerdael.nl/concepts/redaction/
 
 ## The fast path (recommended)
 
@@ -149,64 +167,56 @@ top-down; each step narrows the next. Don't dump every command — follow the fi
 | `report` | a shareable markdown dossier. |
 | `curl [id]` | sanitized, safety-labeled replay command(s). |
 
-## Worked example — an app-startup capture
+## Worked example — a checkout capture
 
-A 353-request startup capture. `wiretrail capture.har auto` would do this entire
-walkthrough in one command — below is what it surfaces (and how to reproduce each
-piece by hand). `summary` immediately points the way:
+The guide's demo capture is `checkout.har` (99 requests over 70 seconds, synthetic; download it from
+https://wiretrail.neerdael.nl/getting-started/follow-along/). `wiretrail checkout.har auto` does this
+whole walkthrough in one command — below is what it surfaces, and how to reproduce each piece by hand.
+`summary` points the way:
 
 ```
-$ wiretrail capture.har summary
+$ wiretrail checkout.har
 ...
 hints:
-  - 29x duplicate calls: POST youtubei.googleapis.com /youtubei/v1/visitor_id prettyPrint=false
-  - 18 error responses (4xx/5xx/failed)
-next useful commands: duplicates · errors · slowest
+  - 12x duplicate calls: GET api.shop.example /v1/products/{id}/price
+  - 16 error responses (4xx/5xx/failed)
+
+recommended next steps:
+  [HIGH] retries
+         4 retries, final 500 on POST /v1/cart/sync — repeated retries did not recover
+  [HIGH] auth
+         suspicious token refresh on auth.shop.example — refresh succeeded but later calls reused the old token
 ```
 
-Group the traffic:
+Characterise the repeats — is the heartbeat redundant?
 
 ```
-$ wiretrail capture.har subsystems
-Google  [-]  (165 req, 0 err, 71 dup)
-Supabase  [-]  (38 req, 3 err, 33 dup)
-TMDB  [-]  (25 req, 0 err, 15 dup)
-jackettio.nexioapp.org  [-]  (21 req, 0 err, 21 dup)
+$ wiretrail checkout.har diff --filter "path:/v1/session/ping"
+POST api.shop.example/v1/session/ping  (12 calls, body: volatile-only)
 ```
 
-Characterise the waste — are the 27 Supabase calls redundant?
+`volatile-only` means only timestamp-like keys differ. The test is broad (any key with an
+underscore, or ending in `ts`, counts), so confirm with `extract` before you call the calls redundant.
+
+The auth story:
 
 ```
-$ wiretrail capture.har duplicates
-  29x  POST youtubei.googleapis.com/youtubei/v1/visitor_id
-  27x  POST yjyuomfgkqwmjvnoxurn.supabase.co/rest/v1/rpc/sync_resolve_account_secret
-
-$ wiretrail capture.har diff
-POST ....supabase.co/rest/v1/rpc/sync_resolve_account_secret  (27 calls, body: volatile-only)
-```
-
-`volatile-only` → the 27 calls differ only in noise: genuinely redundant work.
-
-The auth story (the 3 Supabase errors):
-
-```
-$ wiretrail capture.har auth
-auth failures:
-  1x [401] yjyuomfgkqwmjvnoxurn.supabase.co /rest/v1/rpc/sync_pull_profiles
+$ wiretrail checkout.har auth
 token refreshes:
-  e000007 yjyuomfgkqwmjvnoxurn.supabase.co [200]
+  e000014 auth.shop.example [200] [old-token-reused]
 
-$ wiretrail capture.har jwt
-7a236a4aaf8a2cae (1x, req.header.authorization) [EXPIRED]
-  exp: 1779568690 (expired 60342s ago)
+$ wiretrail checkout.har jwt
+8e37a634a25062a2 (4x, req.header.authorization) [EXPIRED]
+  exp: 1792487342 (expired 301s ago)
 ```
 
-The 401 was caused by an **expired** JWT in the `Authorization` header; a refresh
-followed and a fresh token appears in later responses. Hand it off:
+The first calls used an **expired** token; the app refreshed, and one later call still sent the old
+one. Confirm the later call went to the **same host** as the refresh: the check compares tokens
+across hosts and can raise a false alarm. Then hand it off:
 
 ```bash
-wiretrail capture.har report > capture-dossier.md     # shareable, redacted
-wiretrail capture.har handoff                          # blocks w/ correlation + curl
+wiretrail capture.har report > capture-dossier.md     # a summary, no headers or bodies
+wiretrail capture.har handoff                          # blocks w/ correlation + curl (read before sending)
 ```
 
 ## Output for agents (`--json`)
@@ -249,6 +259,11 @@ wiretrail c.har show-entry e000123 --unsafe-include-secrets   # raw detail
 - **Treating exit code `1` as an error.** `1` means "findings reported"; `2` is the
   real "bad HAR" code.
 - **`timeline` looking truncated.** It honours `--top` (default 10) — raise it.
+- **Quoting output without reading it.** See Redaction above. `search`, `extract` and `show-entry`
+  can print a secret.
+- **Taking a verdict as proof.** `volatile-only` (diff), `[repeated-cursor]` (pagination, tripped by a
+  constant `limit`), `[old-token-reused]` (auth, compares across hosts) and "cascade" (later, not
+  caused) are leads. `compare` does not see how many calls were made, so run `diagnose` too.
 - **Hand-parsing the HAR JSON.** Long base64/encoded path blobs (which often hide
   API keys) are collapsed to `{blob}` and redacted by wiretrail; reading the raw
   JSON re-exposes them.

@@ -1,66 +1,31 @@
-# wiretrail
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/johnneerdael/wiretrail/raw/HEAD/docs/assets/brand/wiretrail-readme-dark-1600x480.png">
+    <img src="https://github.com/johnneerdael/wiretrail/raw/HEAD/docs/assets/brand/wiretrail-readme-light-1600x480.png" alt="WireTrail. Follow the request. Find the cause." width="100%">
+  </picture>
+</p>
 
-[![CI](https://github.com/johnneerdael/wiretrail/actions/workflows/ci.yml/badge.svg)](https://github.com/johnneerdael/wiretrail/actions/workflows/ci.yml)
-[![Crates.io](https://img.shields.io/crates/v/wiretrail.svg)](https://crates.io/crates/wiretrail)
-[![License](https://img.shields.io/crates/l/wiretrail.svg)](https://github.com/johnneerdael/wiretrail/blob/main/LICENSE)
+<p align="center">
+  <a href="https://github.com/johnneerdael/wiretrail/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/johnneerdael/wiretrail?style=flat-square&color=28C5DC&label=release"></a>
+  <a href="https://github.com/johnneerdael/wiretrail/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/johnneerdael/wiretrail/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="https://crates.io/crates/wiretrail"><img alt="crates.io" src="https://img.shields.io/crates/v/wiretrail?style=flat-square&color=101820"></a>
+  <a href="https://wiretrail.neerdael.nl/"><img alt="User guide" src="https://img.shields.io/badge/user%20guide-online-101820?style=flat-square"></a>
+  <img alt="Platforms" src="https://img.shields.io/badge/Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-101820?style=flat-square">
+  <a href="https://github.com/johnneerdael/wiretrail/blob/main/LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-101820?style=flat-square"></a>
+</p>
 
-`wiretrail` is a fast, deterministic, agent-friendly **HAR (HTTP Archive) analyzer**
-for the command line. It answers narrow, repeatable questions about a network
-capture in a single command — storms, duplicates, retries, errors, auth flows,
-slow calls, what varies between repeated requests, ranked root-cause diagnosis,
-body search/extraction, and regression diff against a baseline — with structured
-terminal output and a stable `--json` schema, and **no GUI**.
+WireTrail is a command-line analyzer for HAR network captures. It groups repeated calls, finds the failures and the slow requests, ranks the likely causes, and compares one capture with another. Every investigation is one command that prints a report you can read, paste into a ticket after you have checked it, or parse as JSON.
 
-It is **HeapTrail for network captures**. It reuses
-[heaptrail](https://github.com/johnneerdael/heaptrail)'s design philosophy:
-agentic/LLM-driven investigation, deterministic output that diffs cleanly,
-JSON for machine consumers, and fixed single-command answers instead of an
-interactive load-and-explore session.
+It is a single binary with no runtime dependencies. On a 150 MB capture most commands take about half a second on a laptop.
 
-Forked from [`mandrean/har-rs`](https://github.com/mandrean/har-rs), which
-contributes the HAR 1.2/1.3 struct definitions; this fork replaces the parse path
-with an mmap single-pass loader and adds the analysis CLI documented below.
+<p align="center">
+  <a href="https://github.com/johnneerdael/wiretrail/releases/latest"><b>Download</b></a> &nbsp;·&nbsp;
+  <a href="https://wiretrail.neerdael.nl/getting-started/install/"><b>Install</b></a> &nbsp;·&nbsp;
+  <a href="https://wiretrail.neerdael.nl/"><b>User guide</b></a> &nbsp;·&nbsp;
+  <a href="https://github.com/johnneerdael/wiretrail/issues"><b>Report an issue</b></a>
+</p>
 
-## Motivation
-
-Each `log.entries[]` item in a HAR already exposes the request, response, content,
-timings, cache metadata, headers, cookies, URL, method, status, and bodies — more
-than enough to reconstruct the kind of manual "what happened during this capture?"
-analysis a debugger does by hand. wiretrail turns that into single-command
-answers.
-
-Sanitization is treated as core, not optional: HARs routinely contain cookies,
-auth headers, tokens, request/response bodies, and user data. wiretrail **redacts
-by default** across every output — including secret-bearing blobs hidden in URL
-path segments — and only reveals raw values with an explicit
-`--unsafe-include-secrets` flag.
-
-### When to use `wiretrail`
-
-- **Agentic / LLM-driven investigation.** Structured terminal output (with `--json`)
-  lets an agent run a command, read the result, and decide the next probe. Every
-  command prints a "next useful commands" footer.
-- **Headless / CI.** Single static binary, deterministic output, defined exit codes
-  (`0` clean, `1` findings, `2` invalid HAR). `compare --fail-on <severity>` turns a
-  regression diff against a baseline HAR into a strict pass/fail gate.
-- **Large captures.** mmap single-pass parse: a 143 MB capture (2237 entries) loads
-  in ~0.5 s using ~2× the file size in RAM.
-- **Safe to share.** Redact-by-default makes `report`, `curl`, and `show-entry`
-  output safe to paste into a ticket; `--unsafe-include-secrets` when you actually
-  need to replay a call.
-- **Narrow, repeatable questions.** "What are the request storms?", "Which calls are
-  wasteful duplicates vs retries?", "What's the auth/refresh story?", "What differs
-  between these 27 identical-looking POSTs?" — one command each.
-
-### When to use browser DevTools / a proxy GUI
-
-- **Live, interactive inspection** while reproducing a flow — Chrome DevTools,
-  Charles, Proxyman, HTTP Toolkit stay in their column.
-- **Editing and re-sending** requests interactively. wiretrail emits sanitized
-  `curl` for replay but isn't an interactive client.
-
-The tools complement each other: capture in a proxy/DevTools, then run `wiretrail`
-over the exported `.har` for fast, scriptable, agent-friendly post-mortem analysis.
+The [user guide](https://wiretrail.neerdael.nl/) has tutorials, how-tos, recipes, concepts and the full reference. Every block of output in it comes from a real run on a demo capture that you can download. Its sources are in [`docs/user-guide/`](docs/user-guide/).
 
 ## Install
 
@@ -68,229 +33,94 @@ over the exported `.har` for fast, scriptable, agent-friendly post-mortem analys
 cargo install wiretrail
 ```
 
-Or build from git:
+Or download a prebuilt binary for Linux, macOS or Windows (x86-64 and ARM64) from the [releases page](https://github.com/johnneerdael/wiretrail/releases/latest), and put it on your `PATH`. [Download and install](https://wiretrail.neerdael.nl/getting-started/install/) has the details, including building from source.
+
+## First triage
 
 ```bash
-git clone https://github.com/johnneerdael/wiretrail
-cd wiretrail
-cargo build --release   # ./target/release/wiretrail
+wiretrail capture.har              # the summary: what is in it, and what to run next
+wiretrail capture.har auto         # the summary, then the follow-up analysis for the serious findings
+wiretrail capture.har diagnose     # only the ranked findings, with the evidence behind each
+wiretrail capture.har errors       # failures, with what the server said
+wiretrail capture.har show-entry e000069   # one request in full
+wiretrail new.har compare baseline.har --fail-on high   # what got worse; exits 1 if it did
 ```
 
-Pre-built binaries for Linux/macOS/Windows are attached to each
-[GitHub release](https://github.com/johnneerdael/wiretrail/releases).
-
-## Usage
-
-```
-wiretrail <FILE> [COMMAND] [OPTIONS]
-```
-
-`<FILE>` is a HAR (1.2 or 1.3) export. With no command, `summary` runs.
+The command comes after the file. This is what `diagnose` prints on the guide's demo capture, `checkout.har`:
 
 ```bash
-wiretrail capture.har                      # executive summary (default)
-wiretrail capture.har auto                 # smart one-shot: summary + auto-drill the findings
-wiretrail capture.har duplicates           # repeated calls, grouped
-wiretrail capture.har errors --json        # 4xx/5xx grouped, as JSON
-wiretrail capture.har show-entry e000123   # full redacted detail for one entry
-wiretrail capture.har curl e000123 --unsafe-include-secrets  # replayable cURL
+wiretrail checkout.har diagnose --top 3
 ```
 
-**Start with `auto`** for an unfamiliar capture: it prints the summary, ranks the
-likely problems, and inlines the relevant deeper analysis (errors, retries, auth,
-…) scoped to exactly where the trouble is — one command, no guessing what to run
-next. `summary` itself now ends with a ranked **recommended next steps** section,
-so even the default command tells you precisely which follow-ups matter.
-
-### Global options
-
-| Option | Effect |
-|---|---|
-| `--json` | Emit the stable JSON envelope instead of terminal text. |
-| `--top N` | Bound list sizes (default 10). |
-| `--filter "<expr>"` | Restrict to matching entries (repeatable). |
-| `--config <path>` | Path to `wiretrail.yaml` (default: `./wiretrail.yaml` if present). |
-| `--unsafe-include-secrets` | Show raw auth headers, tokens, bodies, and URL secrets instead of redacting. |
-
-The filter language: `host:api.foo.com status:>=400 method:POST path:*login* time:>1000ms has:req.header.authorization`.
-
-### Commands
-
-**Overview & inventory**
-
-| Command | Answers |
-|---|---|
-| `summary` *(default)* | Capture meta, time range, status/resource breakdown, top hosts, top duplicates, slowest, biggest payloads, root-cause hints. |
-| `hosts` | Per-host: count, methods, status distribution, p50/p95/max latency, bytes, time window, duplicate count. |
-| `subsystems` | Group hosts into named integrations (built-in vendor heuristics + `wiretrail.yaml` ownership map). |
-| `endpoints` | Normalized endpoint inventory (host, method, `{id}` path, statuses, content types, sample query keys). |
-| `timeline` | Chronological per-request view with DUP/RETRY markers. |
-
-**Wasteful traffic**
-
-| Command | Answers |
-|---|---|
-| `duplicates` | Repeated method + normalized-path + query fingerprint, grouped; marks retries. |
-| `retries` | Repeats that follow a failed attempt (5xx/429/network), with backoff gaps. |
-| `storms` | Bursts of many calls to one host/endpoint within a window (`--window-ms`, `--min-count`). |
-| `pagination` | Pagination loops + N+1 fan-out (`--max-pages`, `--fanout-min`, `--window-ms`). |
-| `rate-limit` | 429 events, `Retry-After`, `X-RateLimit-*`, cooldown violations. |
-
-**Failures & timing**
-
-| Command | Answers |
-|---|---|
-| `errors` | 4xx/5xx grouped by endpoint+status, with parsed message/code, correlation IDs, body snippet. |
-| `redirects` | Redirect chains/storms, cross-host hops. |
-| `transitions` | Status sequences: 401→200, 429→429, 5xx→2xx. |
-| `slowest` | Top-N slow calls with timing-phase breakdown + bottleneck classifier. |
-
-**Auth**
-
-| Command | Answers |
-|---|---|
-| `jwt` | Find and decode JWTs (header/claims, `exp`/skew) — hashed `sub`, never the signature or raw token by default. |
-| `auth` | 401/403 patterns, inconsistent auth, token rotation, and token-refresh flows (old-token-reuse, concurrent, failed). |
-| `handoff` | Backend trace-handoff blocks for failed + slowest requests (template, correlation IDs, server IP, sanitized cURL). |
-
-**Inspection, diff & export**
-
-| Command | Answers |
-|---|---|
-| `show-entry <id>` | Full normalized request/response/timings for one entry, redacted. |
-| `diff` | What varies across repeated calls to one endpoint (query/header/body verdict: identical / volatile-only / meaningful). |
-| `search <pattern>` | Grep request/response bodies (`--regex`, `--ignore-case`); redaction-safe context snippets. |
-| `extract <jsonpath>` | Pull a JSON-path value from bodies (`$.errors[0].code`, `[*]` wildcard); `--target req\|resp`; opaque values masked. |
-| `export` | Flatten entries to NDJSON or CSV (`--format ndjson\|csv`) — metadata only, no raw bodies. |
-| `report` | A dossier-style markdown report composed from the analyses. |
-| `curl [id]` | Sanitized, safety-labeled `curl` replay for one entry or all filtered entries. |
-
-**Diagnosis & quality**
-
-| Command | Answers |
-|---|---|
-| `auto` | Smart one-shot: prints the summary, then drills the top-ranked recommendations (HIGH+MED by default) inline, each scoped by its own filter. `--all` / `--min-severity` widen/narrow. |
-| `diagnose` | Ranked root-cause findings synthesized from all analyses (severity-sorted, with evidence IDs + a suggested follow-up command). |
-| `validate` | Capture quality + analysis sufficiency (timings/bodies/auth coverage, sanitized?, anomalies). |
-| `startup` | Boot/startup profile: max concurrency, critical path, slow dependencies (`--window-ms`). |
-| `cascade` | Earliest failure and the downstream failures it triggered (`--window-ms`, `--min-downstream`). |
-
-**Regression & rules**
-
-| Command | Answers |
-|---|---|
-| `compare <baseline.har>` | Diff this capture against a baseline: new/removed hosts & endpoints, new errors, latency regressions, payload growth — severity-scored. `--fail-on <severity>` gates CI. |
-| `rules` | Evaluate `wiretrail.yaml` rules + built-in packs (`--pack auth,caching,payments,security,rest,graphql`). |
-
-Run `wiretrail <file> <command> --help` for per-command options.
-
-## Example
-
+<!-- output: home-hero.txt from="[HIGH] retry-exhaustion" until="[HIGH] 5xx-cluster" -->
 ```text
-$ wiretrail capture.har summary
-== wiretrail summary ==
-entries: 2237 total, 2237 after filter
-duration (first start to last response): 1354.1s
-
-status classes:
-  2xx: 2040
-  4xx: 57
-  5xx: 2
-
-top hosts (by request count):
-    785  api.themoviedb.org
-    131  yjyuomfgkqwmjvnoxurn.supabase.co
-
-top duplicate calls:
-    29x  POST youtubei.googleapis.com /youtubei/v1/visitor_id ...
-
-hints:
-  - 29x duplicate calls: POST youtubei.googleapis.com /youtubei/v1/visitor_id ...
-  - 59 error responses (4xx/5xx/failed)
-
-next useful commands: duplicates · errors · slowest
+[HIGH] retry-exhaustion — 4 retries, final 500 on POST /v1/cart/sync
+  repeated retries did not recover
+  evidence: e000069, e000070, e000072, e000073, e000076
+  -> wiretrail <file> retries
 ```
 
-## Configuration
+[Your first triage](https://wiretrail.neerdael.nl/getting-started/first-triage/) walks through this on the demo capture and explains each line.
 
-An optional `wiretrail.yaml` (in the working directory, or via `--config`) maps
-hosts/paths to named subsystems and declares required-header rules:
+## What it does
 
-```yaml
-ownership:
-  - name: Payments API
-    host: "payments.*.foo.com"
-    owner: payments-team
-    criticality: high
+| You want to know | Use | Guide |
+|---|---|---|
+| What is in the capture, and where to look first | `summary`, `auto`, `diagnose`, `validate` | [Analyze](https://wiretrail.neerdael.nl/analyze/) |
+| What repeated, and whether it was a retry, a burst or a loop | `duplicates`, `retries`, `storms`, `pagination`, `rate-limit`, `diff` | [Repeats](https://wiretrail.neerdael.nl/repeats/) |
+| What failed, what was slow, and how sign-in went | `errors`, `redirects`, `transitions`, `slowest`, `startup`, `cascade`, `auth`, `jwt` | [Failures](https://wiretrail.neerdael.nl/failures/) |
+| One request in full, or text inside bodies | `show-entry`, `search`, `extract`, `curl` | [Inspect](https://wiretrail.neerdael.nl/inspect/) |
+| Something to hand to another team | `report`, `handoff`, `export` | [Inspect](https://wiretrail.neerdael.nl/inspect/) |
+| What got worse since a good capture, or what breaks your rules | `compare`, `rules`, `checks` | [Compare](https://wiretrail.neerdael.nl/compare/) |
+| Output for scripts and CI | `--json`, exit codes | [Automate](https://wiretrail.neerdael.nl/automate/) |
 
-required_headers:
-  - host: "api.foo.com"
-    headers: ["Authorization", "X-App-Version", "Accept"]
+Not sure which command fits? [Choose the right command](https://wiretrail.neerdael.nl/getting-started/choose-a-command/) starts from your question.
 
-rules:
-  - name: "API calls need auth"
-    host: "api.foo.com"          # globs; optional method/path/status matchers
-    require_headers: ["Authorization"]
-    max_latency_ms: 2000
-  - name: "no staging hosts in prod capture"
-    host: "*.staging.foo.com"
-    forbid: true                 # any match is a violation
+`--filter` limits any command to the requests that match, `--top` bounds the lists, and `--config` names a [configuration file](https://wiretrail.neerdael.nl/compare/config-file/) for subsystem names and rules. Every command accepts `--json`, with a stable envelope.
+
+WireTrail has no window to click through. To watch traffic as it happens, or to edit and resend a request, use your browser's DevTools or a proxy, and run WireTrail on the capture you export. A ranked finding is a pattern, and not a diagnosis: [Limitations](https://wiretrail.neerdael.nl/reference/limitations/) lists what WireTrail does not do and where a result can mislead.
+
+## Get a capture
+
+Chrome, Edge, Firefox and Safari save one from the Network tab of their developer tools, and proxies such as Charles, Proxyman, HTTP Toolkit and Fiddler export one. [Capture](https://wiretrail.neerdael.nl/capture/) covers each, and what a capture needs so that the analysis can use it.
+
+## Redaction and safety
+
+A HAR holds cookies, tokens and personal data. WireTrail masks the headers it knows are secret, the JSON keys it knows hold secrets, and values that look like random tokens, and `--unsafe-include-secrets` turns that off.
+
+**Masking is pattern-based, and it is not a guarantee.** A JWT in a header it does not know, a form-encoded body, a short secret in a query string, a server's error message, and anything `search` or `extract` prints can reach the output. Read what you are about to share. [How redaction works](https://wiretrail.neerdael.nl/concepts/redaction/) lists what each command masks, and [Handle captures safely](https://wiretrail.neerdael.nl/capture/handle-captures-safely/) says how to strip a capture before you send it.
+
+## Use it from Claude Code
+
+This repository is also a [Claude Code](https://claude.com/claude-code) plugin marketplace. The plugin adds a skill that runs `wiretrail` for you when you mention a HAR capture:
+
 ```
-
-`rules` evaluates this list plus any built-in `--pack`s; `subsystems` falls back to
-built-in vendor heuristics then raw host when no `ownership` rule matches.
-
-## Redaction & safety
-
-Every command redacts by default: auth/cookie headers, sensitive query params,
-JSON body keys (`password`/`token`/`secret`/…), JWT signatures, and opaque
-secret-bearing blobs embedded in URL path segments (collapsed to `{blob}` in
-aggregate views, `<redacted>` in `show-entry`/`curl`). Pass
-`--unsafe-include-secrets` to reveal raw values for replay. `curl` labels each
-command SAFE/UNSAFE based on method and payment/order keywords.
-
-## Performance
-
-mmap + a single typed `serde_json::from_slice` over the mapped bytes — no
-intermediate `serde_json::Value` DOM. Measured on a 143 MB capture (2237 entries):
-parse + summary in ~0.5 s, ~314 MB peak RSS (~2.2× file size). Every command runs
-in well under a second on that input. Release builds use `lto = "fat"`.
-
-## Format support
-
-- HAR 1.2 and 1.3 (parsed through a unified permissive model; unknown fields ignored).
-- Reads JSON HAR exports from Chrome/Edge DevTools, Charles, Proxyman, HTTP Toolkit,
-  mitmproxy, and others.
-
-## Known limitations
-
-HAR cannot prove low-level packet loss, full TLS certificate chains, client call
-stacks, or proxy/service-worker internals unless captured in custom fields. JWT
-analysis is structural only (no signature verification). N+1 detection is a
-best-effort heuristic. See [USERGUIDE.md](USERGUIDE.md) for details and worked
-examples.
-
-## Claude Code plugin
-
-This repo ships a Claude Code plugin that teaches the assistant to drive wiretrail.
-It auto-triggers on "analyse/debug HAR", "wiretrail", or a `.har` file in the
-conversation, and adds an `/analysing-har` slash command.
-
-```text
-# One-time: add the marketplace
 /plugin marketplace add johnneerdael/wiretrail
-
-# Install the plugin
 /plugin install analysing-har@analysing-har
-
-# Use it
-/analysing-har path/to/capture.har
-# …or just say "analyse this HAR" / "debug this HAR" and the skill triggers.
 ```
 
-The plugin wraps the `wiretrail` CLI (auto-installs via `cargo install wiretrail`
-if missing) and follows the triage workflow in [USERGUIDE.md](USERGUIDE.md).
+[The Claude Code plugin](https://wiretrail.neerdael.nl/automate/claude-code-plugin/) explains what it does, and how to update or remove it.
+
+## Formats
+
+HAR 1.2 and 1.3, as JSON in UTF-8, without compression. [HAR support](https://wiretrail.neerdael.nl/reference/har-support/) lists the fields it reads, and [Performance](https://wiretrail.neerdael.nl/reference/performance/) has measured time and memory.
+
+## Contributing
+
+Issues and pull requests are welcome. Before you open one:
+
+```bash
+cargo fmt --all -- --check
+cargo test
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+```
+
+The user guide is built with MkDocs, and every block of command output in it is generated from a real run. [About](https://wiretrail.neerdael.nl/help/about/#working-on-this-guide) explains how to work on it.
+
+## Credits
+
+WireTrail began as a fork of [mandrean/har-rs](https://github.com/mandrean/har-rs), which contributes the HAR 1.2 and 1.3 type definitions. It is the sibling of [HeapTrail](https://heaptrail.neerdael.nl/), an analyzer for heap dumps, and shares its design: one command per question, deterministic output, and JSON for machines.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+[MIT](https://github.com/johnneerdael/wiretrail/blob/main/LICENSE).
