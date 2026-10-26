@@ -1,16 +1,17 @@
 [package]
 name = "wiretrail"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["John Neerdael <john@neerdael.nl>"]
 edition = "2024"
 rust-version = "1.88"
-description = "Fast, deterministic, agent-friendly HAR analyzer CLI. heaptrail for network captures."
+description = "Fast, deterministic, agent-friendly HAR analyzer for the command line. Follow the request. Find the cause."
 license = "MIT"
 repository = "https://github.com/johnneerdael/wiretrail"
+documentation = "https://wiretrail.neerdael.nl/"
 readme = "README.md"
 keywords = ["har", "http", "analysis", "cli", "debugging"]
 categories = ["command-line-utilities"]
-exclude = ["docs/", "plugins/", ".claude-plugin/", "*.har"]
+exclude = ["docs/", "plugins/", ".claude-plugin/", "*.har", "/scripts/", "/mkdocs.yml"]
 
 [lib]
 name = "har"

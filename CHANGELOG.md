@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2](https://github.com/johnneerdael/wiretrail/compare/v0.3.1...v0.3.2) - 2026-10-26
+
+Documentation and identity. The analysis output is unchanged.
+
+### Added
+
+- A user guide at <https://wiretrail.neerdael.nl/>: tutorials, how-tos, recipes, concepts and a reference. Every block of output in it is generated from a real run on downloadable demo captures, and CI fails the build when a block of output no longer matches a real run or a page uses a flag the tool does not have.
+- A redesigned README with the WireTrail banner, and the WireTrail brand kit (typefaces, colors and mark) on the guide.
+- `documentation` in the crate metadata points at the guide.
+
+### Changed
+
+- The README, the guide and the Claude Code plugin state what redaction does not mask. `search` and `extract` mask by shape only, a JWT in a header outside the known list is printed, form-encoded bodies are not masked, `summary` prints the query values of repeated calls, and `errors`, `report`, `diagnose` and `summary` print the server's message as it was received.
+- `USERGUIDE.md` is now a map from its old sections to the guide. Its examples came from a private capture.
+- The published crate no longer carries the guide's scripts and configuration.
+
 ## [0.3.1](https://github.com/johnneerdael/wiretrail/compare/v0.3.0...v0.3.1) - 2026-05-26
 
 ### Fixed
