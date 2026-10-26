@@ -1,0 +1,34 @@
+<figure class="wt-diagram" markdown="0">
+<svg viewBox="0 0 720 214" role="img" aria-labelledby="phases-title phases-desc">
+  <title id="phases-title">The phases of one request</title>
+  <desc id="phases-desc">A horizontal timeline in six consecutive blocks: blocked, DNS, connect, send, wait and receive. A smaller block marked ssl sits inside connect. A bracket above shows that the total time is the sum of the six blocks.</desc>
+  <path class="stroke" d="M20 36H680M20 30V42M680 30V42" stroke-width="1.5"/>
+  <text class="dim" x="350" y="22" text-anchor="middle" font-size="14">total time = the sum of the six phases</text>
+  <g stroke-width="1.5">
+    <rect class="box" x="20" y="56" width="80" height="46"/>
+    <rect class="box" x="100" y="56" width="64" height="46"/>
+    <rect class="box" x="164" y="56" width="140" height="46"/>
+    <rect class="box" x="304" y="56" width="50" height="46"/>
+    <rect class="box target" x="354" y="56" width="216" height="46"/>
+    <rect class="box" x="570" y="56" width="110" height="46"/>
+    <rect class="box" x="214" y="108" width="90" height="24" stroke-dasharray="4 3"/>
+  </g>
+  <g class="ink" font-size="14" text-anchor="middle">
+    <text x="60" y="84">blocked</text>
+    <text x="132" y="84">dns</text>
+    <text x="234" y="84">connect</text>
+    <text x="329" y="84">send</text>
+    <text x="462" y="84">wait</text>
+    <text x="625" y="84">receive</text>
+  </g>
+  <text class="dim" x="259" y="125" text-anchor="middle" font-size="13">ssl</text>
+  <g class="dim" font-size="13" text-anchor="middle">
+    <text x="60" y="152">queued in</text><text x="60" y="168">the client</text>
+    <text x="132" y="152">look up</text><text x="132" y="168">the host</text>
+    <text x="462" y="152">the server works</text><text x="462" y="168">(time to first byte)</text>
+    <text x="625" y="152">read the</text><text x="625" y="168">response</text>
+  </g>
+  <text class="dim" x="20" y="202" font-size="13">The ssl block is part of connect, not extra time. A request on an open connection has no dns, connect or ssl.</text>
+</svg>
+<figcaption>One request, drawn as a waterfall. The accented block is the one <code>slowest</code> would name if it were the largest.</figcaption>
+</figure>

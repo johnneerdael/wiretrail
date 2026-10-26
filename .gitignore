@@ -2,3 +2,10 @@
 **/*.rs.bk
 Cargo.lock
 .idea/
+
+# User guide (MkDocs): build output and the local virtualenv
+/build/
+/.venv/
+
+# Python bytecode from the docs scripts
+__pycache__/

@@ -1,0 +1,3 @@
+ownershp:
+  - name: Storefront API
+    host: "api.shop.example"
