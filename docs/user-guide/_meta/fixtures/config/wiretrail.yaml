@@ -1,0 +1,28 @@
+# Which team owns which integration, so `subsystems` names them.
+ownership:
+  - name: Storefront API
+    host: "api.shop.example"
+    owner: web-platform
+    criticality: high
+  - name: Payments
+    host: "payments.shop.example"
+    owner: payments-team
+    criticality: high
+  - name: Search
+    host: "search.shop.example"
+    owner: discovery
+    criticality: medium
+
+# Headers every request to a host must carry. `checks` reports the ones that do not.
+required_headers:
+  - host: "api.shop.example"
+    headers: ["X-App-Version"]
+
+# Rules for `rules`: a matcher plus what to require or forbid.
+rules:
+  - name: "Storefront calls are fast enough"
+    host: "api.shop.example"
+    max_latency_ms: 500
+  - name: "No tracking hosts in a checkout capture"
+    host: "*.ingest.sentry.io"
+    forbid: true

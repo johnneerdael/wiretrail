@@ -1,0 +1,7 @@
+ownership:
+  - name: Storefront API
+    host: "api.shop.example"
+    owner: web-platform
+  - name: Checkout
+    host: "payments.shop.example"
+    owner: payments-team

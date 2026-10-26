@@ -1,0 +1,328 @@
+#!/usr/bin/env python3
+"""Check the user guide against the tool it describes.
+
+What it checks (see docs/user-guide/_meta/style.md). The README is checked like a page:
+
+  nav       every page in mkdocs.yml exists, and every page is in mkdocs.yml
+  output    a fenced block that follows `<!-- output: name.txt -->` quotes only
+            lines that the capture docs/user-guide/_meta/outputs/name.txt contains
+            (a line that is only `...` marks an elision; timing lines are ignored)
+  flags     every `--flag` in code spans and fenced blocks is a flag of wiretrail
+            (from the help captures) or of a tool the guide names (see EXTERNAL_FLAGS)
+  voice     none of the filler words the style guide bans appears in prose
+  name      the product is written WireTrail in prose and `wiretrail` only as the command
+            (the brand guide's rule; code, URLs and paths are not prose)
+  hero      the terminal on the home page, written as HTML, quotes only lines that the capture
+            named in its `<!-- hero-capture: name.txt -->` marker contains
+  stub      no page still carries the `<!-- stub -->` marker that scripts write for a page not yet written
+  ending    every page ends with a Related, Next steps or What you learned section
+
+Run it from anywhere: python3 scripts/docs-check.py [--no-voice]
+Exit status is 1 when a check fails, so CI can gate on it.
+"""
+from __future__ import annotations
+
+import html
+import re
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import docs_prose  # noqa: E402  (shared with the one-off rename; sits next to this script)
+
+ROOT = Path(__file__).resolve().parent.parent
+GUIDE = ROOT / "docs" / "user-guide"
+OUTPUTS = GUIDE / "_meta" / "outputs"
+MKDOCS = ROOT / "mkdocs.yml"
+
+# Flags that belong to other tools the guide shows (cargo, curl, jq, gh, mkdocs, ...).
+EXTERNAL_FLAGS = {
+    "--locked", "--force", "--compressed", "--git", "--release", "--bin", "--features", "--tag", "--profile",
+    "--proto", "--tlsv1.2", "--fail", "--silent", "--show-error", "--location",
+    "--output", "--remote-name", "--header", "--data", "--data-raw", "--request",
+    "--arg", "--argjson", "--slurp", "--slurpfile", "--raw-output", "--exit-status",
+    "--compact-output", "--strict", "--check", "--workspace", "--all-targets",
+    "--all-features", "--verbose", "--repo", "--title", "--notes-file", "--target",
+}
+
+BANNED = [
+    "simply", "just", "easy", "easily", "powerful", "seamless", "seamlessly",
+    "robust", "leverage", "leverages", "utilize", "utilizes", "blazing",
+]
+
+TIMING = re.compile(r"processed in|^\[exit ")
+ELISION = re.compile(r"^\s*(\.\.\.|…)\s*$")
+FENCE = re.compile(r"^(\s*)(`{3,}|~{3,})(.*)$")
+OUTPUT_MARK = re.compile(r"<!--\s*output:\s*(\S+)[^>]*?-->")
+FLAG = re.compile(r"(?<![\w-])(--[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\.\d+)?)")
+
+errors: list[str] = []
+warnings: list[str] = []
+
+
+def err(path: Path, line: int, msg: str) -> None:
+    errors.append(f"{path.relative_to(ROOT)}:{line}: {msg}")
+
+
+def warn(path: Path, line: int, msg: str) -> None:
+    warnings.append(f"{path.relative_to(ROOT)}:{line}: {msg}")
+
+
+def pages() -> list[Path]:
+    out = []
+    for p in sorted(GUIDE.rglob("*.md")):
+        rel = p.relative_to(GUIDE).parts
+        if rel[0] in ("_meta", "_snippets"):
+            continue
+        out.append(p)
+    return out
+
+
+def nav_pages() -> list[str]:
+    text = MKDOCS.read_text()
+    nav = text[text.index("\nnav:") :] if "\nnav:" in text else ""
+    return re.findall(r"([\w./-]+\.md)", nav)
+
+
+def check_nav() -> None:
+    listed = nav_pages()
+    missing = [n for n in listed if not (GUIDE / n).exists()]
+    for n in missing:
+        errors.append(f"mkdocs.yml: nav entry {n} does not exist")
+    have = {p.relative_to(GUIDE).as_posix() for p in pages()}
+    for n in sorted(have - set(listed)):
+        errors.append(f"{n}: page is not in the mkdocs.yml nav")
+    dupes = {n for n in listed if listed.count(n) > 1}
+    for n in sorted(dupes):
+        errors.append(f"mkdocs.yml: nav lists {n} more than once")
+
+
+def known_flags() -> set[str]:
+    flags = set(EXTERNAL_FLAGS)
+    # Every `wiretrail ... --help` capture (help-main, help-storms, ...) lists real flags.
+    for f in sorted(OUTPUTS.glob("help-*.txt")):
+        flags |= set(FLAG.findall(f.read_text()))
+    return flags
+
+
+def read_capture(name: str) -> set[str] | None:
+    f = OUTPUTS / name
+    if not f.exists():
+        return None
+    raw_lines = f.read_text().splitlines()
+    # The runner writes two header lines: the command and its exit status.
+    if raw_lines and raw_lines[0].startswith("$ "):
+        raw_lines = raw_lines[1:]
+    if raw_lines and raw_lines[0].startswith("# exit"):
+        raw_lines = raw_lines[1:]
+    return {raw.rstrip() for raw in raw_lines}
+
+
+def capture_command(name: str) -> str | None:
+    f = OUTPUTS / name
+    if not f.exists():
+        return None
+    first = f.read_text().splitlines()[:1]
+    if first and first[0].startswith("$ "):
+        return first[0][2:].strip()
+    return None
+
+
+def norm_cmd(cmd: str) -> str:
+    """Normalize a shell command for comparison: join continuations, drop quotes and spacing."""
+    cmd = cmd.replace("\\\n", " ")
+    cmd = re.sub(r"\s+", " ", cmd).strip()
+    cmd = cmd.replace(" > /dev/null", "")
+    return cmd.replace('"', "'")
+
+
+def walk(path: Path):
+    """Yield (line_no, text, in_fence, fence_info, mark) for every line of a page."""
+    in_fence = False
+    fence_char = ""
+    fence_len = 0
+    fence_indent = 0
+    info = ""
+    pending_mark: str | None = None
+    for i, raw in enumerate(path.read_text().splitlines(), 1):
+        m = FENCE.match(raw)
+        if m:
+            marker = m.group(2)
+            if not in_fence:
+                in_fence, fence_char, fence_len, info = True, marker[0], len(marker), m.group(3).strip()
+                fence_indent = len(m.group(1))
+                yield i, raw, True, info, pending_mark, True
+                continue
+            if marker[0] == fence_char and len(marker) >= fence_len and not m.group(3).strip():
+                in_fence = False
+                yield i, raw, True, info, pending_mark, True
+                pending_mark = None
+                continue
+        if in_fence:
+            # Dedent by the fence's own indentation (blocks inside admonitions and tabs).
+            yield i, raw[fence_indent:] if raw[:fence_indent].strip() == "" else raw, True, info, pending_mark, False
+        else:
+            mk = OUTPUT_MARK.search(raw)
+            if mk:
+                pending_mark = mk.group(1)
+            elif raw.strip() and not raw.lstrip().startswith("<!--"):
+                pending_mark = None
+            yield i, raw, False, "", None, False
+
+
+HERO_MARK = re.compile(r"<!--\s*hero-capture:\s*(\S+)\s*-->")
+HERO_PRE = re.compile(r"<pre><code>(.*?)</code></pre>", re.S)
+
+
+def check_hero(path: Path, text: str) -> None:
+    """The home page terminal is hand-written HTML, so check it against the capture it claims to quote."""
+    m = HERO_MARK.search(text)
+    if not m:
+        return
+    name = m.group(1)
+    pool = read_capture(name)
+    if pool is None:
+        err(path, 1, f"hero capture {name} does not exist")
+        return
+    pre = HERO_PRE.search(text, m.end())
+    if not pre:
+        err(path, 1, "hero marker is not followed by a <pre><code> block")
+        return
+    base = text.count("\n", 0, pre.start()) + 1
+    for offset, raw in enumerate(pre.group(1).split("\n")):
+        line = html.unescape(re.sub(r"<[^>]+>", "", raw)).rstrip()
+        if not line.strip() or line.lstrip().startswith("#") or ELISION.match(line):
+            continue
+        if line.startswith("$ "):
+            want = capture_command(name)
+            if want is None or not norm_cmd(line[2:]).startswith(norm_cmd(want.split(" --top")[0])):
+                err(path, base + offset, f"hero command does not match the capture: {line[:80]}")
+            continue
+        if line not in pool:
+            err(path, base + offset, f"hero line is not in {name}: {line.strip()[:90]}")
+
+
+def check_page(path: Path, flags: set[str], voice: bool) -> None:
+    text = path.read_text()
+    rel = path.relative_to(GUIDE).as_posix() if GUIDE in path.parents else path.name
+    headings = [ln for ln in text.splitlines() if ln.startswith("## ")]
+    is_landing = rel in ("index.md", "README.md")
+    if not is_landing and not any(
+        h.startswith(("## Related", "## Next steps", "## What you learned")) for h in headings
+    ):
+        warn(path, 1, "page has no Related / Next steps / What you learned section")
+
+    if "<!-- stub -->" in text:
+        err(path, 1, "page is still a stub")
+    check_hero(path, text)
+
+    for line_no, col, context in docs_prose.find_names(text):
+        err(path, line_no, f"write WireTrail in prose (`wiretrail` is the command): …{context}…")
+
+    captures: dict[str, set[str] | None] = {}
+    shell_text = []
+    cur_shell: list[str] = []
+    used: dict[str, int] = {}
+    for line_no, raw, in_fence, info, mark, is_fence_line in walk(path):
+        if in_fence and not is_fence_line and info.split(" ")[0] in ("bash", "sh", "shell", "console"):
+            cur_shell.append(raw)
+        elif not in_fence and cur_shell:
+            shell_text.append("\n".join(cur_shell))
+            cur_shell = []
+        if mark and in_fence and is_fence_line:
+            for name in [n.strip() for n in mark.split(",")]:
+                used.setdefault(name, line_no)
+        if in_fence and not is_fence_line:
+            if mark:
+                for name in [n.strip() for n in mark.split(",")]:
+                    if name not in captures:
+                        captures[name] = read_capture(name)
+                        if captures[name] is None:
+                            err(path, line_no, f"output capture {name} does not exist")
+                    pool = captures[name]
+                    if pool is None:
+                        continue
+                for name in [n.strip() for n in mark.split(",")]:
+                    pool = captures.get(name)
+                    if pool is None:
+                        continue
+                if (
+                    raw.strip()
+                    and not ELISION.match(raw)
+                    and not TIMING.search(raw)
+                    and not raw.lstrip().startswith("$ ")
+                ):
+                    pools = [captures[n.strip()] for n in mark.split(",") if captures.get(n.strip())]
+                    if pools and not any(raw.rstrip() in p for p in pools):
+                        err(path, line_no, f"line is not in {mark}: {raw.strip()[:90]}")
+            for f in FLAG.findall(raw):
+                if f not in flags:
+                    err(path, line_no, f"unknown flag {f}")
+        elif not in_fence:
+            for span in re.findall(r"`([^`\n]+)`", raw):
+                for f in FLAG.findall(span):
+                    if f not in flags:
+                        err(path, line_no, f"unknown flag {f}")
+            if voice and not raw.lstrip().startswith(("<", "!!!", "|", "#", "---")):
+                prose = re.sub(r"`[^`]*`", "", raw)
+                prose = re.sub(r"\]\([^)]*\)", "]", prose)
+                for word in BANNED:
+                    if re.search(rf"\b{word}\b", prose, re.IGNORECASE):
+                        warn(path, line_no, f"avoid the word “{word}”")
+    if cur_shell:
+        shell_text.append("\n".join(cur_shell))
+    check_commands(path, shell_text, used)
+
+
+def check_mkdocs_names() -> None:
+    """The site title, description, copyright and nav titles are prose too."""
+    for i, raw in enumerate(MKDOCS.read_text().splitlines(), 1):
+        m = re.match(r"^\s*(?:- )?(site_name|site_description|copyright|name):\s*(.*)$", raw)
+        title = m.group(2) if m else None
+        if title is None:
+            m = re.match(r"^\s*- ([^:]+):\s+\S+\.md\s*$", raw)  # nav entry: - Title: page.md
+            title = m.group(1) if m else None
+        if title and docs_prose.NAME.search(title):
+            errors.append(f"mkdocs.yml:{i}: write WireTrail in titles and descriptions: {title[:80]}")
+
+
+def check_snippet_names() -> None:
+    """Diagram snippets are included into pages, so their captions and titles are prose too."""
+    for path in sorted((GUIDE / "_snippets").glob("*.html")):
+        for line_no, _col, context in docs_prose.find_names(path.read_text()):
+            err(path, line_no, f"write WireTrail in prose (`wiretrail` is the command): …{context}…")
+
+
+def check_commands(path: Path, shell_text: list[str], used: dict[str, int]) -> None:
+    """Every capture a page embeds must have its command shown on that page."""
+    blob = norm_cmd("\n".join(shell_text))
+    for name, line_no in used.items():
+        want = capture_command(name)
+        if not want:
+            continue
+        head = norm_cmd(want.split(" | ")[0].split(" && ")[0])
+        if head not in blob:
+            warn(path, line_no, f"no command block shows the command behind {name}: {head[:90]}")
+
+
+def main() -> int:
+    voice = "--no-voice" not in sys.argv
+    check_nav()
+    check_mkdocs_names()
+    check_snippet_names()
+    flags = known_flags()
+    if "--unsafe-include-secrets" not in flags:
+        warnings.append("no help captures found; flag check is limited (run scripts/docs-capture.sh)")
+    for p in pages():
+        check_page(p, flags, voice)
+    check_page(ROOT / "README.md", flags, voice)  # the README is held to the same rules
+    for w in warnings:
+        print("warning:", w)
+    for e in errors:
+        print("error:  ", e)
+    print(f"\n{len(pages())} pages and the README, {len(errors)} error(s), {len(warnings)} warning(s)")
+    return 1 if errors else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

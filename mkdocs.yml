@@ -1,0 +1,233 @@
+site_name: WireTrail user guide
+site_description: Follow the request. Find the cause. Learn to capture, analyze, compare and share HAR network captures with WireTrail, the command-line analyzer.
+site_url: https://wiretrail.neerdael.nl/
+repo_url: https://github.com/johnneerdael/wiretrail
+repo_name: johnneerdael/wiretrail
+edit_uri: edit/main/docs/user-guide/
+docs_dir: docs/user-guide
+site_dir: build/user-guide-site
+copyright: WireTrail is free, open-source software (MIT). It began as a fork of har-rs and is not affiliated with Chrome DevTools, Charles, Proxyman, HTTP Toolkit or mitmproxy.
+
+# Writer-only material lives beside the pages but is not published.
+exclude_docs: |
+  _meta/
+  _snippets/
+
+theme:
+  name: material
+  language: en
+  custom_dir: docs/overrides
+  logo: assets/brand/wiretrail-mark-on-dark.svg
+  favicon: assets/brand/favicon.svg
+  # Fonts are self-hosted from assets/fonts (see stylesheets/wiretrail.css).
+  font: false
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil-outline
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Follow the system setting
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - content.action.edit
+
+extra_css:
+  - stylesheets/wiretrail.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/johnneerdael/wiretrail
+      name: WireTrail on GitHub
+    - icon: fontawesome/brands/rust
+      link: https://crates.io/crates/wiretrail
+      name: WireTrail on crates.io
+
+plugins:
+  - search:
+      # Keep Material's punctuation/CamelCase/version boundaries; add $ and %.
+      separator: '[\s\-$%,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      base_path: docs/user-guide/_snippets
+      auto_append:
+        - abbreviations.md
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        # The 16 supporting glyphs from the brand kit, as :wiretrail-network: and so on.
+        custom_icons:
+          - docs/overrides/.icons
+
+# Strict builds (`mkdocs build --strict`) turn every one of these into an error.
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+
+nav:
+- Home: index.md
+- Get started:
+  - getting-started/index.md
+  - Download and install: getting-started/install.md
+  - Your first triage: getting-started/first-triage.md
+  - Follow along with the demo captures: getting-started/follow-along.md
+  - Choose the right command: getting-started/choose-a-command.md
+  - What's new: getting-started/whats-new.md
+- Capture:
+  - capture/index.md
+  - From a browser: capture/browsers.md
+  - From a proxy or a phone: capture/proxies-and-phones.md
+  - What a useful capture holds: capture/what-a-capture-needs.md
+  - Handle captures safely: capture/handle-captures-safely.md
+- Analyze:
+  - analyze/index.md
+  - Summary: analyze/summary.md
+  - Auto: analyze/auto.md
+  - Diagnose: analyze/diagnose.md
+  - Hosts, subsystems and endpoints: analyze/inventory.md
+  - Timeline: analyze/timeline.md
+  - Validate a capture: analyze/validate.md
+  - Filter entries: analyze/filters.md
+  - Recipes:
+    - Triage an unfamiliar capture: analyze/recipes/triage-an-unfamiliar-capture.md
+- Repeats:
+  - repeats/index.md
+  - Duplicates: repeats/duplicates.md
+  - Retries: repeats/retries.md
+  - Storms: repeats/storms.md
+  - Pagination and N+1: repeats/pagination.md
+  - Rate limits: repeats/rate-limits.md
+  - What varies between calls: repeats/diff.md
+  - Recipes:
+    - Remove redundant calls: repeats/recipes/remove-redundant-calls.md
+    - Spot an N+1: repeats/recipes/spot-an-n-plus-one.md
+- Failures:
+  - failures/index.md
+  - Errors: failures/errors.md
+  - Redirects: failures/redirects.md
+  - Status transitions: failures/transitions.md
+  - Slowest calls: failures/slowest.md
+  - Startup profile: failures/startup.md
+  - Cascade: failures/cascade.md
+  - Auth failures and refresh: failures/auth.md
+  - JWTs: failures/jwt.md
+  - Recipes:
+    - Find the first failure: failures/recipes/find-the-first-failure.md
+    - Why a call is slow: failures/recipes/why-a-call-is-slow.md
+    - Debug a token refresh race: failures/recipes/debug-a-token-refresh-race.md
+- Inspect:
+  - inspect/index.md
+  - Show an entry: inspect/show-entry.md
+  - Search bodies: inspect/search.md
+  - Extract a field: inspect/extract.md
+  - Export: inspect/export.md
+  - Report: inspect/report.md
+  - curl: inspect/curl.md
+  - Handoff: inspect/handoff.md
+  - Recipes:
+    - Hand a failure to the backend team: inspect/recipes/hand-a-failure-to-the-backend-team.md
+- Compare:
+  - compare/index.md
+  - Compare against a baseline: compare/compare.md
+  - Rules and rule packs: compare/rules.md
+  - Built-in checks: compare/checks.md
+  - The configuration file: compare/config-file.md
+  - Recipes:
+    - Catch a regression before it ships: compare/recipes/catch-a-regression.md
+- Automate:
+  - automate/index.md
+  - JSON output: automate/json-output.md
+  - Gate a build: automate/ci-gates.md
+  - Work with exported data: automate/export-data.md
+  - The Claude Code plugin: automate/claude-code-plugin.md
+- Concepts:
+  - concepts/index.md
+  - How WireTrail reads a HAR: concepts/how-wiretrail-reads-a-har.md
+  - Entries, ids and endpoints: concepts/entries-ids-endpoints.md
+  - How redaction works: concepts/redaction.md
+  - How findings are ranked: concepts/how-findings-are-ranked.md
+  - Timing phases: concepts/timing-phases.md
+- Reference:
+  - reference/index.md
+  - Command line: reference/command-line.md
+  - JSON schemas: reference/json-schemas.md
+  - Errors and exit codes: reference/errors-and-exit-codes.md
+  - HAR support: reference/har-support.md
+  - Performance: reference/performance.md
+  - Limitations: reference/limitations.md
+  - Glossary: reference/glossary.md
+- Help:
+  - FAQ: help/faq.md
+  - Troubleshooting: help/troubleshooting.md
+  - About: help/about.md

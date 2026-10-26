@@ -1,0 +1,372 @@
+# name|max-lines (0 = all)|command   (runs in the work directory; see scripts/docs-capture.sh)
+#
+# Home page
+home-hero|0|wiretrail checkout.har diagnose --top 3
+
+# Command reference: the help text is where scripts/docs-check.py learns which flags are real
+version|0|wiretrail --version
+help-main|0|wiretrail --help
+help-storms|0|wiretrail checkout.har storms --help
+help-pagination|0|wiretrail checkout.har pagination --help
+help-startup|0|wiretrail checkout.har startup --help
+help-cascade|0|wiretrail checkout.har cascade --help
+help-search|0|wiretrail checkout.har search --help
+help-extract|0|wiretrail checkout.har extract --help
+help-export|0|wiretrail checkout.har export --help
+help-compare|0|wiretrail checkout.har compare --help
+help-rules|0|wiretrail checkout.har rules --help
+help-auto|0|wiretrail checkout.har auto --help
+help-curl|0|wiretrail checkout.har curl --help
+help-show-entry|0|wiretrail checkout.har show-entry --help
+
+# Getting started: first triage
+first-summary|0|wiretrail checkout.har --top 5
+first-diagnose|0|wiretrail checkout.har diagnose
+first-retries|0|wiretrail checkout.har retries --filter "path:/v1/cart/sync"
+first-errors|0|wiretrail checkout.har errors --filter "path:/v1/cart/sync"
+first-entry|0|wiretrail checkout.har show-entry e000076
+first-exit|0|wiretrail checkout.har errors --top 1 > /dev/null; echo "exit code: $?"
+first-json|0|wiretrail checkout.har errors --filter "path:/v1/cart/sync" --json | jq '.result.groups[] | {status, count, error_code, entry_ids}'
+
+# Getting started: follow along
+follow-counts|0|for f in checkout baseline sanitized; do printf '%s.har: ' $f; wiretrail $f.har export | wc -l | tr -d ' '; done
+follow-validate|0|wiretrail checkout.har validate
+
+# Analyze: summary
+sum-full|0|wiretrail checkout.har
+sum-top3|0|wiretrail checkout.har --top 3
+sum-filter|0|wiretrail checkout.har --filter "host:payments.shop.example"
+sum-json|0|wiretrail checkout.har --json --top 2 | jq '.result | {total_entries, error_count, hints, top_duplicates}'
+
+# Analyze: auto
+auto-default|0|wiretrail checkout.har auto
+auto-high|0|wiretrail checkout.har auto --min-severity high
+auto-all|0|wiretrail checkout.har auto --all --top 20
+auto-filter|0|wiretrail checkout.har auto --filter "host:search.shop.example"
+auto-json|0|wiretrail checkout.har auto --json | jq '{drilldowns: [.result.drilldowns[] | {severity, kind, command, filter}], not_drilled: [.result.not_drilled[].kind]}'
+auto-clean-exit|0|wiretrail baseline.har auto > /dev/null; echo "exit code: $?"
+
+# Analyze: diagnose
+dx-default|0|wiretrail checkout.har diagnose
+dx-top20|0|wiretrail checkout.har diagnose --top 20
+dx-filter|0|wiretrail checkout.har diagnose --filter "host:search.shop.example"
+dx-json|0|wiretrail checkout.har diagnose --top 3 --json | jq '.result.findings[0]'
+dx-clean|0|wiretrail baseline.har diagnose --top 20
+
+# Analyze: hosts, subsystems, endpoints
+hosts-default|0|wiretrail checkout.har hosts
+hosts-filter|0|wiretrail checkout.har hosts --filter "status:>=400"
+sub-default|0|wiretrail checkout.har subsystems
+sub-config|0|wiretrail checkout.har subsystems --config config/ownership-only.yaml
+sub-auto|0|cd proj && wiretrail ../checkout.har subsystems
+end-top|0|wiretrail checkout.har endpoints --top 6
+end-errors|0|wiretrail checkout.har endpoints --filter "status:>=400" --top 6
+
+# Analyze: timeline
+tl-default|0|wiretrail checkout.har timeline
+tl-sync|0|wiretrail checkout.har timeline --filter "path:/v1/cart/sync"
+tl-slow|0|wiretrail checkout.har timeline --filter "time:>800" --top 20
+tl-json|0|wiretrail checkout.har timeline --filter "path:/v1/cart/sync" --json | jq '.result.rows[0]'
+
+# Analyze: validate
+val-checkout|0|wiretrail checkout.har validate
+val-sanitized|0|wiretrail sanitized.har validate
+val-baseline|0|wiretrail baseline.har validate
+val-json|0|wiretrail checkout.har validate --json | jq '.result | {pct_with_timings, pct_with_resp_body, sanitized, anomalies}'
+
+# Analyze: filters
+flt-host|0|wiretrail checkout.har --filter "host:search.shop.example" summary --top 1
+flt-glob|0|wiretrail checkout.har --filter "host:*.shop.example status:>=500" errors
+flt-time|0|wiretrail checkout.har slowest --filter "time:>1000" --top 3
+flt-has|0|wiretrail checkout.har --filter "has:resp.header.retry-after" timeline
+flt-twice|0|wiretrail checkout.har --filter "method:post" --filter "status:>=400" errors --top 3
+flt-path|0|wiretrail checkout.har --filter "path:/v1/products/*/price" summary --top 1
+flt-query|0|wiretrail checkout.har --filter "path:*page=2*" summary --top 1
+flt-zero|0|wiretrail checkout.har timeline --filter "status:0"
+flt-bad|0|wiretrail checkout.har --filter "colour:red" summary
+
+# Analyze: recipe
+triage-errors-timeline|0|wiretrail checkout.har timeline --filter "status:>=400" --top 20
+triage-hosts|0|wiretrail checkout.har hosts --top 3
+
+# Repeats: duplicates
+dup-default|0|wiretrail checkout.har duplicates
+dup-filter|0|wiretrail checkout.har duplicates --filter "host:api.shop.example method:post" --top 3
+dup-json|0|wiretrail checkout.har duplicates --top 1 --json | jq '.result.groups[0] | {fingerprint, count, statuses, is_retry_pattern, first_offset_ms, last_offset_ms}'
+dup-same-body|0|wiretrail checkout.har extract '$.items[*].qty' --target req --filter "path:/v1/cart/sync" --top 2
+
+# Repeats: retries
+ret-default|0|wiretrail checkout.har retries
+ret-401|0|wiretrail quirks/unauthorized-twice.har retries
+ret-401-dup|0|wiretrail quirks/unauthorized-twice.har duplicates
+ret-json|0|wiretrail checkout.har retries --top 1 --json | jq '.result.groups[0] | {attempts, retry_count, trigger_statuses, gaps_ms, final_status}'
+ret-timeline|0|wiretrail checkout.har timeline --filter "path:/img/banner.webp"
+
+# Repeats: storms
+storm-default|0|wiretrail checkout.har storms
+storm-window|0|wiretrail checkout.har storms --window-ms 300 --min-count 5
+storm-endpoint|0|wiretrail checkout.har storms --filter "path:/v1/products/*/price"
+storm-none|0|wiretrail checkout.har storms --min-count 50
+storm-json|0|wiretrail checkout.har storms --top 1 --json | jq '.result.storms[0] | del(.entry_ids)'
+
+# Repeats: pagination and N+1
+pg-default|0|wiretrail checkout.har pagination
+pg-max|0|wiretrail checkout.har pagination --max-pages 3
+pg-fanout|0|wiretrail checkout.har pagination --fanout-min 20
+pg-const|0|wiretrail quirks/constant-limit.har pagination
+pg-baseline|0|wiretrail baseline.har pagination
+pg-json|0|wiretrail checkout.har pagination --json | jq '.result.nplus1[0] | del(.entry_ids)'
+pg-timeline|0|wiretrail checkout.har timeline --filter "path:/v1/products*" --top 20
+
+# Repeats: rate limits
+rl-default|0|wiretrail checkout.har rate-limit
+rl-timeline|0|wiretrail checkout.har timeline --filter "host:search.shop.example" --top 30
+rl-transitions|0|wiretrail checkout.har transitions --filter "host:search.shop.example"
+rl-date|0|wiretrail quirks/retry-after-date.har rate-limit
+rl-json|0|wiretrail checkout.har rate-limit --json | jq '.result.groups[0]'
+rl-errors|0|wiretrail checkout.har errors --filter "host:search.shop.example"
+
+# Repeats: diff
+diff-default|0|wiretrail checkout.har diff
+diff-ping|0|wiretrail checkout.har diff --filter "path:/v1/session/ping"
+diff-price|0|wiretrail checkout.har diff --filter "path:/v1/products/*/price"
+diff-flags|0|wiretrail checkout.har diff --filter "path:/v1/flags"
+diff-json|0|wiretrail checkout.har diff --filter "path:/v1/session/ping" --json | jq '.result.groups[0] | del(.entry_ids)'
+diff-volatile|0|wiretrail quirks/volatile-substring.har diff
+diff-ping-ts|0|wiretrail checkout.har extract '$.ts' --target req --filter "path:/v1/session/ping" --top 3
+diff-exit|0|wiretrail checkout.har diff --filter "path:/v1/session/ping" > /dev/null; echo "exit code: $?"
+
+# Repeats: recipes
+rr-ping-timeline|0|wiretrail checkout.har timeline --filter "path:/v1/session/ping" --top 5
+rr-baseline-ping|0|wiretrail baseline.har duplicates --filter "path:/v1/session/ping"
+rr-flags|0|wiretrail checkout.har duplicates --filter "path:/v1/flags"
+n1-baseline|0|wiretrail baseline.har timeline --filter "path:/v1/prices"
+n1-storms-baseline|0|wiretrail baseline.har storms --min-count 10
+
+# Failures: errors
+err-default|0|wiretrail checkout.har errors
+err-top3|0|wiretrail checkout.har errors --top 3
+err-5xx|0|wiretrail checkout.har errors --filter "status:>=500"
+err-json|0|wiretrail checkout.har errors --top 1 --json | jq '.result.groups[0] | del(.entry_ids)'
+err-zero|0|wiretrail checkout.har errors --filter "status:0"
+err-payment|0|wiretrail checkout.har errors --filter "host:payments.shop.example"
+
+# Failures: redirects
+redir-default|0|wiretrail checkout.har redirects
+redir-rel|0|wiretrail quirks/relative-redirect.har redirects
+redir-json|0|wiretrail checkout.har redirects --top 2 --json | jq '.result.groups[] | del(.entry_ids)'
+
+# Failures: transitions
+trans-default|0|wiretrail checkout.har transitions
+trans-cart|0|wiretrail checkout.har transitions --filter "path:/v1/cart"
+trans-json|0|wiretrail checkout.har transitions --filter "path:/v1/cart" --json | jq '.result.transitions[0]'
+
+# Failures: slowest
+slow-default|0|wiretrail checkout.har slowest --top 7
+slow-tls|0|wiretrail quirks/tls-in-connect.har slowest
+slow-api|0|wiretrail checkout.har slowest --filter "host:api.shop.example" --top 3
+slow-json|0|wiretrail checkout.har slowest --top 1 --json | jq '.result.entries[0]'
+slow-exit|0|wiretrail checkout.har slowest --top 1 > /dev/null; echo "exit code: $?"
+
+# Failures: startup
+start-default|0|wiretrail checkout.har startup --top 8
+start-whole|0|wiretrail checkout.har startup --window-ms 0 --top 3
+start-5s|0|wiretrail checkout.har startup --window-ms 5000 --top 5
+start-json|0|wiretrail checkout.har startup --window-ms 5000 --top 2 --json | jq '.result | {window_ms, requests_in_window, max_concurrency, critical_path_ms}'
+
+# Failures: cascade
+casc-default|0|wiretrail checkout.har cascade
+casc-window|0|wiretrail checkout.har cascade --window-ms 500 --min-downstream 2
+casc-none|0|wiretrail baseline.har cascade
+casc-json|0|wiretrail checkout.har cascade --json | jq '.result.cascades[0]'
+casc-before|0|wiretrail checkout.har timeline --filter "host:api.shop.example" --top 8
+
+# Failures: auth
+auth-default|0|wiretrail checkout.har auth
+auth-baseline|0|wiretrail baseline.har auth
+auth-cross|0|wiretrail quirks/two-hosts-refresh.har auth
+auth-body|0|wiretrail quirks/refresh-in-body.har auth
+auth-json|0|wiretrail checkout.har auth --json | jq '.result.refreshes'
+auth-race-entry|0|wiretrail checkout.har show-entry e000015
+auth-race-timeline|0|wiretrail checkout.har timeline --filter "has:resp.header.x-request-id" --top 9
+
+# Failures: jwt
+jwt-default|0|wiretrail checkout.har jwt
+jwt-json|0|wiretrail checkout.har jwt --json | jq '.result.tokens[] | {token_hash, source, occurrences, first_entry_id, last_entry_id, expired: .summary.expired}'
+jwt-raw-off|0|wiretrail checkout.har jwt --json | jq -c '.result.tokens[0] | {has_field: has("raw_token"), is_set: (.raw_token != null)}'
+jwt-raw|0|wiretrail checkout.har jwt --json --unsafe-include-secrets | jq -c '.result.tokens[0] | {has_field: has("raw_token"), is_set: (.raw_token != null)}'
+jwt-filter|0|wiretrail checkout.har jwt --filter "host:search.shop.example"
+jwt-none|0|wiretrail baseline.har jwt --filter "host:payments.shop.example"
+
+# Failures: recipes
+race-diagnose|0|wiretrail checkout.har diagnose --filter "host:*shop.example" --top 4
+ff-entry|0|wiretrail checkout.har show-entry e000011
+slow-entry|0|wiretrail checkout.har show-entry e000090
+slow-compare|0|wiretrail checkout.har compare baseline.har --filter "path:/v1/orders"
+
+# Inspect: show-entry
+entry-oauth|0|wiretrail checkout.har show-entry e000014
+entry-receipt|0|wiretrail checkout.har show-entry e000098
+entry-blob|0|wiretrail checkout.har show-entry e000008
+entry-device|0|wiretrail checkout.har show-entry e000043
+entry-unsafe|0|wiretrail checkout.har show-entry e000014 --unsafe-include-secrets
+entry-index|0|wiretrail checkout.har show-entry 14
+entry-bad|0|wiretrail checkout.har show-entry e999999
+entry-json|0|wiretrail checkout.har show-entry e000076 --json | jq '.result | {id, method, status, norm_path, timings, req_body_snippet, resp_body_snippet}'
+
+# Inspect: search
+search-substr|0|wiretrail checkout.har search "internal server error"
+search-ci|0|wiretrail checkout.har search "JWT EXPIRED" --ignore-case --top 2
+search-regex|0|wiretrail checkout.har search '"code":"[a-z_]+"' --regex --filter "status:>=500" --top 3
+search-filter|0|wiretrail checkout.har search "card" --filter "host:payments.shop.example"
+search-none|0|wiretrail checkout.har search "no such text anywhere"
+search-short|0|wiretrail quirks/short-secrets.har search hunter2
+search-badregex|0|wiretrail checkout.har search "(" --regex
+search-json|0|wiretrail checkout.har search "declined" --json | jq '.result.matches'
+
+# Inspect: extract
+ext-msg|0|wiretrail checkout.har extract '$.error.message' --filter "status:>=400" --top 6
+ext-code|0|wiretrail checkout.har extract '$.error.code' --filter "host:api.shop.example status:>=500"
+ext-req|0|wiretrail checkout.har extract '$.grant_type' --target req
+ext-wild|0|wiretrail checkout.har extract '$.data.cart.items[*].sku'
+ext-index|0|wiretrail checkout.har extract 'items[0].sku' --target req --filter "path:/v1/cart/sync" --top 1
+ext-secret|0|wiretrail quirks/short-secrets.har extract '$.password'
+ext-jwt|0|wiretrail checkout.har extract '$.access_token'
+ext-none|0|wiretrail checkout.har extract '$.nothing.here'
+ext-json|0|wiretrail checkout.har extract '$.error.code' --filter "status:>=500" --top 2 --json | jq '.result'
+
+# Inspect: export
+exp-ndjson|0|wiretrail checkout.har export --filter "status:>=500" --top 1
+exp-csv|0|wiretrail checkout.har export --format csv --filter "status:>=500"
+exp-top|0|wiretrail checkout.har export --top 3 | wc -l | tr -d ' '
+exp-json|0|wiretrail checkout.har export --json --filter "status:>=500" | head -1 | jq 'keys'
+exp-jq|0|wiretrail checkout.har export | jq -s 'group_by(.host) | map({host: .[0].host, requests: length, ms: (map(.duration_ms) | add)}) | sort_by(-.ms) | .[0:3]'
+
+# Inspect: report
+rep-default|0|wiretrail checkout.har report
+rep-config|0|wiretrail checkout.har report --config config/ownership-only.yaml --top 3
+rep-json|0|wiretrail checkout.har report --json | jq -r '.result.markdown' | head -8
+
+# Inspect: curl
+curl-get|0|wiretrail checkout.har curl e000010
+curl-pay|0|wiretrail checkout.har curl --filter "path:/v1/charges method:post" --top 1
+curl-many|0|wiretrail checkout.har curl --filter "status:>=500" --top 2
+curl-pseudo|0|wiretrail checkout.har curl e000011
+curl-unsafe|0|wiretrail checkout.har curl e000014 --unsafe-include-secrets
+curl-json|0|wiretrail checkout.har curl e000076 --json | jq '.result.commands[0] | {id, safe, label}'
+
+# Inspect: handoff
+hand-cart|0|wiretrail checkout.har handoff --filter "path:/v1/cart/sync" --top 1
+hand-count|0|wiretrail checkout.har handoff --top 3 | grep -c '^# e'
+hand-json|0|wiretrail checkout.har handoff --filter "path:/v1/cart/sync" --top 1 --json | jq '.result.items[0] | del(.curl)'
+
+# Compare: compare
+cmp-default|0|wiretrail checkout.har compare baseline.har
+cmp-exit-high|0|wiretrail checkout.har compare baseline.har --fail-on high > /dev/null; echo "exit code: $?"
+cmp-exit-critical|0|wiretrail checkout.har compare baseline.har --fail-on critical > /dev/null; echo "exit code: $?"
+cmp-exit-none|0|wiretrail checkout.har compare baseline.har > /dev/null; echo "exit code: $?"
+cmp-self|0|wiretrail baseline.har compare baseline.har
+cmp-self-exit|0|wiretrail baseline.har compare baseline.har --fail-on low > /dev/null; echo "exit code: $?"
+cmp-reverse|0|wiretrail baseline.har compare checkout.har
+cmp-filter|0|wiretrail checkout.har compare baseline.har --filter "host:api.shop.example" --top 3
+cmp-top|0|wiretrail checkout.har compare baseline.har --top 2
+cmp-json|0|wiretrail checkout.har compare baseline.har --json | jq '.result | {max_severity, new_hosts, removed_hosts, new_endpoints, removed_endpoints}'
+cmp-new-errors|0|wiretrail checkout.har compare baseline.har --json | jq '.result.new_errors[:2]'
+cmp-missing|0|wiretrail checkout.har compare nope.har
+cmp-ping|0|wiretrail checkout.har compare baseline.har --filter "path:/v1/session/ping"
+
+# Compare: rules
+rules-packs|0|wiretrail checkout.har rules --pack auth,security,caching,payments,rest,graphql --top 20
+rules-config|0|wiretrail checkout.har rules --config config/wiretrail.yaml
+rules-payments|0|wiretrail checkout.har rules --pack payments
+rules-unknown|0|wiretrail checkout.har rules --pack nonsense
+rules-json|0|wiretrail checkout.har rules --pack payments --json | jq '.result.findings'
+rules-auth-scoped|0|wiretrail checkout.har rules --pack auth --filter "host:api.shop.example method:get"
+rules-exit-none|0|wiretrail baseline.har rules > /dev/null; echo "exit code: $?"
+rules-none|0|wiretrail checkout.har rules
+
+# Compare: checks
+checks-default|0|wiretrail checkout.har checks
+checks-config|0|wiretrail checkout.har checks --config config/wiretrail.yaml
+checks-json|0|wiretrail checkout.har checks --json | jq '.result.findings[0]'
+
+# Compare: configuration file
+cfg-broken|0|wiretrail checkout.har subsystems --config config/broken.yaml
+cfg-typo|0|wiretrail checkout.har subsystems --config config/typo.yaml --top 2
+cfg-missing|0|wiretrail checkout.har subsystems --config config/nope.yaml
+cfg-explicit|0|cd proj && wiretrail ../checkout.har subsystems --config ../config/ownership-only.yaml --top 2
+cfg-none-needed|0|wiretrail checkout.har summary --config config/nope.yaml --top 1
+
+# Automate: JSON output
+json-envelope|0|wiretrail checkout.har errors --top 1 --json | jq '{tool, schema_version, command, warnings, next_commands, capture}'
+json-first-char|0|wiretrail checkout.har summary --json | head -c 1
+json-pivot|0|wiretrail checkout.har errors --json | jq -r '.result.groups[0].entry_ids[0]'
+json-pivot-entry|0|wiretrail checkout.har show-entry "$(wiretrail checkout.har errors --json | jq -r '.result.groups[0].entry_ids[0]')" --json | jq '.result | {id, status, norm_path}'
+json-next|0|wiretrail checkout.har summary --json | jq '.next_commands'
+json-total|0|wiretrail checkout.har errors --json | jq '[.result.groups[].count] | add'
+json-bad-filter|0|wiretrail checkout.har errors --json --filter "colour:red"
+json-bad-filter-out|0|wiretrail checkout.har errors --json --filter "colour:red" 2>/dev/null | wc -c | tr -d ' '
+json-schema-version|0|for c in summary hosts errors duplicates diagnose; do wiretrail checkout.har $c --json | jq -r '"\(.command) schema_version=\(.schema_version)"'; done
+
+# Automate: CI gates
+ci-compare-pass|0|wiretrail baseline.har compare baseline.har --fail-on high; echo "exit code: $?"
+ci-diagnose-pass|0|wiretrail baseline.har diagnose --top 20; echo "exit code: $?"
+ci-diagnose-fail|0|wiretrail checkout.har diagnose --top 20 > /dev/null; echo "exit code: $?"
+ci-high-count|0|wiretrail checkout.har diagnose --top 20 --json | jq '[.result.findings[] | select(.severity == "high")] | length'
+ci-jq-gate|0|wiretrail checkout.har diagnose --top 20 --json | jq -e '[.result.findings[] | select(.severity == "high")] | length == 0' > /dev/null; echo "exit code: $?"
+ci-rules-fail|0|wiretrail checkout.har rules --config config/wiretrail.yaml --top 2 > /dev/null; echo "exit code: $?"
+ci-validate|0|wiretrail sanitized.har validate > /dev/null; echo "exit code: $?"
+ci-two-gates|0|wiretrail checkout.har compare baseline.har --fail-on high > /dev/null; a=$?; wiretrail checkout.har diagnose --top 20 --json | jq -e '[.result.findings[] | select(.severity == "high")] | length == 0' > /dev/null; b=$?; echo "compare=$a diagnose=$b"
+
+# Automate: exported data
+ed-slow|0|wiretrail checkout.har export | jq -s 'map(select(.duration_ms > 1000)) | map({id, host, norm_path, duration_ms})'
+ed-status|0|wiretrail checkout.har export | jq -s 'group_by(.status) | map({status: .[0].status, requests: length}) | sort_by(-.requests) | .[0:4]'
+ed-csv|0|wiretrail checkout.har export --format csv --filter "host:payments.shop.example"
+ed-bytes|0|wiretrail checkout.har export | jq -s 'group_by(.host) | map({host: .[0].host, bytes: (map(.bytes) | add)}) | sort_by(-.bytes) | .[0:3]'
+ed-percentile|0|wiretrail checkout.har export --filter "host:api.shop.example" | jq -s 'map(.duration_ms) | sort | {requests: length, median: .[length / 2 | floor], max: .[-1]}'
+
+# Capture: handle captures safely
+safe-strip|0|jq '(.log.entries[] | .request.headers, .response.headers) |= map(select(.name | ascii_downcase | IN("authorization","cookie","set-cookie","proxy-authorization","x-api-key","x-device-token") | not)) | del(.log.entries[].request.cookies, .log.entries[].response.cookies, .log.entries[].request.postData, .log.entries[].response.content.text)' checkout.har > stripped.har && wiretrail stripped.har validate
+safe-grep|0|grep -c -i 'authorization' checkout.har stripped.har
+safe-query|0|grep -o 'token=[a-z_0-9]*' stripped.har | head -1
+
+# Concepts: redaction and endpoints
+red-auth|0|wiretrail checkout.har show-entry e000076 | grep 'authorization'
+red-cookie|0|wiretrail checkout.har show-entry e000014 | grep 'set-cookie'
+red-query|0|wiretrail checkout.har show-entry e000098 | grep -E '^GET|^  (d|token|sig|page) ='
+red-path|0|wiretrail checkout.har show-entry e000008 | grep '^GET'
+red-body|0|wiretrail checkout.har show-entry e000014 | grep 'request body'
+red-fingerprint|0|wiretrail quirks/unmasked-places.har summary | grep -A1 'top duplicate'
+red-form|0|wiretrail quirks/unmasked-places.har show-entry e000002 | grep 'request body'
+red-form-curl|0|wiretrail quirks/unmasked-places.har curl e000002 | grep 'data'
+red-message|0|wiretrail quirks/unmasked-places.har errors | grep 'message:'
+red-device|0|wiretrail checkout.har show-entry e000043 | grep 'x-device-token' | cut -c1-96
+norm-examples|0|wiretrail checkout.har endpoints --top 40 | grep -E '\{id\}|\{blob\}'
+norm-raw|0|wiretrail checkout.har export --filter "path:/cfg/*" | jq -r '[.id, .norm_path] | join("  ")'
+
+# Limitations: the cut happens before the ranking
+lim-top-default|0|wiretrail quirks/many-error-groups.har diagnose | grep -c '^\[HIGH\]'
+lim-top-20|0|wiretrail quirks/many-error-groups.har diagnose --top 20 | grep '^\[HIGH\]'
+
+# Reference: errors and exit codes, HAR support
+err-nofile|0|wiretrail
+err-unknown|0|wiretrail checkout.har nonsense
+err-top|0|wiretrail checkout.har hosts --top abc
+err-notahar|0|wiretrail not-a-har.json
+err-empty|0|wiretrail empty.har
+err-truncated|0|wiretrail truncated.har
+err-missing|0|wiretrail nope.har
+err-bom|0|printf '\357\273\277{"log":{"version":"1.2","entries":[]}}' > bom.har; wiretrail bom.har
+err-gzip|0|gzip -c checkout.har > checkout.har.gz; wiretrail checkout.har.gz
+err-nolog|0|echo '{}' > nolog.har; wiretrail nolog.har
+har-old|0|sed 's/"version":"1.2"/"version":"1.1"/' checkout.har > old.har; wiretrail old.har --json --top 1 | jq '.capture.har_version'
+har-badtime|0|jq '.log.entries[0].startedDateTime = "yesterday"' checkout.har > badtime.har; wiretrail badtime.har timeline --top 2
+har-empty-entries|0|echo '{"log":{"version":"1.2","entries":[]}}' > noentries.har; wiretrail noentries.har; echo "exit code: $?"
+
+# Concepts: how a HAR is read
+har-entry|0|jq '.log.entries[0] | {startedDateTime, time, request: (.request | {method, url, httpVersion}), response: (.response | {status, statusText, content: (.content | {size, mimeType})}), timings}' checkout.har
+har-ids|0|wiretrail checkout.har export | jq -r 'select(.id == "e000000" or .id == "e000098") | "\(.id) offset \(.offset_ms) ms"'
+
+# Reference: JSON schemas (the real field names of every result)
+schema-keys|0|for c in summary hosts subsystems endpoints duplicates retries errors redirects slowest transitions timeline storms pagination rate-limit jwt auth handoff diff checks diagnose startup cascade validate; do printf '%s: ' $c; wiretrail checkout.har $c --json --top 2 | jq -r '.result | to_entries | map(.key + (if (.value|type)=="array" and (.value|length)>0 and (.value[0]|type)=="object" then " [" + (.value[0]|keys_unsorted|join(", ")) + "]" else "" end)) | join(", ")'; done
+schema-keys-args|0|for spec in 'show-entry e000076' 'curl e000076' 'search internal' 'extract $.error.code' 'compare baseline.har' 'report' 'rules --pack payments' 'auto'; do printf '%s: ' "$spec"; wiretrail checkout.har $spec --json --top 2 | jq -r '.result | to_entries | map(.key + (if (.value|type)=="array" and (.value|length)>0 and (.value[0]|type)=="object" then " [" + (.value[0]|keys_unsorted|join(", ")) + "]" else "" end)) | join(", ")'; done
